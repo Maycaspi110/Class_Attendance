@@ -1,4 +1,4 @@
-﻿# Class Attendance & Teaching Tool
+# Class Attendance & Teaching Tool
 
 A simple web-based tool for teaching in class. Students use it from any smartphone through the browser, with nothing to install.
 
