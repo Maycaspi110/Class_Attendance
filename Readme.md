@@ -1,9 +1,9 @@
-# Class Attendance & Teaching Tool
+﻿# Class Attendance & Teaching Tool
 
 A simple web-based tool for teaching in class. Students use it from any smartphone through the browser, with nothing to install.
 
 > Course: Introduction to Software Engineering, Ariel University
-> Ex2 - Vibe Coding & Deep Designing | Author: May Caspi  and Haim Barabi
+> Ex2 - Vibe Coding & Deep Designing | Author: May Caspi and Haim Barabi
 
 ## Problem
 
