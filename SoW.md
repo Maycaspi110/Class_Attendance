@@ -30,7 +30,7 @@ Build a simple web app for teaching in class that works on students' own smartph
 
 Attendance:
 - Course roster, so only registered students can check in
-- Changing code (every 30-60 seconds), also shown as a QR code
+- Changing code (every 10-30 seconds), also shown as a QR code
 - Location check: within about 150 m of the classroom; students who are far are flagged, not rejected
 - CSV spreadsheet for the lecturer (Present, Flagged, Absent)
 

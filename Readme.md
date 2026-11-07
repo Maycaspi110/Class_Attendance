@@ -18,7 +18,7 @@ Design an end-to-end web application for teaching in class. The assignment is ma
 ![How attendance works](attendance-flow.png)
 
 1. The lecturer uploads the course roster once, and opens attendance from their phone inside the classroom. The system saves that location as the classroom location.
-2. A code (also shown as a QR code) appears on the classroom screen and changes every 30-60 seconds.
+2. A code (also shown as a QR code) appears on the classroom screen and changes every 10-30 seconds.
 3. A student on the roster opens the web page on their phone, enters the code, and is marked present.
 4. The lecturer receives an online/offline spreadsheet with the attendance details.
 
