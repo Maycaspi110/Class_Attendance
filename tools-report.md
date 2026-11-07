@@ -13,7 +13,6 @@ Technical tools considered for the attendance system and the other teaching feat
 | Presence | IP address | University Wi-Fi vs mobile data | TBD | TBD |
 | Hosting | HTTPS hosting (GitHub Pages) | Publish a test page | Works | **Chosen:** GitHub Pages (works) |
 | Output | CSV spreadsheet for the lecturer | Open in Excel, including Hebrew text | Works | **Chosen:** CSV file |
-| Building | Claude Code (vibe coding) | Build the demo | TBD | TBD |
 
 ## Details
 
@@ -63,9 +62,6 @@ HTTPS hosting (GitHub Pages). The test page was published with GitHub Pages and 
 
 ### CSV spreadsheet
 CSV spreadsheet. A sample attendance file (tests/attendance-sample.csv; columns: Student ID, Name, Status, Check-in time, Distance from classroom, Note; four made-up students with the statuses Present, Flagged and Absent) was opened by double-click in Microsoft Excel on Windows. Each column appeared in its own column and all four rows were shown correctly. The sheet was displayed right to left because of the Hebrew language settings, and the column widths had to be widened to read the long headers. Names written in Hebrew were not tested.
-
-### Claude Code
-TBD
 
 ## Other features (design only, not tested)
 
