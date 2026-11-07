@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changing code test</title>
+<style>
+  body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 16px; background: #f5f6f8; color: #1d2733; max-width: 520px; margin-inline: auto; }
+  h1 { font-size: 1.25rem; margin: 0 0 12px; }
+  .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .card h2 { font-size: 1rem; margin: 0 0 10px; }
+  #code { font-size: 3.2rem; font-weight: 700; letter-spacing: .3em; text-align: center; background: #0f172a; color: #fff; border-radius: 10px; padding: 14px 0; }
+  .bar { height: 8px; background: #e5e9f0; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+  #fill { height: 100%; width: 100%; background: #2563eb; }
+  #left { text-align: center; font-size: .9rem; color: #5b6673; margin-top: 6px; }
+  label { font-size: .9rem; }
+  select, input { font-size: 1.1rem; padding: 10px; width: 100%; box-sizing: border-box; margin-top: 4px; }
+  input { text-align: center; letter-spacing: .3em; }
+  button { font-size: 1rem; padding: 12px; border: 0; border-radius: 10px; background: #2563eb; color: #fff; width: 100%; margin-top: 10px; }
+  #result { margin-top: 10px; font-weight: 600; min-height: 1.4em; }
+  .ok { color: #15803d; } .warn { color: #b45309; } .bad { color: #b91c1c; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { padding: 6px 4px; border-bottom: 1px solid #eef0f3; text-align: left; }
+</style>
+</head>
+<body>
+  <h1>Changing code test</h1>
+
+  <div class="card">
+    <h2>1. Lecturer screen</h2>
+    <label>How often does the code change?
+      <select id="period">
+        <option value="30" selected>30 seconds</option>
+        <option value="60">60 seconds</option>
+        <option value="10">10 seconds (quick test)</option>
+      </select>
+    </label>
+    <div id="code" style="margin-top:10px">----</div>
+    <div class="bar"><div id="fill"></div></div>
+    <div id="left"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Student</h2>
+    <label>Type the code
+      <input id="entry" inputmode="numeric" maxlength="4" placeholder="0000">
+    </label>
+    <button id="send">I am here</button>
+    <div id="result"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Attempt log</h2>
+    <table>
+      <thead><tr><th>Time</th><th>Code entered</th><th>Result</th></tr></thead>
+      <tbody id="log"></tbody>
+    </table>
+  </div>
+
+<script>
+  // ALGO START
+  var SECRET = "demo-secret";
+  function codeFor(slot) {
+    var h = 2166136261, s = SECRET + ":" + slot;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return String((h >>> 0) % 10000).padStart(4, "0");
+  }
+  function slotNow(periodSec, nowMs) { return Math.floor(nowMs / (periodSec * 1000)); }
+  function check(entry, periodSec, nowMs) {
+    var slot = slotNow(periodSec, nowMs);
+    if (entry === codeFor(slot)) return "current";
+    if (entry === codeFor(slot - 1)) return "previous";
+    return "invalid";
+  }
+  // ALGO END
+
+  function $(id) { return document.getElementById(id); }
+  function period() { return parseInt($("period").value, 10); }
+
+  function tick() {
+    var p = period(), now = Date.now();
+    var slot = slotNow(p, now);
+    $("code").textContent = codeFor(slot);
+    var intoSlot = (now % (p * 1000)) / 1000;
+    var left = Math.ceil(p - intoSlot);
+    $("left").textContent = "The code changes in " + left + " seconds";
+    $("fill").style.width = (100 - (intoSlot / p) * 100) + "%";
+  }
+
+  $("send").onclick = function () {
+    var entry = $("entry").value.trim();
+    var res = check(entry, period(), Date.now());
+    var r = $("result");
+    var text, cls;
+    if (res === "current") { text = "Present: valid code"; cls = "ok"; }
+    else if (res === "previous") { text = "Present: previous code accepted (grace period)"; cls = "warn"; }
+    else { text = "Invalid or expired code"; cls = "bad"; }
+    r.textContent = text; r.className = cls;
+    var tr = document.createElement("tr");
+    [new Date().toLocaleTimeString("en-GB"), entry || "(empty)", text].forEach(function (v) {
+      var td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+    });
+    $("log").insertBefore(tr, $("log").firstChild);
+    $("entry").value = "";
+  };
+
+  setInterval(tick, 250); tick();
+</script>
+</body>
+</html>
