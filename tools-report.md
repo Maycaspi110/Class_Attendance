@@ -8,7 +8,7 @@ Technical tools considered for the attendance system and the other teaching feat
 |------|------|-----------|--------|----------|
 | Presence | Bluetooth (Web Bluetooth) | Documentation; iPhone check pending | Not supported on Safari / iOS | **Rejected** |
 | Presence | Changing code | Prototype page (code-test.html), 5 manual checks on a PC | All 5 checks passed | **Chosen** |
-| Presence | QR code | Generate and scan on Android and iPhone | TBD | TBD |
+| Presence | QR code | Prototype page (qr-test.html), scanned with an iPhone and an Android device | Scanned successfully on both devices, with all three QR sizes | **Chosen**, together with the typed code |
 | Presence | GPS (browser geolocation) | In class, hallway and library | TBD | TBD |
 | Presence | IP address | University Wi-Fi vs mobile data | TBD | TBD |
 | Hosting | HTTPS hosting (GitHub Pages) | Publish a test page | TBD | TBD |
@@ -36,7 +36,21 @@ Tested with a small prototype page that shows the lecturer screen and the studen
 **Limitation:** a code can be photographed and sent to a friend during its short validity. This is why the location check and the lecturer flag are also used. In the real system the code will be generated on the server, so the secret is not exposed in the browser.
 
 ### QR code
-TBD
+Tested with a small prototype page (qr-test.html) that shows a QR code containing a link with the current code. The QR code changes together with the changing code, and the user can choose between a link and a plain text version.
+
+| Device | Sizes tested | Distances tested | Result |
+|--------|--------------|------------------|--------|
+| iPhone | Small, Medium, Large | About 0.5 m, 1 m and 5 m | Scanned successfully, link opened |
+| Android device | Small, Medium, Large | Several distances, not measured exactly | Scanned successfully, link opened |
+
+Screenshots of the opened link on both devices are in the `evidence` folder.
+
+**Notes:**
+- The link in the prototype points to a placeholder domain (example.com), so the opened page shows a documentation notice. This is expected. In the real system the link will point to our own HTTPS page.
+- The tests were done on a laptop screen. The classroom board is much larger, so scanning from a distance should be easier. This will be checked in class.
+- A QR code can be photographed and shared, just like a typed code. The protection is the same: the code changes every 30-60 seconds, the location check, and the lecturer flag.
+
+**Decision:** QR code is supported together with the typed code. For the demo, the typed code is enough.
 
 ### GPS
 Browser geolocation requires HTTPS and the user's permission, and it reports an accuracy value in meters. Indoor accuracy varies, so a radius of about 150 meters is planned. Real-life test: TBD.
