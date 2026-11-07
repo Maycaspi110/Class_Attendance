@@ -20,49 +20,56 @@ Build a simple web app for teaching in class that works on students' own smartph
 | 6 | Software components | Diagram + text |
 | 7 | Class and sequence diagrams | Diagrams |
 | 8 | Testing strategy | Document |
-| 9 | Working attendance demo | Smartphone web app |
+| 9 | Working demo: attendance and polls | Smartphone web app |
 | 10 | 10-minute demo in class | Live demo |
 | 11 | Conclusion | Document |
 
 ## 3. Scope
 
 **Included (implemented in the demo):**
+
+Attendance:
 - Course roster, so only registered students can check in
 - Changing code (every 30-60 seconds), also shown as a QR code
-- Location check: within about 150 m of the classroom; far students are flagged, not rejected
+- Location check: within about 150 m of the classroom; students who are far are flagged, not rejected
 - CSV spreadsheet for the lecturer (Present, Flagged, Absent)
 
+Lecturer polls: a quick poll about the current material, answered from students' phones
+
 **Design only (not implemented):**
-- Real-time student comments
-- Lecturer polls
-- ML summary of the class video
-- LLM homework review
+- Student comments, suggestions and questions
+- Summary of the class (from the class video)
 
 **Not included:**
+- LLM homework review
 - Integration with Moodle, Zoom or personal information systems
 - A system that is 100% cheat-proof (known limitations are documented)
 
 ## 4. Decisions so far
 
 These come from the tools report:
-- Typed code that changes, plus QR code (tested on iPhone and Android)
-- GPS (browser geolocation) for the distance check
+- A typed code that changes, plus a QR code (tested on iPhone and Android)
 - GitHub Pages for HTTPS hosting
 - CSV file for the lecturer's spreadsheet
+- GPS (browser geolocation) for the distance check: to be confirmed after the tests in class
 - Bluetooth rejected (not supported on iPhone)
 
 ## 5. Work plan
 
 1. Finish the tools report (GPS and IP tests in class)
-2. Write the SRS, then use cases
-3. Design the components, class and sequence diagrams
+2. Write the SRS, then the use cases
+3. Design the components, class diagrams and sequence diagrams
 4. Write the testing strategy
-5. Build the attendance demo (reusing existing code from the test pages)
+5. Build the demo: attendance and polls (reusing existing code from the test pages)
 6. Run the demo in class and write the conclusion
 
-## 6. Assumptions and risks
+## 6. Who does what
+
+Each team member prepares their own version of each deliverable. Then we compare the two versions and combine them into the final one.
+
+## 7. Assumptions and risks
 
 - **GPS accuracy indoors varies.** Mitigation: a wide radius (about 150 m) and a flag for the lecturer.
-- **A code can be photographed and shared.** Mitigation: the code changes quickly, the location check, and the lecturer flag.
+- **A code can be photographed and shared.** Mitigation: the code changes quickly, the location check, and the flag for the lecturer.
 - **Classroom internet may be weak.** Mitigation: test the demo in the classroom before the presentation.
-- **Time is limited.** Mitigation: implement only attendance; keep everything else as design.
+- **Time is limited.** Mitigation: implement only attendance and polls; everything else stays as design.
