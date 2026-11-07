@@ -30,7 +30,7 @@ Tested with a small prototype page that shows the lecturer screen and the studen
 | Enter a random code | Rejected | Passed |
 | Code changes on time | Changes every 30 seconds | Passed |
 
-**Decision:** a typed code that changes every 30-60 seconds, with the previous code accepted.
+**Decision:** a typed code that changes every 10-30 seconds, with the previous code accepted.
 
 **Limitation:** a code can be photographed and sent to a friend during its short validity. This is why the location check and the lecturer flag are also used. In the real system the code will be generated on the server, so the secret is not exposed in the browser.
 
@@ -47,7 +47,7 @@ The test pages are in the `tests` folder (`code-test.html` and `qr-test.html`), 
 **Notes:**
 - The link in the prototype points to a placeholder domain (example.com), so the opened page shows a documentation notice. This is expected. In the real system the link will point to our own HTTPS page.
 - The tests were done on a laptop screen. The classroom board is much larger, so scanning from a distance should be easier. This will be checked in class.
-- A QR code can be photographed and shared, just like a typed code. The protection is the same: the code changes every 30-60 seconds, the location check, and the lecturer flag.
+- A QR code can be photographed and shared, just like a typed code. The protection is the same: the code changes every 10-30 seconds, the location check, and the lecturer flag.
 
 **Decision:** QR code is supported together with the typed code. For the demo, the typed code is enough.
 
