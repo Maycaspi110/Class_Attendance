@@ -33,6 +33,6 @@ No method is 100% cheat-proof, and known limitations will be documented in the d
 
 ## Scope
 
-- **Implemented in the demo:** attendance (roster, changing code, location check, lecturer spreadsheet)
-- **Design only:** real-time comments, on-the-spot polls, ML video summary, LLM homework review
-- **Out of scope:** integration with Moodle, Zoom, or personal information systems
+- **Implemented in the demo:** attendance (roster, changing code, location check, lecturer spreadsheet) and lecturer polls
+- **Design only:** student comments and the class summary
+- **Not included:** LLM homework review, and integration with Moodle, Zoom, or personal information systems
