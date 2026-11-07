@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Location test for attendance</title>
+<style>
+  body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 16px; background: #f5f6f8; color: #1d2733; }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  p.sub { margin: 0 0 16px; color: #5b6673; font-size: .9rem; }
+  .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  button { font-size: 1rem; padding: 12px 14px; border: 0; border-radius: 10px; background: #2563eb; color: #fff; width: 100%; margin-top: 8px; }
+  button.secondary { background: #e5e9f0; color: #1d2733; }
+  button:disabled { opacity: .5; }
+  label { display: block; margin-top: 10px; font-size: .9rem; }
+  select, input[type=number] { font-size: 1rem; padding: 8px; width: 100%; box-sizing: border-box; margin-top: 4px; }
+  .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eef0f3; }
+  .row:last-child { border-bottom: 0; }
+  .val { font-weight: 600; }
+  .ok { color: #15803d; } .bad { color: #b91c1c; } .warn { color: #b45309; }
+  table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+  th, td { padding: 6px 4px; border-bottom: 1px solid #eef0f3; text-align: left; }
+  #msg { margin-top: 8px; font-size: .9rem; }
+</style>
+</head>
+<body>
+  <h1>Location test for attendance</h1>
+  <p class="sub">Open this page on a phone, measure in different places, and compare the results.</p>
+
+  <div class="card">
+    <label>Where am I standing now?
+      <select id="place">
+        <option>In the classroom</option>
+        <option>In the hallway next to the classroom</option>
+        <option>In another building</option>
+        <option>In the library</option>
+        <option>Off campus</option>
+        <option>Other</option>
+      </select>
+    </label>
+    <label>Allowed range from the classroom (meters)
+      <input type="number" id="radius" value="150" min="10" step="10">
+    </label>
+    <button id="measure">Measure location</button>
+    <button id="setRef" class="secondary" disabled>Set as classroom point</button>
+    <div id="msg"></div>
+  </div>
+
+  <div class="card" id="result" hidden>
+    <div class="row"><span>Latitude</span><span class="val" id="lat">-</span></div>
+    <div class="row"><span>Longitude</span><span class="val" id="lon">-</span></div>
+    <div class="row"><span>Accuracy (meters)</span><span class="val" id="acc">-</span></div>
+    <div class="row"><span>Distance from classroom point</span><span class="val" id="dist">-</span></div>
+    <div class="row"><span>IP address</span><span class="val" id="ip">-</span></div>
+    <div class="row"><span>Conclusion</span><span class="val" id="verdict">-</span></div>
+  </div>
+
+  <div class="card">
+    <strong>My measurements</strong>
+    <table>
+      <thead><tr><th>Place</th><th>Accuracy</th><th>Distance</th><th>IP</th><th>Time</th></tr></thead>
+      <tbody id="log"></tbody>
+    </table>
+    <button id="copy" class="secondary">Copy results</button>
+    <button id="clear" class="secondary">Clear</button>
+  </div>
+
+<script>
+  var last = null, ref = null, rows = [];
+
+  function save() {
+    try { localStorage.setItem("loc_test", JSON.stringify({ ref: ref, rows: rows })); } catch (e) {}
+  }
+  function load() {
+    try {
+      var d = JSON.parse(localStorage.getItem("loc_test") || "null");
+      if (d) { ref = d.ref || null; rows = d.rows || []; }
+    } catch (e) {}
+  }
+  function $(id) { return document.getElementById(id); }
+  function msg(t, cls) { var m = $("msg"); m.textContent = t; m.className = cls || ""; }
+
+  function distance(a, b) {
+    var R = 6371000, toRad = function (x) { return x * Math.PI / 180; };
+    var dLat = toRad(b.lat - a.lat), dLon = toRad(b.lon - a.lon);
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  function renderLog() {
+    var tb = $("log"); tb.innerHTML = "";
+    rows.forEach(function (r) {
+      var tr = document.createElement("tr");
+      [r.place, r.acc + " m", r.dist === null ? "-" : r.dist + " m", r.ip, r.time].forEach(function (v) {
+        var td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+  }
+
+  function getIP() {
+    return fetch("https://api.ipify.org?format=json")
+      .then(function (r) { return r.json(); })
+      .then(function (j) { return j.ip; })
+      .catch(function () { return "unavailable"; });
+  }
+
+  $("measure").onclick = function () {
+    if (!navigator.geolocation) { msg("This browser does not support location.", "bad"); return; }
+    $("measure").disabled = true;
+    msg("Measuring... tap Allow if the browser asks.", "");
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var c = pos.coords;
+      last = { lat: c.latitude, lon: c.longitude, acc: Math.round(c.accuracy) };
+      getIP().then(function (ip) {
+        var dist = ref ? Math.round(distance(ref, last)) : null;
+        var radius = parseFloat($("radius").value) || 150;
+        $("result").hidden = false;
+        $("lat").textContent = last.lat.toFixed(5);
+        $("lon").textContent = last.lon.toFixed(5);
+        $("acc").textContent = last.acc + " m";
+        $("dist").textContent = dist === null ? "No classroom point set yet" : dist + " m";
+        $("ip").textContent = ip;
+        var v = $("verdict");
+        if (dist === null) { v.textContent = "-"; v.className = "val"; }
+        else if (dist <= radius) { v.textContent = "Within range"; v.className = "val ok"; }
+        else if (dist - last.acc <= radius) { v.textContent = "Unsure (low accuracy)"; v.className = "val warn"; }
+        else { v.textContent = "Outside range"; v.className = "val bad"; }
+        rows.push({ place: $("place").value, acc: last.acc, dist: dist, ip: ip,
+                    time: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) });
+        save(); renderLog();
+        $("setRef").disabled = false;
+        $("measure").disabled = false;
+        msg("Measurement saved.", "ok");
+      });
+    }, function (err) {
+      var t = { 1: "Location permission was not granted.", 2: "Location is unavailable. Check that Location is turned on in the phone.", 3: "Timed out. Try again." };
+      msg(t[err.code] || "Measurement error.", "bad");
+      $("measure").disabled = false;
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  };
+
+  $("setRef").onclick = function () {
+    if (!last) return;
+    ref = { lat: last.lat, lon: last.lon };
+    save();
+    msg("Classroom point set. Now go to other places and measure.", "ok");
+  };
+
+  $("copy").onclick = function () {
+    var text = rows.map(function (r) {
+      return [r.place, "accuracy " + r.acc, "distance " + (r.dist === null ? "-" : r.dist), "IP " + r.ip, r.time].join(" | ");
+    }).join("\n");
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { msg("Copied.", "ok"); });
+    else msg("Automatic copy is not available in this browser.", "warn");
+  };
+
+  $("clear").onclick = function () { rows = []; ref = null; save(); renderLog(); $("result").hidden = true; msg("Cleared.", ""); };
+
+  load(); renderLog();
+</script>
+</body>
+</html>
