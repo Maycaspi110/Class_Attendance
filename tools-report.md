@@ -36,14 +36,14 @@ Tested with a small prototype page that shows the lecturer screen and the studen
 **Limitation:** a code can be photographed and sent to a friend during its short validity. This is why the location check and the lecturer flag are also used. In the real system the code will be generated on the server, so the secret is not exposed in the browser.
 
 ### QR code
-Tested with a small prototype page (qr-test.html) that shows a QR code containing a link with the current code. The QR code changes together with the changing code, and the user can choose between a link and a plain text version.
+Tested with a small prototype page (qr-test.html) that shows a QR code containing a link with the current code. The QR code changes together with the changing code, and the user can choose between a link and a plain text version. The QR code is generated with the open-source library qrcode-generator (MIT license), so no QR code was written from scratch.
 
 | Device | Sizes tested | Distances tested | Result |
 |--------|--------------|------------------|--------|
 | iPhone | Small, Medium, Large | About 0.5 m, 1 m and 5 m | Scanned successfully, link opened |
 | Android device | Small, Medium, Large | Several distances, not measured exactly | Scanned successfully, link opened |
 
-Screenshots of the opened link on both devices are in the `evidence` folder.
+The test pages are in the `tests` folder (`code-test.html` and `qr-test.html`), and the screenshots of the results are in the `evidence` folder.
 
 **Notes:**
 - The link in the prototype points to a placeholder domain (example.com), so the opened page shows a documentation notice. This is expected. In the real system the link will point to our own HTTPS page.
