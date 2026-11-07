@@ -23,7 +23,7 @@ This document lists what the system must do (functional requirements) and how it
 |----|-------------|
 | FR-1 | The lecturer shall be able to upload the course roster (name and phone number for each student). |
 | FR-2 | The lecturer shall be able to start an attendance session. Starting the session stores the classroom location, taken from the lecturer's phone. |
-| FR-3 | The system shall show a 4-digit code and a matching QR code on the classroom screen. The code shall change every 30-60 seconds. |
+| FR-3 | The system shall show a 4-digit code and a matching QR code on the classroom screen. The code shall change every 10-30 seconds. |
 | FR-4 | The system shall accept the current code and the previous code. |
 | FR-5 | The lecturer shall be able to end the session. After that, no more check-ins are accepted. |
 | FR-6 | The lecturer shall be able to see who is Present, who is Flagged and who is Absent. |
@@ -66,4 +66,4 @@ This document lists what the system must do (functional requirements) and how it
 ## 6. Open points
 
 - Roster file format (planned: CSV).
-- Final values for the code period (30 or 60 seconds) and the radius, to be confirmed after the tests in class.
+- Final values for the code period (10-30 seconds) and the radius, to be confirmed after the tests in class.
