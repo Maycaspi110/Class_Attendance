@@ -11,7 +11,7 @@ Technical tools considered for the attendance system and the other teaching feat
 | Presence | QR code | Prototype page (qr-test.html), scanned with an iPhone and an Android device | Scanned successfully on both devices, with all three QR sizes | **Chosen**, together with the typed code |
 | Presence | GPS (browser geolocation) | In class, hallway and library | TBD | TBD |
 | Presence | IP address | University Wi-Fi vs mobile data | TBD | TBD |
-| Hosting | HTTPS hosting (GitHub Pages) | Publish a test page | TBD | TBD |
+| Hosting | HTTPS hosting (GitHub Pages) | Publish a test page | Works | **Chosen:** GitHub Pages (works) |
 | Output | CSV spreadsheet for the lecturer | Open in Excel, including Hebrew text | TBD | TBD |
 | Building | Claude Code (vibe coding) | Build the demo | TBD | TBD |
 
@@ -59,7 +59,7 @@ Browser geolocation requires HTTPS and the user's permission, and it reports an 
 A web page cannot read the Wi-Fi network or router. The server can see the IP address, but the whole campus shares one network. Real-life test: TBD.
 
 ### HTTPS hosting
-TBD
+HTTPS hosting (GitHub Pages). The test page was published with GitHub Pages and is served over HTTPS (Enforce HTTPS is on). It opened on a laptop and on an iPhone. On both devices the browser asked for location permission and returned a measurement. This works only because the page is served over HTTPS. Accuracy was about 10 m on the phone and about 183 m on the laptop (which has no GPS).
 
 ### CSV spreadsheet
 TBD
