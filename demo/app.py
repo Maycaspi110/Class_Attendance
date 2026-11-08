@@ -83,7 +83,8 @@ def create_app(test_config=None):
         ALLOWED_RADIUS_METERS=_env_int("ALLOWED_RADIUS_METERS", 150),
         MAX_ACCURACY_METERS=_env_int("MAX_ACCURACY_METERS", 200),
         TIMEZONE=os.environ.get("TIMEZONE", "Asia/Jerusalem"),
-        PUBLIC_URL=os.environ.get("PUBLIC_URL"),
+        # RENDER_EXTERNAL_URL is set by the Render hosting service itself.
+        PUBLIC_URL=os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL"),
         SECRET_KEY=os.environ.get("SECRET_KEY") or secrets.token_hex(32),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",

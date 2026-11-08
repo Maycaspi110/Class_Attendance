@@ -1,0 +1,28 @@
+# Render "Blueprint": tells Render how to run the demo from the demo/ folder.
+# The data is kept in memory, so the demo must run as ONE process (one worker).
+services:
+  - type: web
+    name: class-attendance
+    runtime: python
+    plan: free
+    rootDir: demo
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --workers 1 --threads 8 --bind 0.0.0.0:$PORT
+    healthCheckPath: /checkin
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: LECTURER_PASSWORD
+        sync: false            # Render asks you for it. Choose a strong password.
+      - key: CODE_SECRET
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SECURE_COOKIES
+        value: "1"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: TIMEZONE
+        value: Asia/Jerusalem
+      - key: CODE_PERIOD_SECONDS
+        value: "30"
