@@ -66,7 +66,7 @@ flowchart LR
 
 | Component | What it does |
 |-----------|--------------|
-| Storage | Keeps the roster, the sessions (with the classroom location), the check-ins and the poll answers. |
+| Storage | Keeps the roster, the sessions (with the classroom location), the check-ins and the poll answers. In a real system this is a database, so the lecturer uploads the roster once for the course. In the demo it is kept in memory. |
 
 ## 3. How the components work together
 
