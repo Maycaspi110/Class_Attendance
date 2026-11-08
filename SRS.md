@@ -23,7 +23,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 
 | Req. no. | Requirement |
 |----------|-------------|
-| FR-1 | The lecturer shall be able to upload the course roster (name and phone number for each student). The system shall keep the roster, so the lecturer uploads it once for the course. |
+| FR-1 | The lecturer shall be able to upload the course roster (name and email for each student). The system shall keep the roster, so the lecturer uploads it once for the course. |
 | FR-2 | The lecturer shall be able to start an attendance session. Starting the session stores the classroom location, taken from the lecturer's phone. |
 | FR-3 | The system shall show a 4-digit code and a matching QR code on the classroom screen. The code shall change every 10-30 seconds. |
 | FR-4 | The system shall accept the current code and the previous code. |
@@ -38,11 +38,11 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | Req. no. | Requirement |
 |----------|-------------|
 | FR-10 | The student shall be able to open the check-in page in a phone browser, without installing anything. |
-| FR-11 | The student shall identify with a phone number. Only phone numbers on the roster are accepted. |
+| FR-11 | The student shall identify with an email address. Only emails on the roster are accepted. |
 | FR-12 | The student shall be able to enter the code by typing it or by scanning the QR code. |
 | FR-13 | The system shall ask for the phone location and check that the student is within the allowed distance from the classroom (default: about 150 m). |
 | FR-14 | If the code is valid but the location is far, missing or too inaccurate, the student shall be marked Flagged for the lecturer, not rejected. |
-| FR-15 | The system shall show the student a clear message: check-in received, or the reason it failed (wrong or expired code, phone number not on the roster). |
+| FR-15 | The system shall show the student a clear message: check-in received, or the reason it failed (wrong or expired code, email not on the roster). |
 | FR-16 | A student shall have only one attendance record per session. Checking in again shall not create a duplicate. |
 | FR-17 | The student shall be able to answer an open poll once. |
 
@@ -61,7 +61,8 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 
 - Students have a smartphone with a browser and allow location access.
 - GPS accuracy inside a building can be lower than outdoors. The radius is wide on purpose, and far or inaccurate locations are flagged for the lecturer to decide.
-- The demo uses made-up students and phone numbers.
+- The demo uses made-up students and emails.
+- The roster file may have other columns (for example an ID number). The system ignores them and does not keep them.
 - In the prototype the secret used to create the code is visible in the browser. A real system would create the codes on a server.
 - In the demo the data is kept in memory and is lost when the server restarts. A real system would keep it in a database.
 - Not included: Moodle or Zoom integration, LLM homework review, comments and class summary (design only).

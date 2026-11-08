@@ -18,7 +18,7 @@ We test on three levels:
 
 Every test has an input and an expected result. A test passes only if the result is the same as expected.
 
-The tests use made-up students and phone numbers.
+The tests use made-up students and emails.
 
 ## 2. Unit tests by class
 
@@ -27,10 +27,11 @@ The tests use made-up students and phone numbers.
 | Test | Input | Expected result |
 |------|-------|-----------------|
 | Load a good file | CSV with 3 students | 3 students are loaded |
-| Missing column | CSV without the phone number column | An error is shown |
-| Same number twice | CSV with a repeated phone number | A warning is shown |
-| Find a student | A phone number on the roster | The student is returned |
-| Unknown number | A phone number not on the roster | "Not found" |
+| Missing column | CSV without the email column | An error is shown |
+| Other columns | CSV with an extra ID number column | The ID number is ignored and not kept |
+| Same email twice | CSV with a repeated email | A warning is shown |
+| Find a student | An email on the roster | The student is returned |
+| Unknown email | An email not on the roster | "Not found" |
 
 ### CodeGenerator
 
@@ -95,7 +96,7 @@ The tests use made-up students and phone numbers.
 
 | Test | Input | Expected result |
 |------|-------|-----------------|
-| Columns | Any session | The first row has: Phone number, Name, Status, Check-in time, Distance from classroom (m), Note |
+| Columns | Any session | The first row has: Email, Name, Status, Check-in time, Distance from classroom (m), Note |
 | Present and Flagged | A session with one Present and one Flagged | Both appear with the right status |
 | Absent | A student on the roster with no record | The student appears as Absent |
 | Opens in a spreadsheet | The file is opened in Excel | Every column is in its own column |
@@ -115,12 +116,12 @@ These are done by hand, in the real classroom, with real phones (iPhone and Andr
 | Test | How | Expected result |
 |------|-----|-----------------|
 | The page opens | Open the student page on several phones | The page opens over HTTPS and the phone asks for the location |
-| Typed code | A student types the code and a phone number | Check-in is received |
+| Typed code | A student types the code and an email | Check-in is received |
 | QR code | A student scans the QR code from the classroom screen | The page opens and the check-in is received |
 | Location blocked | A student refuses the location permission | The student is recorded as Flagged |
 | Outside the class | A student checks in with a real code from another place (for example the library) | The student is recorded as Flagged |
 | Old code | A student uses a code from a photo taken a minute ago | The code is rejected |
-| Same name | Two students with the same name and different phone numbers check in | Both appear in the CSV as separate students |
+| Same name | Two students with the same name and different emails check in | Both appear in the CSV as separate students |
 | Many phones at once | About 10 students check in together | All check-ins are recorded |
 | Spreadsheet | The lecturer downloads the CSV and opens it in Excel | The file opens and the data is correct |
 | Poll | The lecturer creates a poll and students answer | The results are shown |
