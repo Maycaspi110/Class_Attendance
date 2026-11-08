@@ -23,7 +23,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 
 | Req. no. | Requirement |
 |----------|-------------|
-| FR-1 | The lecturer shall be able to upload the course roster (name and phone number for each student). |
+| FR-1 | The lecturer shall be able to upload the course roster (name and phone number for each student). The system shall keep the roster, so the lecturer uploads it once for the course. |
 | FR-2 | The lecturer shall be able to start an attendance session. Starting the session stores the classroom location, taken from the lecturer's phone. |
 | FR-3 | The system shall show a 4-digit code and a matching QR code on the classroom screen. The code shall change every 10-30 seconds. |
 | FR-4 | The system shall accept the current code and the previous code. |
@@ -63,6 +63,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 - GPS accuracy inside a building can be lower than outdoors. The radius is wide on purpose, and far or inaccurate locations are flagged for the lecturer to decide.
 - The demo uses made-up students and phone numbers.
 - In the prototype the secret used to create the code is visible in the browser. A real system would create the codes on a server.
+- In the demo the data is kept in memory and is lost when the server restarts. A real system would keep it in a database.
 - Not included: Moodle or Zoom integration, LLM homework review, comments and class summary (design only).
 
 ## 6. Open points
