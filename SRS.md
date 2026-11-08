@@ -17,10 +17,12 @@ This document lists what the system must do (functional requirements) and how it
 
 ## 3. Functional requirements
 
+FR = Functional Requirement (what the system does). NFR = Non-functional Requirement (how the system behaves).
+
 ### 3.1 Lecturer
 
-| ID | Requirement |
-|----|-------------|
+| Req. no. | Requirement |
+|----------|-------------|
 | FR-1 | The lecturer shall be able to upload the course roster (name and phone number for each student). |
 | FR-2 | The lecturer shall be able to start an attendance session. Starting the session stores the classroom location, taken from the lecturer's phone. |
 | FR-3 | The system shall show a 4-digit code and a matching QR code on the classroom screen. The code shall change every 10-30 seconds. |
@@ -33,8 +35,8 @@ This document lists what the system must do (functional requirements) and how it
 
 ### 3.2 Student
 
-| ID | Requirement |
-|----|-------------|
+| Req. no. | Requirement |
+|----------|-------------|
 | FR-10 | The student shall be able to open the check-in page in a phone browser, without installing anything. |
 | FR-11 | The student shall identify with a phone number. Only phone numbers on the roster are accepted. |
 | FR-12 | The student shall be able to enter the code by typing it or by scanning the QR code. |
@@ -46,8 +48,8 @@ This document lists what the system must do (functional requirements) and how it
 
 ## 4. Non-functional requirements
 
-| ID | Requirement |
-|----|-------------|
+| Req. no. | Requirement |
+|----------|-------------|
 | NFR-1 | **Simple:** a student can check in in a few taps, in about 30 seconds or less. |
 | NFR-2 | **No installation:** it works in a regular browser on iPhone and Android. |
 | NFR-3 | **Secure connection:** the pages are served over HTTPS only, because browsers give the location only over HTTPS. |
