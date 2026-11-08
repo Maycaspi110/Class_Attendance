@@ -67,7 +67,7 @@ CSV spreadsheet. A sample attendance file (tests/attendance-sample.csv; columns:
 
 - **Real-time comments:** TBD
 - **Polls:** TBD
-- **ML summary of class video:** transcript of the recording, then a language model to summarize it
+- **Class summary:** students upload their own summaries, and an AI agent combines them into one PDF summary
 - **LLM homework review:** language model that reviews homework and compares it to other submissions
 
 ## Notes
