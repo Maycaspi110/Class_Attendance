@@ -13,13 +13,13 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Actor:** Lecturer
 - **Before:** The lecturer opened the lecturer page.
 - **Main flow:**
-  1. The lecturer chooses a CSV file with the students' names and phone numbers.
+  1. The lecturer chooses a CSV file with the students' names and emails.
   2. The system reads the file and shows how many students it found.
   3. The lecturer confirms.
   4. The system saves the roster.
 - **Other cases:**
-  - The file is missing the name or phone number column: the system shows an error and asks for another file.
-  - The same phone number appears twice: the system shows a warning and the lecturer fixes the file.
+  - The file is missing the name or email column: the system shows an error and asks for another file.
+  - The same email appears twice: the system shows a warning and the lecturer fixes the file.
 - **After:** The roster is saved and ready for a session.
 - **Related requirements:** upload the roster
 
@@ -48,13 +48,13 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Before:** A session is open. The student has a phone with a browser.
 - **Main flow:**
   1. The student scans the QR code from the classroom screen, or opens the check-in page and types the code.
-  2. The student types their phone number.
+  2. The student types their email.
   3. The student allows location when the phone asks.
   4. The student presses "I am here".
-  5. The system checks three things: the phone number is on the roster, the code is the current or the previous one, and the phone is within about 150 m of the classroom.
+  5. The system checks three things: the email is on the roster, the code is the current or the previous one, and the phone is within about 150 m of the classroom.
   6. The system records the student as Present and shows a confirmation.
 - **Other cases:**
-  - The phone number is not on the roster: the system shows an error.
+  - The email is not on the roster: the system shows an error.
   - The code is wrong or expired: the system shows an error and the student can try again with the new code.
   - The code is valid but the location is far, missing or too inaccurate: the system records the student as Flagged and tells the student that the lecturer will review it. The student is not rejected.
   - The student already checked in: the system says so and does not create a second record.
@@ -74,7 +74,7 @@ Each use case is a short story of how a user does one thing with the system. Att
   4. The lecturer downloads the CSV file.
 - **Other cases:**
   - Nobody checked in: all students appear as Absent.
-- **After:** The lecturer has a CSV file with the columns Phone number, Name, Status, Check-in time, Distance from classroom (m) and Note.
+- **After:** The lecturer has a CSV file with the columns Email, Name, Status, Check-in time, Distance from classroom (m) and Note.
 - **Related requirements:** see the results, download the CSV
 
 ## UC-5: Lecturer runs a poll (optional)

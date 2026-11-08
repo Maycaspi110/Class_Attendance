@@ -12,12 +12,12 @@ This document goes one level below the components. The class diagram shows the m
 classDiagram
   class Student {
     +String name
-    +String phoneNumber
+    +String email
   }
   class Roster {
     +List~Student~ students
     +load(csvFile)
-    +findByPhone(phone) Student
+    +findByEmail(email) Student
   }
   class Session {
     +Location classroomLocation
@@ -45,7 +45,7 @@ classDiagram
     +String note
   }
   class AttendanceManager {
-    +checkIn(phone, code, location, accuracy) AttendanceRecord
+    +checkIn(email, code, location, accuracy) AttendanceRecord
     +results() List~AttendanceRecord~
   }
   class Poll {
@@ -80,8 +80,8 @@ classDiagram
 
 | Class | Purpose | Related requirements |
 |-------|---------|----------------------|
-| Student | A student: name and phone number. | identify by phone number |
-| Roster | The course student list. Loads it from a CSV file and finds a student by phone number. | upload the roster, identify by phone number |
+| Student | A student: name and email. | identify by email |
+| Roster | The course student list. Loads it from a CSV file and finds a student by email. | upload the roster, identify by email |
 | Session | One attendance session: the classroom location, the start time and whether it is open or closed. | start and end a session |
 | CodeGenerator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells if an entered code is the current one, the previous one or invalid. | changing code, current and previous code |
 | LocationChecker | Calculates the distance between the phone and the classroom, and decides if the location is good, far or too inaccurate. | distance check, flag |
@@ -109,13 +109,13 @@ sequenceDiagram
   participant LC as Location checker
   participant DB as Storage
 
-  St->>SP: Types phone number and code, allows location
-  SP->>AM: checkIn(phone, code, location, accuracy)
-  AM->>R: findByPhone(phone)
+  St->>SP: Types email and code, allows location
+  SP->>AM: checkIn(email, code, location, accuracy)
+  AM->>R: findByEmail(email)
   R-->>AM: Student or not found
-  alt Phone number is not on the roster
+  alt Email is not on the roster
     AM-->>SP: Error: not on the roster
-  else Phone number is on the roster
+  else Email is on the roster
     AM->>CG: checkCode(code, now)
     CG-->>AM: current, previous or invalid
     alt Code is invalid

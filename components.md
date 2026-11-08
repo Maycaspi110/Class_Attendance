@@ -50,7 +50,7 @@ flowchart LR
 |-----------|--------------|---------|--------------|
 | Lecturer page | Uploads the roster, starts and ends a session, shows the results, downloads the CSV, creates a poll and shows its results. | Lecturer | upload the roster, start and end a session, see the results, download the CSV, create a poll |
 | Classroom screen page | Shows the current 4-digit code and the QR code, and updates them when the code changes. | Classroom screen | show the code and QR |
-| Student page | The student enters a phone number and a code (or arrives from the QR code), allows location, sees a confirmation or an error, and answers a poll. | Student | check in, see messages, answer a poll |
+| Student page | The student enters an email and a code (or arrives from the QR code), allows location, sees a confirmation or an error, and answers a poll. | Student | check in, see messages, answer a poll |
 
 ### Server
 
@@ -60,7 +60,7 @@ flowchart LR
 | Location checker | Calculates the distance between the student's phone and the classroom location, and takes the accuracy of the phone into account. | distance check, flag |
 | Attendance manager | The main logic. For each check-in it checks the roster, the code and the location, and records Present or Flagged. It also makes sure there is only one record per student. | roster, code and location checks, one record per student |
 | Poll manager | Saves a poll, receives one answer per student and counts the answers. | create a poll, one answer per student, see the results |
-| CSV exporter | Builds the spreadsheet for the lecturer (Phone number, Name, Status, Check-in time, Distance from classroom, Note). | download the CSV |
+| CSV exporter | Builds the spreadsheet for the lecturer (Email, Name, Status, Check-in time, Distance from classroom, Note). | download the CSV |
 
 ### Storage
 
@@ -71,7 +71,7 @@ flowchart LR
 ## 3. How the components work together
 
 - **Starting a session:** the lecturer page sends the phone location to the attendance manager, which saves it as the classroom location and starts the session. The classroom screen page asks the code generator for the current code and shows it.
-- **A student check-in:** the student page sends the phone number, the code and the phone location to the attendance manager. The attendance manager asks the code generator if the code is valid, asks the location checker for the distance, looks up the roster in the storage, and saves the result.
+- **A student check-in:** the student page sends the email, the code and the phone location to the attendance manager. The attendance manager asks the code generator if the code is valid, asks the location checker for the distance, looks up the roster in the storage, and saves the result.
 - **Getting the spreadsheet:** the lecturer page asks the CSV exporter, which reads the results from the storage and returns a CSV file.
 - **A poll:** the lecturer page sends the question to the poll manager. Students answer through the student page, and the answers are saved in the storage.
 
