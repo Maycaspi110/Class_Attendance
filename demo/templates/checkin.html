@@ -4,7 +4,7 @@
 <h1>Attendance</h1>
 <p class="sub">Scan the QR code on the classroom screen, or type the code shown there. Then type your email.</p>
 
-<form class="card" id="form" autocomplete="off">
+<form class="card" id="form">
   <div id="codefield">
     <label>Code from the classroom screen
       <input type="text" id="code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000">
@@ -15,7 +15,7 @@
     <button type="button" id="typecode" class="secondary">Type a code instead</button>
   </div>
   <label>Your email
-    <input type="email" id="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="name@example.com" maxlength="254" required>
+    <input type="email" id="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="name@example.com" maxlength="254" required>
   </label>
   <button type="submit" id="send">I am here</button>
   <div id="msg" class="msg" role="status"></div>
