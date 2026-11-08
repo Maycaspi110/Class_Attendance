@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Classroom screen{% endblock %}
+{% block bodyclass %}screen{% endblock %}
+{% block body %}
+<h1 id="title">Attendance</h1>
+<div id="open" hidden>
+  <div id="bigcode">----</div>
+  <div id="qr"></div>
+  <div class="bar"><div id="fill"></div></div>
+  <div id="left" class="hint"></div>
+  <div class="hint">Scan the QR code, or open the check-in page and type the code.</div>
+</div>
+<div id="closed" class="hint">No attendance session is open.</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='qrcode.js') }}"></script>
+<script src="{{ url_for('static', filename='screen.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Lecturer login{% endblock %}
+{% block body %}
+<h1>Lecturer login</h1>
+<p class="sub">This page is for the lecturer only. Students use the check-in page.</p>
+<form class="card" method="post" action="">
+  <label>Password
+    <input type="password" name="password" autocomplete="current-password" autofocus required>
+  </label>
+  {% if error %}<div class="msg bad">{{ error }}</div>{% endif %}
+  <button type="submit">Log in</button>
+</form>
+<p class="muted"><a href="{{ url_for('checkin') }}">Student check-in page</a></p>
+{% endblock %}

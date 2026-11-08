@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Attendance check-in{% endblock %}
+{% block body %}
+<h1>Attendance</h1>
+<p class="sub">Type your phone number and the code from the classroom screen.</p>
+
+<form class="card" id="form" autocomplete="off">
+  <label>Phone number
+    <input type="tel" id="phone" inputmode="tel" placeholder="05X-XXXXXXX" maxlength="20" required>
+  </label>
+  <label>Code
+    <input type="text" id="code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" required>
+  </label>
+  <button type="submit" id="send">I am here</button>
+  <div id="msg" class="msg" role="status"></div>
+  <p class="muted">The phone will ask to share its location. It is used only to check that you are in the classroom.</p>
+</form>
+
+<div class="card" id="pollbox" hidden>
+  <h2 id="pollquestion"></h2>
+  <div id="polloptions"></div>
+  <div id="pollmsg" class="msg" role="status"></div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='checkin.js') }}"></script>{% endblock %}

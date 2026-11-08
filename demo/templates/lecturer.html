@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Lecturer{% endblock %}
+{% block body %}
+<div class="topbar">
+  <h1>Lecturer</h1>
+  <a href="{{ url_for('logout') }}">Log out</a>
+</div>
+
+<div class="card">
+  <h2>1. Course roster</h2>
+  <p class="muted">A CSV file with the columns <b>Name</b> and <b>Phone number</b>. It stays on the server until it restarts.</p>
+  <div id="rostercount" class="msg"></div>
+  <label>Choose a file
+    <input type="file" id="rosterfile" accept=".csv,text/csv">
+  </label>
+  <button type="button" id="rosterpreview" class="secondary">Check the file</button>
+  <div id="rostermsg" class="msg" role="status"></div>
+  <ul id="rosterwarnings" class="warn"></ul>
+  <button type="button" id="rosterconfirm" hidden>Confirm and save the roster</button>
+</div>
+
+<div class="card">
+  <h2>2. Attendance session <span id="sessionpill" class="pill closed">closed</span></h2>
+  <p class="muted">Press Start while you stand in the classroom. The phone location becomes the classroom location.</p>
+  <button type="button" id="startsession">Start attendance</button>
+  <button type="button" id="endsession" class="danger" hidden>End attendance</button>
+  <button type="button" id="openscreen" class="secondary">Open the classroom screen</button>
+  <div id="sessionmsg" class="msg" role="status"></div>
+</div>
+
+<div class="card">
+  <h2>3. Results</h2>
+  <div id="counts" class="muted"></div>
+  <div class="group-title ok">Present</div><table><tbody id="listpresent"></tbody></table>
+  <div class="group-title warn">Flagged (the lecturer decides)</div><table><tbody id="listflagged"></tbody></table>
+  <div class="group-title">Absent</div><table><tbody id="listabsent"></tbody></table>
+  <button type="button" id="downloadcsv" class="secondary">Download the CSV spreadsheet</button>
+  <p class="muted">Excel may hide the leading 0 of phone numbers. The file itself is correct.</p>
+</div>
+
+<div class="card">
+  <h2>4. Poll</h2>
+  <label>Question
+    <input type="text" id="pollquestion" maxlength="200" placeholder="Did you understand the lesson?">
+  </label>
+  <label>Answer options (2 to 6)</label>
+  <input type="text" class="pollopt" maxlength="80" placeholder="Option 1">
+  <input type="text" class="pollopt" maxlength="80" placeholder="Option 2">
+  <input type="text" class="pollopt" maxlength="80" placeholder="Option 3 (optional)">
+  <input type="text" class="pollopt" maxlength="80" placeholder="Option 4 (optional)">
+  <button type="button" id="createpoll">Open the poll</button>
+  <button type="button" id="closepoll" class="secondary" hidden>Close the poll</button>
+  <div id="pollmsg" class="msg" role="status"></div>
+  <div id="pollresults"></div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='lecturer.js') }}"></script>{% endblock %}
