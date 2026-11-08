@@ -11,7 +11,7 @@ class Session:
         self.start_time = None
         self.end_time = None
         self.status = CLOSED
-        self._records = {}  # phone number -> AttendanceRecord, in check-in order
+        self._records = {}  # email -> AttendanceRecord, in check-in order
 
     def start(self, location, start_time=None):
         """Open the session. `location` is the lecturer's phone (lat, lon)."""
@@ -28,15 +28,15 @@ class Session:
     def is_open(self):
         return self.status == OPEN
 
-    def record_for(self, phone_number):
-        return self._records.get(phone_number)
+    def record_for(self, email):
+        return self._records.get(email)
 
     def add_record(self, record):
         """Save a record. Only one record per student is allowed."""
-        phone = record.student.phone_number
-        if phone in self._records:
+        email = record.student.email
+        if email in self._records:
             raise ValueError("This student already has a record in this session.")
-        self._records[phone] = record
+        self._records[email] = record
 
     @property
     def records(self):

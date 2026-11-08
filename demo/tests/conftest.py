@@ -13,11 +13,11 @@ NEAR = (32.1009, 35.2000)  # about 100 m from the classroom
 FAR_AWAY = (32.1090, 35.2000)  # about 1 km from the classroom
 
 ROSTER_CSV = (
-    "Name,Phone number\n"
-    "Dana Levi,0500000001\n"
-    "Noa Cohen,0500000002\n"
-    "Ron Mizrahi,0500000003\n"
-    "Lior Peretz,0500000004\n"
+    "Name,Email\n"
+    "Dana Levi,dana.levi@example.com\n"
+    "Noa Cohen,noa.cohen@example.com\n"
+    "Ron Mizrahi,ron.mizrahi@example.com\n"
+    "Lior Peretz,lior.peretz@example.com\n"
 )
 
 

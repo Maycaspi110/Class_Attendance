@@ -39,7 +39,7 @@ class AttendanceManager:
         self.location_checker = location_checker
         self.tz = tz  # time zone for the check-in times (None = this computer)
         self.session = None
-        self._wrong_codes = {}  # phone number -> list of times of wrong codes
+        self._wrong_codes = {}  # email -> list of times of wrong codes
         self._lock = threading.RLock()
 
     # ---- the lecturer side -------------------------------------------------
@@ -70,7 +70,7 @@ class AttendanceManager:
 
     # ---- the student side --------------------------------------------------
 
-    def check_in(self, phone, code, location, accuracy, now=None):
+    def check_in(self, email, code, location, accuracy, now=None):
         """
         Check in one student. Returns the saved AttendanceRecord, or raises
         CheckInError with a clear message for the student.
@@ -81,13 +81,13 @@ class AttendanceManager:
             if session is None or not session.is_open():
                 raise CheckInError("session_closed", "There is no open attendance session now.")
 
-            student = self.roster.find_by_phone(phone)
+            student = self.roster.find_by_email(email)
             if student is None:
-                raise CheckInError("not_on_roster", "This phone number is not on the roster.")
+                raise CheckInError("not_on_roster", "This email is not on the roster.")
 
-            self._check_not_locked(student.phone_number, now)
+            self._check_not_locked(student.email, now)
             if self.code_generator.check_code(code, now) == INVALID:
-                self._remember_wrong_code(student.phone_number, now)
+                self._remember_wrong_code(student.email, now)
                 raise CheckInError(
                     "bad_code",
                     "Wrong or expired code. Look at the classroom screen and try again.",
@@ -95,7 +95,7 @@ class AttendanceManager:
 
             result = self.location_checker.check(location, accuracy, session.classroom_location)
 
-            existing = session.record_for(student.phone_number)
+            existing = session.record_for(student.email)
             if existing is not None:
                 raise CheckInError("already_recorded", "You are already recorded in this session.", existing)
 
@@ -130,11 +130,11 @@ class AttendanceManager:
         """
         with self._lock:
             records = self.session.records if self.session else []
-            recorded = {r.student.phone_number for r in records}
+            recorded = {r.student.email for r in records}
             return {
                 PRESENT: [r for r in records if r.status == PRESENT],
                 FLAGGED: [r for r in records if r.status == FLAGGED],
-                ABSENT: [s for s in self.roster.students if s.phone_number not in recorded],
+                ABSENT: [s for s in self.roster.students if s.email not in recorded],
             }
 
     # ---- helpers -----------------------------------------------------------
@@ -142,14 +142,14 @@ class AttendanceManager:
     def _datetime(self, now):
         return datetime.fromtimestamp(now, self.tz)
 
-    def _check_not_locked(self, phone, now):
-        recent = [t for t in self._wrong_codes.get(phone, []) if now - t < WRONG_CODE_WINDOW_SECONDS]
-        self._wrong_codes[phone] = recent
+    def _check_not_locked(self, email, now):
+        recent = [t for t in self._wrong_codes.get(email, []) if now - t < WRONG_CODE_WINDOW_SECONDS]
+        self._wrong_codes[email] = recent
         if len(recent) >= MAX_WRONG_CODES:
             raise CheckInError(
                 "too_many_attempts",
                 "Too many wrong codes. Wait a minute and try again.",
             )
 
-    def _remember_wrong_code(self, phone, now):
-        self._wrong_codes.setdefault(phone, []).append(now)
+    def _remember_wrong_code(self, email, now):
+        self._wrong_codes.setdefault(email, []).append(now)

@@ -34,7 +34,7 @@ class Poll:
         self.question = question
         self.options = options
         self.is_open = True
-        self._answers = {}  # phone number -> PollAnswer
+        self._answers = {}  # email -> PollAnswer
         self._lock = threading.Lock()
 
     def open(self):
@@ -52,12 +52,12 @@ class Poll:
                 raise PollError("This poll is closed.")
             if option not in self.options:
                 raise PollError("Choose one of the answer options.")
-            if student.phone_number in self._answers:
+            if student.email in self._answers:
                 raise PollError("You already answered this poll.")
-            self._answers[student.phone_number] = PollAnswer(student, option)
+            self._answers[student.email] = PollAnswer(student, option)
 
     def has_answered(self, student):
-        return student.phone_number in self._answers
+        return student.email in self._answers
 
     def counts(self):
         """How many students chose each option (options with no answers show 0)."""

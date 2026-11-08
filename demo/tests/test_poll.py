@@ -3,9 +3,9 @@ import pytest
 from attendance.poll import Poll, PollAnswer, PollError
 from attendance.student import Student
 
-DANA = Student("Dana Levi", "0500000001")
-NOA = Student("Noa Cohen", "0500000002")
-RON = Student("Ron Mizrahi", "0500000003")
+DANA = Student("Dana Levi", "dana.levi@example.com")
+NOA = Student("Noa Cohen", "noa.cohen@example.com")
+RON = Student("Ron Mizrahi", "ron.mizrahi@example.com")
 
 
 @pytest.fixture

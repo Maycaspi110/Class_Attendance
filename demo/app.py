@@ -226,7 +226,7 @@ def create_app(test_config=None):
     # ---- lecturer API: session and results -------------------------------
 
     def person(student):
-        return {"name": student.name, "phone": student.phone_number}
+        return {"name": student.name, "email": student.email}
 
     def record_json(record):
         data = person(record.student)
@@ -328,13 +328,13 @@ def create_app(test_config=None):
         data = request.get_json(silent=True)
         if not isinstance(data, dict):
             return fail("The request is not valid.")
-        phone = str(data.get("phone") or "")[:30]
+        email = str(data.get("email") or "")[:254]
         code = str(data.get("code") or "")[:10]
         lat, lon = _number(data.get("lat")), _number(data.get("lon"))
         location = (lat, lon) if lat is not None and lon is not None and valid_point(lat, lon) else None
         accuracy = _number(data.get("accuracy"))
         try:
-            record = manager.check_in(phone, code, location, accuracy, now=now())
+            record = manager.check_in(email, code, location, accuracy, now=now())
         except CheckInError as error:
             extra = {"reason": error.reason}
             if error.record is not None:
@@ -406,9 +406,9 @@ def create_app(test_config=None):
         poll = state.poll
         if poll is None or data.get("id") != state.poll_id:
             return fail("This poll is no longer available.", 404)
-        student = manager.roster.find_by_phone(str(data.get("phone") or "")[:30])
+        student = manager.roster.find_by_email(str(data.get("email") or "")[:254])
         if student is None:
-            return fail("This phone number is not on the roster.", 403)
+            return fail("This email is not on the roster.", 403)
         try:
             poll.answer(student, str(data.get("option") or ""))
         except PollError as error:
