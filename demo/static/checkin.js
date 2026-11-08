@@ -6,8 +6,19 @@
   function load(key) { try { return localStorage.getItem(key) || ""; } catch (e) { return ""; } }
 
   emailEl.value = load("attendance_email");
+  // Arrived from the QR code: the code is already known, so the code field is hidden.
   var fromLink = new URLSearchParams(window.location.search).get("code");
-  if (fromLink && /^\d{4}$/.test(fromLink)) { codeEl.value = fromLink; }  // arrived from the QR code
+  if (fromLink && /^\d{4}$/.test(fromLink)) {
+    codeEl.value = fromLink;
+    $("codefield").hidden = true;
+    $("fromqr").hidden = false;
+  }
+  $("typecode").addEventListener("click", function () {
+    codeEl.value = "";
+    $("fromqr").hidden = true;
+    $("codefield").hidden = false;
+    codeEl.focus();
+  });
 
   codeEl.addEventListener("input", function () { codeEl.value = codeEl.value.replace(/\D/g, "").slice(0, 4); });
 
@@ -15,7 +26,7 @@
     event.preventDefault();
     var email = emailEl.value.trim(), code = codeEl.value.trim();
     if (!email) { say(msgEl, "Type your email.", "bad"); return; }
-    if (!/^\d{4}$/.test(code)) { say(msgEl, "The code has 4 digits.", "bad"); return; }
+    if (!/^\d{4}$/.test(code)) { say(msgEl, "Type the 4-digit code from the classroom screen.", "bad"); return; }
     store("attendance_email", email);
     sendEl.disabled = true;
     say(msgEl, "Getting your location... tap Allow if the phone asks.", "");

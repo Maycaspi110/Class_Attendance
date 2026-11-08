@@ -23,6 +23,7 @@
       $("open").hidden = false;
       $("bigcode").textContent = d.code.split("").join(" ");
       if (d.link !== shownLink) { drawQr(d.link); shownLink = d.link; }
+      $("page").textContent = d.page.replace(/^https?:\/\//, "");
       $("left").textContent = "The code changes in " + d.seconds_left + " seconds";
       $("fill").style.width = Math.round(100 * d.seconds_left / d.period) + "%";
     });
