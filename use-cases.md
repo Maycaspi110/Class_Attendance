@@ -21,7 +21,7 @@ Each use case is a short story of how a user does one thing with the system. Att
   - The file is missing the name or phone number column: the system shows an error and asks for another file.
   - The same phone number appears twice: the system shows a warning and the lecturer fixes the file.
 - **After:** The roster is saved and ready for a session.
-- **Requirements:** FR-1
+- **Related requirements:** upload the roster
 
 ## UC-2: Lecturer starts and ends an attendance session
 
@@ -38,7 +38,7 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Other cases:**
   - The location is blocked or too inaccurate: the system tells the lecturer and asks to try again.
 - **After:** The session is open (or closed) and the results are available.
-- **Requirements:** FR-2, FR-3, FR-4, FR-5
+- **Related requirements:** start a session, show the code and QR, accept the current and previous code, end a session
 
 ## UC-3: Student checks in
 
@@ -59,7 +59,7 @@ Each use case is a short story of how a user does one thing with the system. Att
   - The code is valid but the location is far, missing or too inaccurate: the system records the student as Flagged and tells the student that the lecturer will review it. The student is not rejected.
   - The student already checked in: the system says so and does not create a second record.
 - **After:** The student has one record in the session: Present or Flagged.
-- **Requirements:** FR-10 to FR-16
+- **Related requirements:** check in from the phone: roster, code, location, flag, messages, one record per student
 
 ## UC-4: Lecturer reviews the results and downloads the spreadsheet
 
@@ -75,7 +75,7 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Other cases:**
   - Nobody checked in: all students appear as Absent.
 - **After:** The lecturer has a CSV file with the columns Phone number, Name, Status, Check-in time, Distance from classroom (m) and Note.
-- **Requirements:** FR-6, FR-7
+- **Related requirements:** see the results, download the CSV
 
 ## UC-5: Lecturer runs a poll (optional)
 
@@ -86,7 +86,7 @@ Each use case is a short story of how a user does one thing with the system. Att
   1. The lecturer writes a question with answer options and opens the poll.
   2. Each student sees the poll on their phone and answers once.
   3. The lecturer sees the results as they come in.
-- **Requirements:** FR-8, FR-9, FR-17
+- **Related requirements:** create a poll, see the results, answer once
 
 ## UC-6: Class summary from student summaries (design only)
 
