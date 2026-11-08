@@ -46,21 +46,21 @@ flowchart LR
 
 ### Pages in the browser
 
-| Component | What it does | Used by | Requirements |
+| Component | What it does | Used by | Related requirements |
 |-----------|--------------|---------|--------------|
-| Lecturer page | Uploads the roster, starts and ends a session, shows the results, downloads the CSV, creates a poll and shows its results. | Lecturer | FR-1, FR-2, FR-5 to FR-9 |
-| Classroom screen page | Shows the current 4-digit code and the QR code, and updates them when the code changes. | Classroom screen | FR-3 |
-| Student page | The student enters a phone number and a code (or arrives from the QR code), allows location, sees a confirmation or an error, and answers a poll. | Student | FR-10 to FR-17 |
+| Lecturer page | Uploads the roster, starts and ends a session, shows the results, downloads the CSV, creates a poll and shows its results. | Lecturer | upload the roster, start and end a session, see the results, download the CSV, create a poll |
+| Classroom screen page | Shows the current 4-digit code and the QR code, and updates them when the code changes. | Classroom screen | show the code and QR |
+| Student page | The student enters a phone number and a code (or arrives from the QR code), allows location, sees a confirmation or an error, and answers a poll. | Student | check in, see messages, answer a poll |
 
 ### Server
 
-| Component | What it does | Requirements |
+| Component | What it does | Related requirements |
 |-----------|--------------|--------------|
-| Code generator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells whether a code is the current or the previous one. | FR-3, FR-4 |
-| Location checker | Calculates the distance between the student's phone and the classroom location, and takes the accuracy of the phone into account. | FR-13, FR-14 |
-| Attendance manager | The main logic. For each check-in it checks the roster, the code and the location, and records Present or Flagged. It also makes sure there is only one record per student. | FR-2, FR-5, FR-6, FR-11, FR-14 to FR-16 |
-| Poll manager | Saves a poll, receives one answer per student and counts the answers. | FR-8, FR-9, FR-17 |
-| CSV exporter | Builds the spreadsheet for the lecturer (Phone number, Name, Status, Check-in time, Distance from classroom, Note). | FR-7 |
+| Code generator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells whether a code is the current or the previous one. | changing code, current and previous code |
+| Location checker | Calculates the distance between the student's phone and the classroom location, and takes the accuracy of the phone into account. | distance check, flag |
+| Attendance manager | The main logic. For each check-in it checks the roster, the code and the location, and records Present or Flagged. It also makes sure there is only one record per student. | roster, code and location checks, one record per student |
+| Poll manager | Saves a poll, receives one answer per student and counts the answers. | create a poll, one answer per student, see the results |
+| CSV exporter | Builds the spreadsheet for the lecturer (Phone number, Name, Status, Check-in time, Distance from classroom, Note). | download the CSV |
 
 ### Storage
 
