@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Never commit real student data. Keep real lists outside the repository,
+# or name them so that they are ignored.
+private/
+real-*.csv
+*-real.csv
