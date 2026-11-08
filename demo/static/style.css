@@ -35,4 +35,5 @@ body.screen h1 { font-size: clamp(1.2rem, 3vw, 2rem); color: #94a3b8; font-weigh
 #qr { width: min(40vh, 70vw); margin: 0 auto; background: #fff; padding: 8px; border-radius: 12px; }
 #qr svg { display: block; width: 100%; height: auto; }
 body.screen .bar { max-width: 600px; margin: 2vh auto 0; height: 12px; background: #1e293b; }
+body.screen .pagelink { color: #fff; font-weight: 700; margin-top: 0; }
 body.screen .hint { color: #94a3b8; font-size: clamp(1rem, 2.5vw, 1.6rem); margin-top: 2vh; }

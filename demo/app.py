@@ -7,6 +7,7 @@ import hmac
 import math
 import os
 import secrets
+import socket
 import time
 from functools import wraps
 from zoneinfo import ZoneInfo
@@ -52,6 +53,18 @@ def _env_int(name, default):
         return int(os.environ.get(name, default))
     except ValueError:
         raise SystemExit("The environment variable %s must be a whole number." % name)
+
+
+def _lan_ip():
+    """The address of this computer on the local network (for phones on the same Wi-Fi)."""
+    probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        probe.connect(("10.255.255.255", 1))  # nothing is sent: it only picks the network card
+        return probe.getsockname()[0]
+    except OSError:
+        return None
+    finally:
+        probe.close()
 
 
 def _number(value):
@@ -303,6 +316,19 @@ def create_app(test_config=None):
 
     # ---- the classroom screen --------------------------------------------
 
+    def public_base():
+        """
+        The address that students' phones can open. PUBLIC_URL wins. If the
+        lecturer opened the site as "localhost", a phone could not use that
+        address, so the address of this computer on the local network is used.
+        """
+        if app.config["PUBLIC_URL"]:
+            return app.config["PUBLIC_URL"].rstrip("/")
+        host, _, port = request.host.partition(":")
+        if host in ("localhost", "127.0.0.1") and _lan_ip():
+            return "http://%s:%s" % (_lan_ip(), port or "80")
+        return request.host_url.rstrip("/")
+
     @app.route("/api/code")
     @lecturer_required
     def current_code():
@@ -311,13 +337,14 @@ def create_app(test_config=None):
             return jsonify(ok=True, open=False)
         t = now()
         code = manager.code_generator.current_code(t)
-        base = (app.config["PUBLIC_URL"] or request.host_url).rstrip("/")
+        base = public_base()
         return jsonify(
             ok=True,
             open=True,
             code=code,
             seconds_left=manager.code_generator.seconds_left(t),
             period=manager.code_generator.period_seconds,
+            page="%s/checkin" % base,
             link="%s/checkin?code=%s" % (base, code),
         )
 
@@ -423,4 +450,10 @@ def create_app(test_config=None):
 
 
 if __name__ == "__main__":
-    create_app().run(host=os.environ.get("HOST", "127.0.0.1"), port=_env_int("PORT", 5000), debug=False)
+    host = os.environ.get("HOST", "127.0.0.1")
+    port = _env_int("PORT", 5000)
+    if host == "0.0.0.0":
+        print("Phones on the same Wi-Fi can open: http://%s:%d/checkin" % (_lan_ip() or "<this computer>", port))
+    else:
+        print("Only this computer can open the site. To let phones in, set HOST=0.0.0.0")
+    create_app().run(host=host, port=port, debug=False)

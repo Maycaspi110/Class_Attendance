@@ -8,7 +8,7 @@ It follows the design documents in the main folder: `SRS.md`, `use-cases.md`, `c
 
 - **Lecturer page** (`/lecturer`, needs a password): upload the roster, start and end attendance, see Present / Flagged / Absent, download the CSV, run a poll.
 - **Classroom screen** (`/screen`, needs the same password): shows the 4-digit code and a QR code. They change every 10-30 seconds (default 20).
-- **Student page** (`/checkin`): email + code (typed, or arriving from the QR code) + the phone location. Students can also answer the poll here.
+- **Student page** (`/checkin`): the code (typed, or filled in by the QR code) + email + the phone location. Students can also answer the poll here.
 
 Checks for every check-in: the email is on the roster, the code is the current or the previous one, and the phone is within the allowed distance (default 150 m). If the code is right but the location is far, missing or too inaccurate, the student is **Flagged** for the lecturer. It is not rejected.
 
@@ -29,6 +29,18 @@ Then open <http://localhost:5000/lecturer> and log in.
 
 Try it: on the lecturer page choose `sample-roster.csv` (made-up students), press **Check the file**, then **Confirm**. Press **Start attendance**, then **Open the classroom screen**. On a second browser tab open <http://localhost:5000/checkin>, type `dana.levi@example.com` and the code from the screen.
 
+### Try it with a phone on the same Wi-Fi
+
+Add `HOST` before you start the server:
+
+```n$env:HOST = "0.0.0.0"
+```n
+The server prints the address for phones, for example `http://192.168.1.20:5000/checkin`. Open the lecturer page on the computer, open the classroom screen, and scan the QR code with the phone camera. The check-in page opens with the code already filled in, and the student only types an email. A student can also open the address shown on the classroom screen and type the code.
+
+- Windows may ask about the firewall. Allow access, and also tick **Public networks** if your Wi-Fi is set to Public.
+- Some Wi-Fi networks (for example in a university) do not let devices talk to each other. Then use the hotspot of a phone.
+- Over plain `http` the phone does not share its location, so the student is Flagged. Real location checks need HTTPS.
+
 Hint: if the virtual environment is inside OneDrive, OneDrive will upload it. It is better to keep the project outside OneDrive when you work on it.
 
 ## Environment variables
@@ -42,8 +54,8 @@ Hint: if the virtual environment is inside OneDrive, OneDrive will upload it. It
 | `MAX_ACCURACY_METERS` | A phone that reports a worse accuracy is treated as "inaccurate" (Flagged). The final value is decided after the tests in class. | `200` |
 | `TIMEZONE` | The time zone of the check-in times in the CSV. | `Asia/Jerusalem` |
 | `PORT` | The port of the server. | `5000` |
-| `HOST` | The address to listen on. Use `0.0.0.0` to reach it from other devices. | `127.0.0.1` |
-| `PUBLIC_URL` | The public address of the site, used inside the QR code link (for example `https://example.com`). If missing, the address of the request is used. | not set |
+| `HOST` | The address to listen on. Use `0.0.0.0` so that phones on the same Wi-Fi can reach the site. | `127.0.0.1` |
+| `PUBLIC_URL` | The public address of the site, used inside the QR code link (for example `https://example.com`). If missing, the address of the request is used. When the lecturer opens the site as `localhost`, the address of the computer on the local network is used, so that a phone can open the link. | not set |
 | `SECRET_KEY` | Signs the login cookie. If missing, a random one is made at every start. | random |
 | `SECURE_COOKIES` | Set to `1` when the site runs over HTTPS. | not set |
 | `TRUST_PROXY` | Set to `1` when the site is behind a hosting proxy that sets the `X-Forwarded-*` headers. | not set |

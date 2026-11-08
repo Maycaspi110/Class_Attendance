@@ -2,14 +2,20 @@
 {% block title %}Attendance check-in{% endblock %}
 {% block body %}
 <h1>Attendance</h1>
-<p class="sub">Type your email and the code from the classroom screen.</p>
+<p class="sub">Scan the QR code on the classroom screen, or type the code shown there. Then type your email.</p>
 
 <form class="card" id="form" autocomplete="off">
-  <label>Email
+  <div id="codefield">
+    <label>Code from the classroom screen
+      <input type="text" id="code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000">
+    </label>
+  </div>
+  <div id="fromqr" hidden>
+    <div class="msg ok">The code was filled in from the QR code.</div>
+    <button type="button" id="typecode" class="secondary">Type a code instead</button>
+  </div>
+  <label>Your email
     <input type="email" id="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="name@example.com" maxlength="254" required>
-  </label>
-  <label>Code
-    <input type="text" id="code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" required>
   </label>
   <button type="submit" id="send">I am here</button>
   <div id="msg" class="msg" role="status"></div>

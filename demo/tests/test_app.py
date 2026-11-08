@@ -386,3 +386,65 @@ def test_a_new_poll_replaces_the_old_one(lecturer, student):
 )
 def test_bad_polls_are_refused(lecturer, body):
     assert lecturer.post("/api/poll", json=body).status_code == 400
+
+
+# ---- the address inside the QR code ---------------------------------------------
+
+
+class AtAddress:
+    """A test client that opens every page as if the site was reached at `host`."""
+
+    def __init__(self, app, host):
+        self._client, self._host = app.test_client(), host
+
+    def _call(self, method, *args, **kwargs):
+        kwargs["headers"] = dict(kwargs.get("headers") or {}, Host=self._host)
+        return getattr(self._client, method)(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        return self._call("get", *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        return self._call("post", *args, **kwargs)
+
+
+def code_info(app, host):
+    client = AtAddress(app, host)
+    client.post("/login", data={"password": PASSWORD})
+    confirm_roster(client)
+    start_session(client)
+    return client.get("/api/code").get_json()
+
+
+def test_qr_link_uses_the_address_of_the_computer_on_the_network(app, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_lan_ip", lambda: "192.0.2.10")
+    data = code_info(app, "localhost:5000")
+    assert data["page"] == "http://192.0.2.10:5000/checkin"
+    assert data["link"] == "http://192.0.2.10:5000/checkin?code=" + data["code"]
+
+
+def test_public_url_wins_over_everything(clock, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_lan_ip", lambda: "192.0.2.10")
+    app = create_app(
+        {"TESTING": True, "LECTURER_PASSWORD": PASSWORD, "CODE_SECRET": "s", "CLOCK": clock,
+         "TIMEZONE": "UTC", "PUBLIC_URL": "https://attendance.example.org/"}
+    )
+    assert code_info(app, "localhost:5000")["page"] == "https://attendance.example.org/checkin"
+
+
+def test_a_real_host_name_is_kept(app, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_lan_ip", lambda: "192.0.2.10")
+    assert code_info(app, "classroom.example.org")["page"] == "http://classroom.example.org/checkin"
+
+
+def test_localhost_without_a_network_address_stays_localhost(app, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_lan_ip", lambda: None)
+    assert code_info(app, "localhost:5000")["page"] == "http://localhost:5000/checkin"
