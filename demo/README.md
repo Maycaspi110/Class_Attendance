@@ -60,6 +60,24 @@ Hint: if the virtual environment is inside OneDrive, OneDrive will upload it. It
 | `SECURE_COOKIES` | Set to `1` when the site runs over HTTPS. | not set |
 | `TRUST_PROXY` | Set to `1` when the site is behind a hosting proxy that sets the `X-Forwarded-*` headers. | not set |
 
+## Put it on the internet (Render, free)
+
+Phones in class reach the demo through the internet, so the demo runs on a hosting service. The files for this are ready: `wsgi.py`, `requirements.txt` and `render.yaml` (in the main folder of the repository).
+
+1. Make a free account at <https://render.com> (sign in with GitHub).
+2. **New** > **Blueprint**, choose the repository `Class_Attendance`. Render reads `render.yaml`.
+3. Render asks for `LECTURER_PASSWORD`. Choose a strong password and write it down.
+4. Press **Apply**. After a few minutes the site is ready at an address like `https://class-attendance-xxxx.onrender.com`.
+5. Open `https://.../lecturer` and log in.
+
+If the Blueprint option does not work, use **New** > **Web Service** instead: connect the repository, set **Root Directory** to `demo`, **Build Command** to `pip install -r requirements.txt`, **Start Command** to `gunicorn wsgi:app --workers 1 --threads 8 --bind 0.0.0.0:$PORT`, plan **Free**, and add the environment variables from `render.yaml`.
+
+Before the demo in class:
+- **The free server falls asleep** after about 15 minutes without visits, and the first visit afterwards takes about a minute. Open the site a few minutes before the demo.
+- **Everything is in memory.** When the server sleeps or restarts, the roster and results are gone. Upload the roster after the server is awake, and download the CSV before you stop.
+- **Use a made-up roster** for the demo. Do not put real student emails on a free public server.
+- Location works here, because the site uses HTTPS.
+- Known limit: while a session is open, the check-in page tells whether an email is on the roster. This is why the demo should use a made-up roster.
 ## The CSV files
 
 **Roster you upload** needs a name and an email for every student, for example:
