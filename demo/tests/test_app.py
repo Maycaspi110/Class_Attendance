@@ -41,7 +41,7 @@ def app(clock):
 
 @pytest.fixture
 def student(app):
-    """A client with no login, like a student's phone."""
+    """A client with no login, like a student's email."""
     return app.test_client()
 
 
@@ -71,8 +71,8 @@ def start_session(client, point=CLASSROOM, accuracy=10):
     return client.post("/api/session/start", json={"lat": point[0], "lon": point[1], "accuracy": accuracy})
 
 
-def check_in(client, phone, code, point=NEAR, accuracy=10):
-    body = {"phone": phone, "code": code}
+def check_in(client, email, code, point=NEAR, accuracy=10):
+    body = {"email": email, "code": code}
     if point is not None:
         body.update(lat=point[0], lon=point[1], accuracy=accuracy)
     return client.post("/api/checkin", json=body)
@@ -165,15 +165,15 @@ def test_roster_preview_then_confirm(lecturer):
 
 
 def test_roster_with_a_repeated_number_cannot_be_confirmed(lecturer):
-    preview = upload_roster(lecturer, ROSTER_CSV + "Copy,0500000001\n").get_json()
+    preview = upload_roster(lecturer, ROSTER_CSV + "Copy,dana.levi@example.com\n").get_json()
     assert preview["warnings"] and not preview["can_confirm"]
     assert lecturer.post("/api/roster/confirm").status_code == 400
 
 
-def test_roster_without_the_phone_column_is_refused(lecturer):
-    response = upload_roster(lecturer, "Name,Email\nDana,d@example.com\n")
+def test_roster_without_the_email_column_is_refused(lecturer):
+    response = upload_roster(lecturer, "Name,Phone number\nDana,0500000001\n")
     assert response.status_code == 400
-    assert "Phone number" in response.get_json()["error"]
+    assert "Email" in response.get_json()["error"]
 
 
 def test_roster_upload_without_a_file_is_refused(lecturer):
@@ -228,9 +228,9 @@ def test_full_attendance_flow(lecturer, student):
     assert start_session(lecturer).status_code == 200
     code = screen_code(lecturer)
 
-    near = check_in(student, "0500000001", code, NEAR)
-    far = check_in(student, "0500000002", code, FAR_AWAY)
-    wrong = check_in(student, "0500000003", "0000" if code != "0000" else "1111", NEAR)
+    near = check_in(student, "dana.levi@example.com", code, NEAR)
+    far = check_in(student, "noa.cohen@example.com", code, FAR_AWAY)
+    wrong = check_in(student, "ron.mizrahi@example.com", "0000" if code != "0000" else "1111", NEAR)
 
     assert near.get_json()["status"] == "Present"
     assert far.get_json()["status"] == "Flagged"
@@ -242,7 +242,7 @@ def test_full_attendance_flow(lecturer, student):
     assert [s["name"] for s in data["absent"]] == ["Ron Mizrahi", "Lior Peretz"]
 
     assert lecturer.post("/api/session/end").status_code == 200
-    late = check_in(student, "0500000004", code, NEAR)
+    late = check_in(student, "lior.peretz@example.com", code, NEAR)
     assert late.status_code == 400 and late.get_json()["reason"] == "session_closed"
 
     response = lecturer.get("/api/session/csv")
@@ -251,13 +251,13 @@ def test_full_attendance_flow(lecturer, student):
     assert "attachment" in response.headers["Content-Disposition"]
     assert response.data.startswith(b"\xef\xbb\xbf")
     rows = list(csv.reader(io.StringIO(response.data.decode("utf-8-sig"))))
-    assert rows[0][:3] == ["Phone number", "Name", "Status"]
+    assert rows[0][:3] == ["Email", "Name", "Status"]
     statuses = {r[0]: r[2] for r in rows[1:]}
     assert statuses == {
-        "0500000001": "Present",
-        "0500000002": "Flagged",
-        "0500000003": "Absent",
-        "0500000004": "Absent",
+        "dana.levi@example.com": "Present",
+        "noa.cohen@example.com": "Flagged",
+        "ron.mizrahi@example.com": "Absent",
+        "lior.peretz@example.com": "Absent",
     }
 
 
@@ -268,11 +268,11 @@ def test_changing_code_previous_is_accepted_older_is_not(lecturer, student, cloc
 
     clock.t = NOW + PERIOD  # the code changed once
     assert screen_code(lecturer) != first_code
-    accepted = check_in(student, "0500000001", first_code)
+    accepted = check_in(student, "dana.levi@example.com", first_code)
     assert accepted.status_code == 200
 
     clock.t = NOW + 2 * PERIOD  # the code changed twice
-    rejected = check_in(student, "0500000002", first_code)
+    rejected = check_in(student, "noa.cohen@example.com", first_code)
     assert rejected.status_code == 400 and rejected.get_json()["reason"] == "bad_code"
 
 
@@ -280,28 +280,28 @@ def test_check_in_twice_gives_already_recorded(lecturer, student):
     confirm_roster(lecturer)
     start_session(lecturer)
     code = screen_code(lecturer)
-    assert check_in(student, "0500000001", code).status_code == 200
-    again = check_in(student, "0500000001", code)
+    assert check_in(student, "dana.levi@example.com", code).status_code == 200
+    again = check_in(student, "dana.levi@example.com", code)
     assert again.status_code == 409 and again.get_json()["reason"] == "already_recorded"
     assert again.get_json()["record_status"] == "Present"
     assert len(results(lecturer)["present"]) == 1
 
 
-def test_unknown_phone_number_is_refused(lecturer, student):
+def test_unknown_email_is_refused(lecturer, student):
     confirm_roster(lecturer)
     start_session(lecturer)
-    response = check_in(student, "0509999999", screen_code(lecturer))
+    response = check_in(student, "nobody@example.com", screen_code(lecturer))
     assert response.status_code == 400 and response.get_json()["reason"] == "not_on_roster"
 
 
 def test_check_in_without_location_is_flagged(lecturer, student):
     confirm_roster(lecturer)
     start_session(lecturer)
-    response = check_in(student, "0500000001", screen_code(lecturer), point=None)
+    response = check_in(student, "dana.levi@example.com", screen_code(lecturer), point=None)
     assert response.get_json()["status"] == "Flagged"
 
 
-@pytest.mark.parametrize("body", [None, [], "text", {"phone": "0500000001"}])
+@pytest.mark.parametrize("body", [None, [], "text", {"email": "dana.levi@example.com"}])
 def test_strange_check_in_requests_do_not_crash(lecturer, student, body):
     confirm_roster(lecturer)
     start_session(lecturer)
@@ -315,13 +315,13 @@ def test_nonsense_location_values_are_flagged_not_crashing(lecturer, student):
     code = screen_code(lecturer)
     response = student.post(
         "/api/checkin",
-        json={"phone": "0500000001", "code": code, "lat": "x", "lon": True, "accuracy": float("nan")},
+        json={"email": "dana.levi@example.com", "code": code, "lat": "x", "lon": True, "accuracy": float("nan")},
     )
     assert response.status_code == 200 and response.get_json()["status"] == "Flagged"
 
 
 def test_names_with_html_are_returned_as_plain_text(lecturer):
-    confirm_roster(lecturer, 'Name,Phone number\n"<b>Dana</b>",0500000001\n')
+    confirm_roster(lecturer, 'Name,Email\n"<b>Dana</b>",dana.levi@example.com\n')
     data = results(lecturer)
     assert data["absent"][0]["name"] == "<b>Dana</b>"  # the page shows it with textContent
 
@@ -341,27 +341,27 @@ def test_poll_flow(lecturer, student):
     current = student.get("/api/poll/current").get_json()
     assert current["open"] and current["options"] == ["Yes", "A little", "No"]
 
-    def answer(phone, option):
-        return student.post("/api/poll/answer", json={"id": current["id"], "phone": phone, "option": option})
+    def answer(email, option):
+        return student.post("/api/poll/answer", json={"id": current["id"], "email": email, "option": option})
 
-    assert answer("0500000001", "Yes").status_code == 200
-    assert answer("0500000002", "Yes").status_code == 200
-    assert answer("0500000003", "No").status_code == 200
-    assert answer("0500000001", "No").status_code == 409  # one answer only
+    assert answer("dana.levi@example.com", "Yes").status_code == 200
+    assert answer("noa.cohen@example.com", "Yes").status_code == 200
+    assert answer("ron.mizrahi@example.com", "No").status_code == 200
+    assert answer("dana.levi@example.com", "No").status_code == 409  # one answer only
 
     shown = lecturer.get("/api/poll/results").get_json()["poll"]
     assert shown["counts"] == [2, 0, 1] and shown["total"] == 3
 
     assert lecturer.post("/api/poll/close").status_code == 200
     assert student.get("/api/poll/current").get_json()["open"] is False
-    assert answer("0500000004", "Yes").status_code == 400  # closed
+    assert answer("lior.peretz@example.com", "Yes").status_code == 400  # closed
 
 
-def test_poll_answer_needs_a_roster_phone_number(lecturer, student):
+def test_poll_answer_needs_a_roster_email(lecturer, student):
     confirm_roster(lecturer)
     create_poll(lecturer)
     current = student.get("/api/poll/current").get_json()
-    response = student.post("/api/poll/answer", json={"id": current["id"], "phone": "0509999999", "option": "Yes"})
+    response = student.post("/api/poll/answer", json={"id": current["id"], "email": "nobody@example.com", "option": "Yes"})
     assert response.status_code == 403
 
 
@@ -376,7 +376,7 @@ def test_a_new_poll_replaces_the_old_one(lecturer, student):
     create_poll(lecturer)
     old_id = student.get("/api/poll/current").get_json()["id"]
     lecturer.post("/api/poll", json={"question": "Next?", "options": ["A", "B"]})
-    response = student.post("/api/poll/answer", json={"id": old_id, "phone": "0500000001", "option": "Yes"})
+    response = student.post("/api/poll/answer", json={"id": old_id, "email": "dana.levi@example.com", "option": "Yes"})
     assert response.status_code == 404
 
 

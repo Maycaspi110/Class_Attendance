@@ -112,7 +112,7 @@
       $("counts").textContent = "Present: " + d.present.length + "   Flagged: " + d.flagged.length + "   Absent: " + d.absent.length;
       fillList("listpresent", d.present, function (r) { return r.time + (r.distance === null ? "" : " - " + r.distance + " m"); });
       fillList("listflagged", d.flagged, function (r) { return r.time + (r.distance === null ? "" : " - " + r.distance + " m") + (r.note ? " - " + r.note : ""); });
-      fillList("listabsent", d.absent, function (s) { return s.phone; });
+      fillList("listabsent", d.absent, function (s) { return s.email; });
     });
   }
 

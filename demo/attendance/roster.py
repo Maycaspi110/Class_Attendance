@@ -1,13 +1,22 @@
-"""Roster: the course student list, loaded from a CSV file."""
+"""Roster: the course student list, loaded from a CSV file.
+
+The file needs a name and an email for every student. Any other column
+(for example an ID number) is ignored: it is never read or kept.
+"""
 import csv
 import io
 
-from .student import Student, normalize_phone
+from .student import Student, normalize_email
 
 MAX_STUDENTS = 2000
 
-NAME_HEADERS = {"name", "full name", "student name"}
-PHONE_HEADERS = {"phone number", "phone", "phone_number", "phonenumber", "mobile"}
+NAME_HEADERS = {"name", "full name", "student name", "שם", "שם מלא", "שם התלמיד", "שם הסטודנט", "שם סטודנט", "שם תלמיד"}
+FIRST_NAME_HEADERS = {"first name", "firstname", "שם פרטי"}
+LAST_NAME_HEADERS = {"last name", "lastname", "family name", "surname", "שם משפחה"}
+EMAIL_HEADERS = {
+    "email", "e-mail", "mail", "email address",
+    "מייל", "אימייל", "אי-מייל", "דוא\"ל", "דואל", "דואר אלקטרוני", "כתובת מייל", "כתובת דוא\"ל",
+}
 
 
 class RosterError(Exception):
@@ -32,11 +41,19 @@ def _delimiter(text):
     return best if counts[best] > 0 else ","
 
 
+def _header(cell):
+    return " ".join(cell.replace("﻿", "").replace("‏", "").replace("‎", "").strip().strip('"').lower().split())
+
+
+def _find(header, names):
+    return next((i for i, h in enumerate(header) if h in names), None)
+
+
 class Roster:
     def __init__(self):
         self.students = []
         self.warnings = []
-        self._by_phone = {}
+        self._by_email = {}
 
     def __len__(self):
         return len(self.students)
@@ -47,47 +64,53 @@ class Roster:
 
     def load(self, source):
         """
-        Read a CSV file (bytes or text) with the columns Name and Phone number.
+        Read a CSV file (bytes or text) with the columns Name and Email.
         Raises RosterError if the file cannot be used. Problems in single rows
-        (empty name, bad phone number, the same phone number twice) are added
-        to `warnings`, and those rows are not loaded.
+        (empty name, bad email, the same email twice) are added to `warnings`,
+        and those rows are not loaded.
         """
         text = _decode(source)
         if not text.strip():
             raise RosterError("The file is empty.")
-        reader = csv.reader(io.StringIO(text), delimiter=_delimiter(text))
-        rows = list(reader)
-        header = [cell.strip().lower() for cell in rows[0]]
-        name_col = next((i for i, h in enumerate(header) if h in NAME_HEADERS), None)
-        phone_col = next((i for i, h in enumerate(header) if h in PHONE_HEADERS), None)
-        if name_col is None or phone_col is None:
-            raise RosterError("The file must have the columns Name and Phone number.")
+        rows = list(csv.reader(io.StringIO(text), delimiter=_delimiter(text)))
+        header = [_header(cell) for cell in rows[0]]
+        email_col = _find(header, EMAIL_HEADERS)
+        name_col = _find(header, NAME_HEADERS)
+        first_col = _find(header, FIRST_NAME_HEADERS)
+        last_col = _find(header, LAST_NAME_HEADERS)
+        has_name = name_col is not None or (first_col is not None and last_col is not None)
+        if email_col is None or not has_name:
+            raise RosterError("The file must have the columns Name and Email.")
         if len(rows) - 1 > MAX_STUDENTS:
             raise RosterError("The file has too many rows (the limit is %d)." % MAX_STUDENTS)
 
-        students, warnings, by_phone, first_row = [], [], {}, {}
+        def cell(row, col):
+            return row[col].strip() if col is not None and len(row) > col else ""
+
+        students, warnings, by_email, first_row = [], [], {}, {}
         for number, row in enumerate(rows[1:], start=2):  # row 1 is the header
-            if not any(cell.strip() for cell in row):
+            if not any(c.strip() for c in row):
                 continue
-            name = row[name_col].strip() if len(row) > name_col else ""
-            phone = normalize_phone(row[phone_col]) if len(row) > phone_col else None
+            if name_col is not None:
+                name = cell(row, name_col)
+            else:
+                name = (cell(row, first_col) + " " + cell(row, last_col)).strip()
+            email = normalize_email(cell(row, email_col))
             if not name:
                 warnings.append("Row %d: the name is empty." % number)
-            elif phone is None:
-                warnings.append("Row %d: the phone number is missing or not valid." % number)
-            elif phone in by_phone:
-                warnings.append(
-                    "Rows %d and %d have the same phone number." % (first_row[phone], number)
-                )
+            elif email is None:
+                warnings.append("Row %d: the email is missing or not valid." % number)
+            elif email in by_email:
+                warnings.append("Rows %d and %d have the same email." % (first_row[email], number))
             else:
-                student = Student(name=name, phone_number=phone)
+                student = Student(name=name, email=email)
                 students.append(student)
-                by_phone[phone] = student
-                first_row[phone] = number
+                by_email[email] = student
+                first_row[email] = number
 
-        self.students, self.warnings, self._by_phone = students, warnings, by_phone
+        self.students, self.warnings, self._by_email = students, warnings, by_email
         return self
 
-    def find_by_phone(self, phone):
-        """The student with this phone number, or None ("not found")."""
-        return self._by_phone.get(normalize_phone(phone))
+    def find_by_email(self, email):
+        """The student with this email, or None ("not found")."""
+        return self._by_email.get(normalize_email(email))

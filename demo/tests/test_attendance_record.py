@@ -5,7 +5,7 @@ import pytest
 from attendance.attendance_record import FLAGGED, PRESENT, AttendanceRecord
 from attendance.student import Student
 
-STUDENT = Student("Dana Levi", "0500000001")
+STUDENT = Student("Dana Levi", "dana.levi@example.com")
 WHEN = datetime(2026, 1, 1, 10, 2)
 
 

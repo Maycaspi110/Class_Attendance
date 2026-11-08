@@ -8,7 +8,7 @@
 
 <div class="card">
   <h2>1. Course roster</h2>
-  <p class="muted">A CSV file with the columns <b>Name</b> and <b>Phone number</b>. It stays on the server until it restarts.</p>
+  <p class="muted">A CSV file with the columns <b>Name</b> and <b>Email</b>. It stays on the server until it restarts.</p>
   <div id="rostercount" class="msg"></div>
   <label>Choose a file
     <input type="file" id="rosterfile" accept=".csv,text/csv">
@@ -35,7 +35,7 @@
   <div class="group-title warn">Flagged (the lecturer decides)</div><table><tbody id="listflagged"></tbody></table>
   <div class="group-title">Absent</div><table><tbody id="listabsent"></tbody></table>
   <button type="button" id="downloadcsv" class="secondary">Download the CSV spreadsheet</button>
-  <p class="muted">Excel may hide the leading 0 of phone numbers. The file itself is correct.</p>
+  <p class="muted">The file is saved as UTF-8, so Excel shows Hebrew names correctly.</p>
 </div>
 
 <div class="card">

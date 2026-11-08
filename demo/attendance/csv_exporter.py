@@ -5,7 +5,7 @@ import io
 from .attendance_record import ABSENT
 
 COLUMNS = [
-    "Phone number",
+    "Email",
     "Name",
     "Status",
     "Check-in time",
@@ -37,13 +37,13 @@ class CsvExporter:
         writer = csv.writer(out)
         writer.writerow(COLUMNS)
         for student in self.roster.students:
-            record = session.record_for(student.phone_number) if session else None
+            record = session.record_for(student.email) if session else None
             if record is None:
-                writer.writerow([student.phone_number, _safe(student.name), ABSENT, "", "", ""])
+                writer.writerow([student.email, _safe(student.name), ABSENT, "", "", ""])
             else:
                 writer.writerow(
                     [
-                        student.phone_number,
+                        student.email,
                         _safe(student.name),
                         record.status,
                         record.check_in_time.strftime("%H:%M"),

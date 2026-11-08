@@ -8,9 +8,9 @@ It follows the design documents in the main folder: `SRS.md`, `use-cases.md`, `c
 
 - **Lecturer page** (`/lecturer`, needs a password): upload the roster, start and end attendance, see Present / Flagged / Absent, download the CSV, run a poll.
 - **Classroom screen** (`/screen`, needs the same password): shows the 4-digit code and a QR code. They change every 10-30 seconds (default 20).
-- **Student page** (`/checkin`): phone number + code (typed, or arriving from the QR code) + the phone location. Students can also answer the poll here.
+- **Student page** (`/checkin`): email + code (typed, or arriving from the QR code) + the phone location. Students can also answer the poll here.
 
-Checks for every check-in: the phone number is on the roster, the code is the current or the previous one, and the phone is within the allowed distance (default 150 m). If the code is right but the location is far, missing or too inaccurate, the student is **Flagged** for the lecturer. It is not rejected.
+Checks for every check-in: the email is on the roster, the code is the current or the previous one, and the phone is within the allowed distance (default 150 m). If the code is right but the location is far, missing or too inaccurate, the student is **Flagged** for the lecturer. It is not rejected.
 
 ## Run it on your computer
 
@@ -27,7 +27,7 @@ $env:CODE_SECRET = "choose-a-long-random-text"
 
 Then open <http://localhost:5000/lecturer> and log in.
 
-Try it: on the lecturer page choose `sample-roster.csv` (made-up students), press **Check the file**, then **Confirm**. Press **Start attendance**, then **Open the classroom screen**. On a second browser tab open <http://localhost:5000/checkin>, type `0500000001` and the code from the screen.
+Try it: on the lecturer page choose `sample-roster.csv` (made-up students), press **Check the file**, then **Confirm**. Press **Start attendance**, then **Open the classroom screen**. On a second browser tab open <http://localhost:5000/checkin>, type `dana.levi@example.com` and the code from the screen.
 
 Hint: if the virtual environment is inside OneDrive, OneDrive will upload it. It is better to keep the project outside OneDrive when you work on it.
 
@@ -50,16 +50,16 @@ Hint: if the virtual environment is inside OneDrive, OneDrive will upload it. It
 
 ## The CSV files
 
-**Roster you upload** has the columns `Name` and `Phone number`, for example:
+**Roster you upload** needs a name and an email for every student, for example:
 
 ```
-Name,Phone number
-Dana Levi,0500000001
+Name,Email
+Dana Levi,dana.levi@example.com
 ```
 
-A phone number written like `050-000-0001` or `+972500000001` is understood too. A file with a repeated phone number is refused until you fix it.
+Other columns (for example an ID number) are ignored: they are never read or kept. These column names are understood: `Name` / `שם` / `שם מלא`, or `First name` + `Last name` / `שם פרטי` + `שם משפחה`; and `Email` / `מייל` / `אימייל`. Capital letters and spaces in an email do not matter. A file with a repeated email is refused until you fix it. Files saved from Excel in Hebrew are read correctly.
 
-**Results you download** have the columns: Phone number, Name, Status, Check-in time, Distance from classroom (m), Note. The file is saved as UTF-8 with a BOM, so Excel shows Hebrew names correctly. Excel may hide the leading 0 of phone numbers: the file itself is correct.
+**Results you download** have the columns: Email, Name, Status, Check-in time, Distance from classroom (m), Note. The file is saved as UTF-8 with a BOM, so Excel shows Hebrew names correctly.
 
 ## Run the tests
 
@@ -74,7 +74,7 @@ The tests follow `testing-strategy.md`: unit tests for each class, and integrati
 - **Everything is kept in memory.** There is no database. When the server restarts, the roster, the sessions and the polls are lost. Download the CSV before you stop the server.
 - **Run one server process only.** The data lives inside the process, so do not start several workers.
 - **Location needs HTTPS.** Phones give the location only to `https://` pages (and to `localhost`). Over plain `http://` on the local network, students will be Flagged because the phone gives no location.
-- **No real student data in the repository.** Use made-up data in files that are committed. Keep real lists outside the repository, or name them `real-*.csv`, which git ignores here.
+- **No real student data in the repository, and no ID numbers anywhere.** Use made-up data in files that are committed. Keep real lists outside the repository, or name them `real-*.csv`, which git ignores here.
 - **Known limit:** a student can send the code to a friend who is not in the class. This is why the code changes quickly and the location check and the lecturer flag exist.
 - A student who types 5 wrong codes in a row must wait a minute. This stops guessing of the 4-digit code.
 

@@ -1,11 +1,11 @@
 // The student page: check in, and answer a poll.
 (function () {
-  var phoneEl = $("phone"), codeEl = $("code"), sendEl = $("send"), msgEl = $("msg");
+  var emailEl = $("email"), codeEl = $("code"), sendEl = $("send"), msgEl = $("msg");
 
   function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
   function load(key) { try { return localStorage.getItem(key) || ""; } catch (e) { return ""; } }
 
-  phoneEl.value = load("attendance_phone");
+  emailEl.value = load("attendance_email");
   var fromLink = new URLSearchParams(window.location.search).get("code");
   if (fromLink && /^\d{4}$/.test(fromLink)) { codeEl.value = fromLink; }  // arrived from the QR code
 
@@ -13,15 +13,15 @@
 
   $("form").addEventListener("submit", function (event) {
     event.preventDefault();
-    var phone = phoneEl.value.trim(), code = codeEl.value.trim();
-    if (!phone) { say(msgEl, "Type your phone number.", "bad"); return; }
+    var email = emailEl.value.trim(), code = codeEl.value.trim();
+    if (!email) { say(msgEl, "Type your email.", "bad"); return; }
     if (!/^\d{4}$/.test(code)) { say(msgEl, "The code has 4 digits.", "bad"); return; }
-    store("attendance_phone", phone);
+    store("attendance_email", email);
     sendEl.disabled = true;
     say(msgEl, "Getting your location... tap Allow if the phone asks.", "");
 
     getLocation(function (location, problem) {
-      var body = { phone: phone, code: code };
+      var body = { email: email, code: code };
       if (location) { body.lat = location.lat; body.lon = location.lon; body.accuracy = location.accuracy; }
       say(msgEl, "Sending...", "");
       api("POST", "/api/checkin", body).then(function (result) {
@@ -60,9 +60,9 @@
   }
 
   function sendAnswer(id, option) {
-    var phone = phoneEl.value.trim();
-    if (!phone) { say(pollMsg, "Type your phone number above first.", "bad"); return; }
-    api("POST", "/api/poll/answer", { id: id, phone: phone, option: option }).then(function (result) {
+    var email = emailEl.value.trim();
+    if (!email) { say(pollMsg, "Type your email above first.", "bad"); return; }
+    api("POST", "/api/poll/answer", { id: id, email: email, option: option }).then(function (result) {
       var data = result.data;
       if (data.ok) {
         store("attendance_poll_" + id, "1");

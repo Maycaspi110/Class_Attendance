@@ -6,7 +6,7 @@ from attendance.attendance_record import PRESENT, AttendanceRecord
 from attendance.session import CLOSED, OPEN, Session
 from attendance.student import Student
 
-STUDENT = Student("Dana Levi", "0500000001")
+STUDENT = Student("Dana Levi", "dana.levi@example.com")
 
 
 def test_a_new_session_is_closed():
@@ -39,7 +39,7 @@ def test_one_record_per_student():
     with pytest.raises(ValueError):
         session.add_record(record)
     assert session.records == [record]
-    assert session.record_for("0500000001") == record
+    assert session.record_for("dana.levi@example.com") == record
 
 
 def test_starting_again_clears_the_old_records():

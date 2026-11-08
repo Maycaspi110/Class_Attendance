@@ -1,25 +1,20 @@
-"""Student: a name and a phone number (the phone number is the identity)."""
+"""Student: a name and an email address (the email is the identity)."""
 import re
 from dataclasses import dataclass
 
+_EMAIL = re.compile(r"^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$")
+MAX_EMAIL_LENGTH = 254
 
-def normalize_phone(text):
+
+def normalize_email(text):
     """
-    Turn a phone number into one standard form, or return None if it is not
-    a usable number. Spaces, dashes, dots and brackets are removed, and an
-    Israeli international prefix (+972 / 972) becomes a leading 0.
+    Turn an email address into one standard form (no spaces, lower case),
+    or return None if it is not a usable address.
     """
     if text is None:
         return None
-    text = str(text).strip()
-    text = re.sub(r"[\s\-\.\(\)]", "", text)
-    if text.startswith("+"):
-        text = text[1:]
-    if not text.isdigit():
-        return None
-    if text.startswith("972") and len(text) >= 11:
-        text = "0" + text[3:]
-    if not 9 <= len(text) <= 15:
+    text = str(text).strip().lower()
+    if len(text) > MAX_EMAIL_LENGTH or not _EMAIL.match(text):
         return None
     return text
 
@@ -27,4 +22,4 @@ def normalize_phone(text):
 @dataclass(frozen=True)
 class Student:
     name: str
-    phone_number: str
+    email: str
