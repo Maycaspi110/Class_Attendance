@@ -38,7 +38,7 @@ Lecturer polls: a quick poll about the current material, answered from students'
 
 **Design only (not implemented):**
 - Student comments, suggestions and questions
-- Summary of the class (from the class video)
+- Class summary: students upload their own summaries, and an AI agent combines them into one PDF summary
 
 **Not included:**
 - LLM homework review
