@@ -59,25 +59,59 @@ Hint: if the virtual environment is inside OneDrive, OneDrive will upload it. It
 | `SECRET_KEY` | Signs the login cookie. If missing, a random one is made at every start. | random |
 | `SECURE_COOKIES` | Set to `1` when the site runs over HTTPS. | not set |
 | `TRUST_PROXY` | Set to `1` when the site is behind a hosting proxy that sets the `X-Forwarded-*` headers. | not set |
+| `REQUIRE_SECRETS` | Set to `1` on a real server: the app then refuses to start if `LECTURER_PASSWORD` or `CODE_SECRET` is missing. (Render also turns this on by itself.) | not set |
 
-## Put it on the internet (Render, free)
+## Deploy on Render
 
-Phones in class reach the demo through the internet, so the demo runs on a hosting service. The files for this are ready: `wsgi.py`, `requirements.txt` and `render.yaml` (in the main folder of the repository).
+Render is a free hosting service. The demo must run on the internet, because the phones in class reach it over HTTPS. The demo runs as **one** process, because everything is kept in memory.
 
-1. Make a free account at <https://render.com> (sign in with GitHub).
-2. **New** > **Blueprint**, choose the repository `Class_Attendance`. Render reads `render.yaml`.
-3. Render asks for `LECTURER_PASSWORD`. Choose a strong password and write it down.
-4. Press **Apply**. After a few minutes the site is ready at an address like `https://class-attendance-xxxx.onrender.com`.
-5. Open `https://.../lecturer` and log in.
+1. Create a free account at <https://render.com> (**Sign up with GitHub**).
+2. Press **New** > **Web Service**, choose **Build and deploy from a Git repository**, and connect the repository `Class_Attendance`.
+3. Fill in the form with exactly these values:
 
-If the Blueprint option does not work, use **New** > **Web Service** instead: connect the repository, set **Root Directory** to `demo`, **Build Command** to `pip install -r requirements.txt`, **Start Command** to `gunicorn wsgi:app --workers 1 --threads 8 --bind 0.0.0.0:$PORT`, plan **Free**, and add the environment variables from `render.yaml`.
+| Field | Value |
+|-------|-------|
+| Name | `class-attendance` (any name; it becomes part of the address) |
+| Language | `Python 3` |
+| Branch | `main` |
+| Root Directory | `demo` |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `gunicorn wsgi:app --workers 1 --threads 8 --bind 0.0.0.0:$PORT` |
+| Instance Type | `Free` |
 
-Before the demo in class:
-- **The free server falls asleep** after about 15 minutes without visits, and the first visit afterwards takes about a minute. Open the site a few minutes before the demo.
-- **Everything is in memory.** When the server sleeps or restarts, the roster and results are gone. Upload the roster after the server is awake, and download the CSV before you stop.
-- **Use a made-up roster** for the demo. Do not put real student emails on a free public server.
+4. Under **Environment Variables**, add these (the values here are examples only, never use them as they are):
+
+| Key | Example value | What it is |
+|-----|---------------|------------|
+| `PYTHON_VERSION` | `3.12.8` | The Python version |
+| `LECTURER_PASSWORD` | `your-own-long-password` | The password of the lecturer page. Make it long and private. |
+| `CODE_SECRET` | `a-random-text-of-30-letters-and-digits` | The secret that creates the codes. Random, and never shared. |
+| `SECRET_KEY` | `another-random-text` | Signs the login cookie. Random. |
+| `ALLOWED_RADIUS_METERS` | `100` | How far from the classroom a student may be |
+| `CODE_PERIOD_SECONDS` | `30` | How often the code changes (10 to 30) |
+| `TIMEZONE` | `Asia/Jerusalem` | The time zone of the times in the CSV |
+| `SECURE_COOKIES` | `1` | The site uses HTTPS |
+| `TRUST_PROXY` | `1` | Render puts a proxy in front of the app |
+| `REQUIRE_SECRETS` | `1` | The app refuses to start if the password or the secret is missing |
+
+   You do not need `PUBLIC_URL`: Render gives the address to the app by itself.
+5. Press **Create Web Service**. After a few minutes the log says the service is live, and the address is shown at the top: `https://class-attendance-xxxx.onrender.com`.
+6. Open `https://.../lecturer` and log in. Then open `https://.../checkin` on a phone.
+
+**Random values:** in PowerShell, this makes a random text of 32 letters and digits (run it once for each secret):
+
+```
+-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object { [char]$_ })
+```
+
+Do not write the password or the secrets in any file of the repository. The repository has a `render.yaml` file too (a "Blueprint"). It is an alternative to the form above: **New** > **Blueprint**. It asks for the password and the radius, and creates the other values by itself.
+
+**Before the demo in class**
+- **The free server falls asleep** after about 15 minutes without visits. The first visit after that takes **about one minute** while it wakes up. Open the site a few minutes before the demo, and open the classroom screen to keep it awake.
+- **Everything is in memory.** When the server sleeps or restarts, the roster, the session and the results are gone. Upload the roster after the server is awake, and download the CSV before you stop.
+- **Use a made-up roster** (`sample-roster.csv`). Do not put real student emails on a free public server.
 - Location works here, because the site uses HTTPS.
-- Known limit: while a session is open, the check-in page tells whether an email is on the roster. This is why the demo should use a made-up roster.
+- Known limit: while a session is open, the check-in page tells whether an email is on the roster. This is one more reason to use a made-up roster.
 ## The CSV files
 
 **Roster you upload** needs a name and an email for every student, for example:
