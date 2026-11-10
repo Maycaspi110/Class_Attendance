@@ -96,6 +96,14 @@ def create_app(test_config=None):
     if test_config:
         app.config.update(test_config)
 
+    # On a real server (Render sets RENDER; or set REQUIRE_SECRETS=1) the app refuses to
+    # start without its own password and secret. The development fallbacks below are
+    # only for running on your own computer.
+    if os.environ.get("REQUIRE_SECRETS") == "1" or os.environ.get("RENDER"):
+        missing = [n for n in ("LECTURER_PASSWORD", "CODE_SECRET") if not app.config[n]]
+        if missing:
+            raise RuntimeError("Set these environment variables before starting: " + ", ".join(missing))
+
     if not app.config["LECTURER_PASSWORD"]:
         # No password was set: make a random one so the lecturer pages are never open.
         app.config["LECTURER_PASSWORD"] = secrets.token_urlsafe(9)
