@@ -61,7 +61,7 @@ A web page cannot read the Wi-Fi network or router. The server can see the IP ad
 HTTPS hosting (GitHub Pages). The test page was published with GitHub Pages and is served over HTTPS (Enforce HTTPS is on). It opened on a laptop and on an iPhone. On both devices the browser asked for location permission and returned a measurement. This works only because the page is served over HTTPS. Accuracy was about 10 m on the phone and about 183 m on the laptop (which has no GPS).
 
 ### CSV spreadsheet
-CSV spreadsheet. A sample attendance file (tests/attendance-sample.csv; columns: Phone number, Name, Status, Check-in time, Distance from classroom, Note; four made-up students with the statuses Present, Flagged and Absent) was opened by double-click in Microsoft Excel on Windows. Each column appeared in its own column and all four rows were shown correctly. The sheet was displayed right to left because of the Hebrew language settings, and the column widths had to be widened to read the long headers. Names written in Hebrew were not tested.
+CSV spreadsheet. A sample attendance file (tests/attendance-sample.csv; columns: Email, Name, Status, Check-in time, Distance from classroom, Note; four made-up students with the statuses Present, Flagged and Absent) was opened by double-click in Microsoft Excel on Windows. Each column appeared in its own column and all four rows were shown correctly. The sheet was displayed right to left because of the Hebrew language settings, and the column widths had to be widened to read the long headers. Names written in Hebrew were not tested.
 
 ## Other features (design only, not tested)
 
