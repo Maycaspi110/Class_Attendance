@@ -67,12 +67,12 @@ The tests use made-up students and emails.
 
 | Test | Input | Expected result |
 |------|-------|-----------------|
-| Good check-in | Number on the roster, valid code, near | One record: Present |
-| Far location | Number on the roster, valid code, far | One record: Flagged |
-| No location | Number on the roster, valid code, no location | One record: Flagged |
-| Wrong code | Number on the roster, wrong code | An error, no record |
-| Previous code | Number on the roster, the previous code | One record: Present |
-| Not on the roster | Unknown number, valid code | An error, no record |
+| Good check-in | Email on the roster, valid code, near | One record: Present |
+| Far location | Email on the roster, valid code, far | One record: Flagged |
+| No location | Email on the roster, valid code, no location | One record: Flagged |
+| Wrong code | Email on the roster, wrong code | An error, no record |
+| Previous code | Email on the roster, the previous code | One record: Present |
+| Not on the roster | Unknown email, valid code | An error, no record |
 | Checking in twice | The same student sends two check-ins | "Already recorded", still one record |
 | Closed session | A check-in after the session ended | The check-in is not accepted |
 
