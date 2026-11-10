@@ -9,8 +9,8 @@ Technical tools considered for the attendance system and the other teaching feat
 | Presence | Bluetooth (Web Bluetooth) | Documentation; iPhone check pending | Not supported on Safari / iOS | **Rejected** |
 | Presence | Changing code | Prototype page (code-test.html), 5 manual checks on a PC | All 5 checks passed | **Chosen** |
 | Presence | QR code | Prototype page (qr-test.html), scanned with an iPhone and an Android device | Scanned successfully on both devices, with all three QR sizes | **Chosen**, together with the typed code |
-| Presence | GPS (browser geolocation) | In class, hallway and library | TBD | TBD |
-| Presence | IP address | University Wi-Fi vs mobile data | TBD | TBD |
+| Presence | GPS (browser geolocation) | In class, hallway and library | Works (iPhone, 2 places) | **Chosen:** GPS for the distance check |
+| Presence | IP address | University Wi-Fi vs mobile data | Same address in two places | **Not used** as a check (at most a weak hint) |
 | Hosting | HTTPS hosting (GitHub Pages) | Publish a test page | Works | **Chosen:** GitHub Pages (works) |
 | Output | CSV spreadsheet for the lecturer | Open in Excel, including Hebrew text | Works | **Chosen:** CSV file |
 
@@ -52,10 +52,10 @@ The test pages are in the `tests` folder (`code-test.html` and `qr-test.html`), 
 **Decision:** QR code is supported together with the typed code. For the demo, the typed code is enough.
 
 ### GPS
-Browser geolocation requires HTTPS and the user's permission, and it reports an accuracy value in meters. Indoor accuracy varies, so a radius of about 150 meters is planned. Real-life test: TBD.
+Browser geolocation requires HTTPS and the user's permission, and it reports an accuracy value in meters. Indoor accuracy varies, so a radius of about 150 meters is planned. GPS (browser geolocation). Tested on one iPhone with the test page (tests/location-test.html) over HTTPS. Two measurements were taken, on different days: in the classroom (accuracy 13 m) and in the library (accuracy 9 m). The distance between the two places, calculated from the coordinates, was about 175 m. The accuracy of each measurement was much smaller than this distance, so GPS can tell the two places apart. Only one phone and one point in each place were tested. Other points inside the classroom and Android phones were not tested. Because the library is only about 175 m from the classroom, a radius of 150 m is too close to the library, and a radius of 50-100 m should be considered. The final radius is still to be decided. The classroom location is not fixed in the system: each lecturer saves it by pressing Start in their own classroom, so the system works in any classroom.
 
 ### IP address
-A web page cannot read the Wi-Fi network or router. The server can see the IP address, but the whole campus shares one network. Real-life test: TBD.
+A web page cannot read the Wi-Fi network or router. The server can see the IP address, but the whole campus shares one network. IP address. The test page reads the public IP address of the phone. In the classroom and in the library (both on the university Wi-Fi) the address was the same, so an IP check cannot tell the two places apart. On a different network (not on campus) the address was different, so the IP can at most show that a phone is on the campus network. The phone settings showed that the local address of the phone inside the campus network was different in the two places, but a web page cannot read it. Decision: the IP is not used as a check, and at most it can be a weak hint.
 
 ### HTTPS hosting
 HTTPS hosting (GitHub Pages). The test page was published with GitHub Pages and is served over HTTPS (Enforce HTTPS is on). It opened on a laptop and on an iPhone. On both devices the browser asked for location permission and returned a measurement. This works only because the page is served over HTTPS. Accuracy was about 10 m on the phone and about 183 m on the laptop (which has no GPS).
