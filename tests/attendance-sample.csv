@@ -1,5 +1,5 @@
-﻿Phone number,Name,Status,Check-in time,Distance from classroom (m),Note
-0500000001,Dana Levi,Present,10:02,12,
-0500000002,Noa Cohen,Present,10:04,35,
-0500000003,Ron Mizrahi,Flagged,10:05,780,Valid code but location far from the classroom
-0500000004,Lior Peretz,Absent,,,
+﻿Email,Name,Status,Check-in time,Distance from classroom (m),Note
+dana.levi@example.com,Dana Levi,Present,10:02,12,
+noa.cohen@example.com,Noa Cohen,Present,10:04,35,
+ron.mizrahi@example.com,Ron Mizrahi,Flagged,10:05,780,Valid code but location far from the classroom
+lior.peretz@example.com,Lior Peretz,Absent,,,
