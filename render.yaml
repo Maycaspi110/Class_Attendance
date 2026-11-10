@@ -16,6 +16,8 @@ services:
         sync: false            # Render asks you for it. Choose a strong password.
       - key: CODE_SECRET
         generateValue: true
+      - key: REQUIRE_SECRETS
+        value: "1"
       - key: SECRET_KEY
         generateValue: true
       - key: SECURE_COOKIES
@@ -26,3 +28,5 @@ services:
         value: Asia/Jerusalem
       - key: CODE_PERIOD_SECONDS
         value: "30"
+      - key: ALLOWED_RADIUS_METERS
+        sync: false            # Render asks you for it. Example: 100
