@@ -131,6 +131,60 @@
       fillList("listpresent", d.present, times);
       fillList("listflagged", d.flagged, function (r) { return times(r) + (r.note ? " - " + r.note : ""); });
       fillList("listabsent", d.absent, function (s) { return s.email; });
+      showHeadcounts(d);
+    });
+  }
+
+  // ---- photo count ----
+  var photoMsg = $("photomsg");
+
+  // A phone photo can be several MB. It is shrunk here, so it is sent fast and the AI needs less.
+  function shrink(file) {
+    if (!window.createImageBitmap) { return Promise.resolve(file); }
+    return createImageBitmap(file).then(function (bitmap) {
+      var scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+      var canvas = document.createElement("canvas");
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+      canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      return new Promise(function (resolve) {
+        canvas.toBlob(function (blob) { resolve(blob || file); }, "image/jpeg", 0.85);
+      });
+    }).catch(function () { return file; });
+  }
+
+  $("countphoto").addEventListener("click", function () {
+    var file = $("photofile").files[0];
+    if (!file) { say(photoMsg, "Choose or take a photo first.", "bad"); return; }
+    var button = $("countphoto");
+    button.disabled = true;
+    say(photoMsg, "Counting... this can take up to a minute.", "");
+    shrink(file).then(function (photo) {
+      var form = new FormData();
+      form.append("photo", photo, "classroom.jpg");
+      return api("POST", "/api/headcount", form, true);
+    }).then(function (result) {
+      button.disabled = false;
+      if (needLogin(result)) { return; }
+      var d = result.data;
+      if (d.ok) {
+        say(photoMsg, d.message, d.level === "warning" ? "warn" : (d.level === "ok" ? "ok" : ""));
+        $("photofile").value = "";
+      } else {
+        say(photoMsg, d.error || "Could not count the people.", "bad");
+      }
+      refreshResults();
+    });
+  });
+
+  function showHeadcounts(d) {
+    $("headcountoff").hidden = d.headcount_ready;
+    var body = $("listheadcounts");
+    clear(body);
+    d.headcounts.forEach(function (h) {
+      var row = add(body, "tr");
+      add(row, "td", h.time + " (" + (h.round === "end" ? "end" : "start") + ")");
+      add(row, "td", "Photo: " + h.people + ", check-ins: " + h.check_ins, h.level === "warning" ? "warn" : "muted");
     });
   }
 
