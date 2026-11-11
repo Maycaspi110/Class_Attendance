@@ -9,6 +9,7 @@ import os
 import secrets
 import socket
 import time
+from datetime import datetime
 from functools import wraps
 from zoneinfo import ZoneInfo
 
@@ -26,6 +27,7 @@ from flask import (
 from attendance.attendance_manager import AttendanceManager, CheckInError, SessionError
 from attendance.attendance_record import ABSENT, FLAGGED, LATE, LEFT_EARLY, PRESENT
 from attendance.code_generator import CodeGenerator
+from attendance.headcount import GeminiCounter, HeadcountError, compare, image_type
 from attendance.csv_exporter import CsvExporter
 from attendance.location_checker import LocationChecker, valid_point
 from attendance.poll import Poll, PollError
@@ -35,6 +37,7 @@ from attendance.session import END_ROUND, START_ROUND
 DEFAULT_DEV_CODE_SECRET = "dev-only-secret-change-me"
 MAX_LOGIN_FAILURES = 10
 LOGIN_WINDOW_SECONDS = 300
+MAX_PHOTO_BYTES = 6 * 1024 * 1024
 
 
 class DemoState:
@@ -46,6 +49,8 @@ class DemoState:
         self.pending_roster = None
         self.poll = None
         self.poll_id = 0
+        self.counter = None  # counts the people in a photo (None = not set up)
+        self.headcounts = []  # the photo counts of this lesson (the photos are never kept)
         self.login_failures = {}  # ip -> list of times
 
 
@@ -126,6 +131,12 @@ def create_app(test_config=None):
     )
     state = DemoState(manager)
     app.extensions["demo"] = state
+    if app.config.get("HEADCOUNTER") is not None:  # tests give a fake counter
+        state.counter = app.config["HEADCOUNTER"]
+    elif os.environ.get("GEMINI_API_KEY"):
+        state.counter = GeminiCounter(
+            os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL") or "gemini-2.5-flash"
+        )
 
     def now():
         return app.config["CLOCK"]()
@@ -295,6 +306,8 @@ def create_app(test_config=None):
             manager.start_session(location, accuracy, now=now(), round_name=round_name)
         except SessionError as error:
             return fail(str(error))
+        if round_name == START_ROUND:
+            state.headcounts = []  # a new lesson
         return jsonify(ok=True)
 
     @app.route("/api/session/end", methods=["POST"])
@@ -328,7 +341,42 @@ def create_app(test_config=None):
             comments=[
                 {"name": e.student.name, "comment": e.comment} for e in entries if e.comment
             ],
+            headcounts=state.headcounts,
+            headcount_ready=state.counter is not None,
         )
+
+    @app.route("/api/headcount", methods=["POST"])
+    @lecturer_required
+    def headcount():
+        """Count the people in a classroom photo and compare with the check-ins. The photo is not saved."""
+        request.max_content_length = MAX_PHOTO_BYTES  # a photo is bigger than a roster file
+        if state.counter is None:
+            return fail("The AI counting is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        session = manager.session
+        if session is None:
+            return fail("Start a check-in first, then take the photo.", 409)
+        photo = request.files.get("photo")
+        if photo is None:
+            return fail("Choose a photo first.")
+        data = photo.read(MAX_PHOTO_BYTES + 1)
+        if len(data) > MAX_PHOTO_BYTES:
+            return fail("The photo is too large.", 413)
+        mime_type = image_type(data)
+        if mime_type is None:
+            return fail("The file must be a JPEG, PNG or WebP photo.")
+        try:
+            people = state.counter.count(data, mime_type)
+        except HeadcountError as error:
+            return fail(str(error), 502)
+        entry = {
+            "round": session.round,
+            "people": people,
+            "check_ins": len(session.records),
+            "time": datetime.fromtimestamp(now(), manager.tz).strftime("%H:%M"),
+        }
+        entry.update(compare(people, entry["check_ins"]))
+        state.headcounts.append(entry)
+        return jsonify(ok=True, **entry)
 
     @app.route("/api/session/csv")
     @lecturer_required
