@@ -20,10 +20,11 @@
 </div>
 
 <div class="card">
-  <h2>2. Attendance session <span id="sessionpill" class="pill closed">closed</span></h2>
-  <p class="muted">Press Start while you stand in the classroom. The phone location becomes the classroom location.</p>
-  <button type="button" id="startsession">Start attendance</button>
-  <button type="button" id="endsession" class="danger" hidden>End attendance</button>
+  <h2>2. Attendance <span id="sessionpill" class="pill closed">closed</span></h2>
+  <p class="muted">Check in twice: at the start of the class and again at the end. Press Start while you stand in the classroom. The phone location becomes the classroom location. Students can leave a comment about the lesson in the end check-in.</p>
+  <button type="button" id="startsession">Start attendance (start of class)</button>
+  <button type="button" id="startend" hidden>Start the end-of-class check-in</button>
+  <button type="button" id="endsession" class="danger" hidden>End this check-in</button>
   <button type="button" id="openscreen" class="secondary">Open the classroom screen</button>
   <div id="sessionmsg" class="msg" role="status"></div>
 </div>
@@ -32,8 +33,11 @@
   <h2>3. Results</h2>
   <div id="counts" class="muted"></div>
   <div class="group-title ok">Present</div><table><tbody id="listpresent"></tbody></table>
+  <div id="grouplate" hidden><div class="group-title warn">Late (only the end check-in)</div><table><tbody id="listlate"></tbody></table></div>
+  <div id="groupleft" hidden><div class="group-title warn">Left early (only the start check-in)</div><table><tbody id="listleft"></tbody></table></div>
   <div class="group-title warn">Flagged (the lecturer decides)</div><table><tbody id="listflagged"></tbody></table>
   <div class="group-title">Absent</div><table><tbody id="listabsent"></tbody></table>
+  <div id="groupcomments" hidden><div class="group-title">Comments about the lesson</div><table><tbody id="listcomments"></tbody></table></div>
   <button type="button" id="downloadcsv" class="secondary">Download the CSV spreadsheet</button>
   <p class="muted">The file is saved as UTF-8, so Excel shows Hebrew names correctly.</p>
 </div>

@@ -20,6 +20,16 @@
     codeEl.focus();
   });
 
+  // The comment box is shown only while the end-of-class check-in is open.
+  var commentEl = $("comment");
+  function checkRound() {
+    api("GET", "/api/round").then(function (result) {
+      $("commentfield").hidden = !(result.data && result.data.round === "end");
+    });
+  }
+  checkRound();
+  setInterval(checkRound, 5000);
+
   codeEl.addEventListener("input", function () { codeEl.value = codeEl.value.replace(/\D/g, "").slice(0, 4); });
 
   $("form").addEventListener("submit", function (event) {
@@ -33,6 +43,7 @@
 
     getLocation(function (location, problem) {
       var body = { email: email, code: code };
+      if (!$("commentfield").hidden && commentEl.value.trim()) { body.comment = commentEl.value.trim(); }
       if (location) { body.lat = location.lat; body.lon = location.lon; body.accuracy = location.accuracy; }
       say(msgEl, "Sending...", "");
       api("POST", "/api/checkin", body).then(function (result) {
