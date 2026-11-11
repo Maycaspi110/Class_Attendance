@@ -43,7 +43,19 @@
 </div>
 
 <div class="card">
-  <h2>4. Poll</h2>
+  <h2>4. Photo count (a second check)</h2>
+  <p class="muted">Take a photo of the classroom. The AI counts the people and compares the number with the check-ins. It is a rough count and only a warning: you decide. The photo is not saved.</p>
+  <div id="headcountoff" class="msg warn" hidden>The AI counting is not set up on this server yet (GEMINI_API_KEY is missing).</div>
+  <label>Photo of the classroom
+    <input type="file" id="photofile" accept="image/*">
+  </label>
+  <button type="button" id="countphoto" class="secondary">Count the people</button>
+  <div id="photomsg" class="msg" role="status"></div>
+  <table><tbody id="listheadcounts"></tbody></table>
+</div>
+
+<div class="card">
+  <h2>5. Poll</h2>
   <label>Question
     <input type="text" id="pollquestion" maxlength="200" placeholder="Did you understand the lesson?">
   </label>
