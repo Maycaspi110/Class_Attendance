@@ -24,12 +24,13 @@ from flask import (
 )
 
 from attendance.attendance_manager import AttendanceManager, CheckInError, SessionError
-from attendance.attendance_record import ABSENT, FLAGGED, PRESENT
+from attendance.attendance_record import ABSENT, FLAGGED, LATE, LEFT_EARLY, PRESENT
 from attendance.code_generator import CodeGenerator
 from attendance.csv_exporter import CsvExporter
 from attendance.location_checker import LocationChecker, valid_point
 from attendance.poll import Poll, PollError
 from attendance.roster import Roster, RosterError
+from attendance.session import END_ROUND, START_ROUND
 
 DEFAULT_DEV_CODE_SECRET = "dev-only-secret-change-me"
 MAX_LOGIN_FAILURES = 10
@@ -41,7 +42,7 @@ class DemoState:
 
     def __init__(self, manager):
         self.manager = manager
-        self.exporter = CsvExporter(manager.roster)
+        self.exporter = CsvExporter()
         self.pending_roster = None
         self.poll = None
         self.poll_id = 0
@@ -241,7 +242,6 @@ def create_app(test_config=None):
         if session is not None and session.is_open():
             return fail("End the attendance session before changing the roster.", 409)
         manager.roster = pending
-        state.exporter = CsvExporter(pending)
         state.pending_roster = None
         return jsonify(ok=True, count=len(pending))
 
@@ -250,12 +250,18 @@ def create_app(test_config=None):
     def person(student):
         return {"name": student.name, "email": student.email}
 
-    def record_json(record):
-        data = person(record.student)
+    def clock(record):
+        return None if record is None else record.check_in_time.strftime("%H:%M")
+
+    def entry_json(entry):
+        data = person(entry.student)
         data.update(
-            time=record.check_in_time.strftime("%H:%M"),
-            distance=record.distance_meters,
-            note=record.note,
+            time=clock(entry.start) or clock(entry.end),
+            start_time=clock(entry.start),
+            end_time=clock(entry.end),
+            distance=entry.distance_meters,
+            note=entry.note,
+            comment=entry.comment,
         )
         return data
 
@@ -268,6 +274,9 @@ def create_app(test_config=None):
             roster_count=len(manager.roster),
             session_open=bool(session and session.is_open()),
             has_session=session is not None,
+            round=session.round if session is not None else None,
+            has_start=START_ROUND in manager.rounds,
+            has_end=END_ROUND in manager.rounds,
             period=manager.code_generator.period_seconds,
             radius=manager.location_checker.allowed_radius_meters,
         )
@@ -281,8 +290,9 @@ def create_app(test_config=None):
         data = request.get_json(silent=True) or {}
         lat, lon, accuracy = _number(data.get("lat")), _number(data.get("lon")), _number(data.get("accuracy"))
         location = (lat, lon) if lat is not None and lon is not None and valid_point(lat, lon) else None
+        round_name = END_ROUND if data.get("round") == END_ROUND else START_ROUND
         try:
-            manager.start_session(location, accuracy, now=now())
+            manager.start_session(location, accuracy, now=now(), round_name=round_name)
         except SessionError as error:
             return fail(str(error))
         return jsonify(ok=True)
@@ -299,26 +309,36 @@ def create_app(test_config=None):
     @app.route("/api/results")
     @lecturer_required
     def results():
-        groups = manager.grouped_results()
+        entries = manager.lesson_entries()
         session = manager.session
+
+        def group(status):
+            return [entry_json(e) for e in entries if e.status == status]
+
         return jsonify(
             ok=True,
             session_open=bool(session and session.is_open()),
             has_session=session is not None,
-            present=[record_json(r) for r in groups[PRESENT]],
-            flagged=[record_json(r) for r in groups[FLAGGED]],
-            absent=[person(s) for s in groups[ABSENT]],
+            has_end=END_ROUND in manager.rounds,
+            present=group(PRESENT),
+            late=group(LATE),
+            left_early=group(LEFT_EARLY),
+            flagged=group(FLAGGED),
+            absent=[person(e.student) for e in entries if e.status == ABSENT],
+            comments=[
+                {"name": e.student.name, "comment": e.comment} for e in entries if e.comment
+            ],
         )
 
     @app.route("/api/session/csv")
     @lecturer_required
     def session_csv():
-        session = manager.session
-        if session is None:
+        started = manager.lesson_start_time()
+        if started is None:
             return fail("There is no session yet.", 404)
-        filename = "attendance-%s.csv" % session.start_time.strftime("%Y-%m-%d-%H%M")
+        filename = "attendance-%s.csv" % started.strftime("%Y-%m-%d-%H%M")
         return Response(
-            state.exporter.export(session),
+            state.exporter.export(manager.lesson_entries()),
             mimetype="text/csv",
             headers={"Content-Disposition": 'attachment; filename="%s"' % filename},
         )
@@ -350,6 +370,7 @@ def create_app(test_config=None):
         return jsonify(
             ok=True,
             open=True,
+            round=session.round,
             code=code,
             seconds_left=manager.code_generator.seconds_left(t),
             period=manager.code_generator.period_seconds,
@@ -358,6 +379,14 @@ def create_app(test_config=None):
         )
 
     # ---- the student API --------------------------------------------------
+
+    @app.route("/api/round")
+    def current_round():
+        """Which check-in is open now ("start" or "end"). The student page shows the comment box only for "end"."""
+        session = manager.session
+        if session is None or not session.is_open():
+            return jsonify(ok=True, open=False, round=None)
+        return jsonify(ok=True, open=True, round=session.round)
 
     @app.route("/api/checkin", methods=["POST"])
     def api_checkin():
@@ -369,8 +398,9 @@ def create_app(test_config=None):
         lat, lon = _number(data.get("lat")), _number(data.get("lon"))
         location = (lat, lon) if lat is not None and lon is not None and valid_point(lat, lon) else None
         accuracy = _number(data.get("accuracy"))
+        comment = str(data.get("comment") or "")[:1000]
         try:
-            record = manager.check_in(email, code, location, accuracy, now=now())
+            record = manager.check_in(email, code, location, accuracy, now=now(), comment=comment)
         except CheckInError as error:
             extra = {"reason": error.reason}
             if error.record is not None:

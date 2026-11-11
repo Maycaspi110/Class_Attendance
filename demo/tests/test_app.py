@@ -448,3 +448,66 @@ def test_localhost_without_a_network_address_stays_localhost(app, monkeypatch):
 
     monkeypatch.setattr(app_module, "_lan_ip", lambda: None)
     assert code_info(app, "localhost:5000")["page"] == "http://localhost:5000/checkin"
+
+# ---- start and end of the class, and the comment -------------------------------
+
+
+def start_end_round(client, point=CLASSROOM, accuracy=10):
+    return client.post(
+        "/api/session/start", json={"lat": point[0], "lon": point[1], "accuracy": accuracy, "round": "end"}
+    )
+
+
+def test_two_check_ins_give_present_late_and_left_early(lecturer, student, clock):
+    confirm_roster(lecturer)
+    start_session(lecturer)
+    assert student.get("/api/round").get_json() == {"ok": True, "open": True, "round": "start"}
+    code = screen_code(lecturer)
+    check_in(student, "dana.levi@example.com", code)
+    check_in(student, "noa.cohen@example.com", code)
+    lecturer.post("/api/session/end")
+    assert student.get("/api/round").get_json()["open"] is False
+
+    clock.t = NOW + 3000
+    assert start_end_round(lecturer).status_code == 200
+    assert student.get("/api/round").get_json()["round"] == "end"
+    code = screen_code(lecturer)
+    check_in(student, "dana.levi@example.com", code)
+    check_in(student, "ron.mizrahi@example.com", code)
+    lecturer.post("/api/session/end")
+
+    data = results(lecturer)
+    assert [r["name"] for r in data["present"]] == ["Dana Levi"]
+    assert [r["name"] for r in data["left_early"]] == ["Noa Cohen"]
+    assert [r["name"] for r in data["late"]] == ["Ron Mizrahi"]
+    assert [r["name"] for r in data["absent"]] == ["Lior Peretz"]
+    assert data["has_end"] is True
+
+
+def test_comment_from_the_end_check_in_reaches_the_lecturer_and_the_csv(lecturer, student, clock):
+    confirm_roster(lecturer)
+    start_session(lecturer)
+    lecturer.post("/api/session/end")
+    clock.t = NOW + 3000
+    start_end_round(lecturer)
+    body = {"email": "dana.levi@example.com", "code": screen_code(lecturer), "comment": "The lesson was great"}
+    assert student.post("/api/checkin", json=body).status_code == 200
+    assert results(lecturer)["comments"] == [{"name": "Dana Levi", "comment": "The lesson was great"}]
+    rows = list(csv.reader(io.StringIO(lecturer.get("/api/session/csv").data.decode("utf-8-sig"))))
+    dana = next(r for r in rows if r[0] == "dana.levi@example.com")
+    assert dana[-1] == "The lesson was great"
+
+
+def test_second_round_cannot_open_while_one_is_open(lecturer):
+    confirm_roster(lecturer)
+    start_session(lecturer)
+    assert start_end_round(lecturer).status_code == 409
+
+
+def test_state_tells_which_rounds_exist(lecturer):
+    confirm_roster(lecturer)
+    assert lecturer.get("/api/state").get_json()["has_start"] is False
+    start_session(lecturer)
+    lecturer.post("/api/session/end")
+    state = lecturer.get("/api/state").get_json()
+    assert state["has_start"] is True and state["has_end"] is False and state["round"] == "start"

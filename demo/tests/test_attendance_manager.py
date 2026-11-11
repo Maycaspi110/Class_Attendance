@@ -185,5 +185,6 @@ def test_grouped_results_present_flagged_and_absent(open_manager):
 
 def test_starting_a_new_session_forgets_the_old_one(open_manager):
     open_manager.check_in("dana.levi@example.com", good_code(open_manager), NEAR, 10, now=NOW)
+    open_manager.end_session(now=NOW + 50)
     open_manager.start_session(CLASSROOM, 10, now=NOW + 100)
     assert open_manager.results() == []

@@ -2,15 +2,15 @@
 import csv
 import io
 
-from .attendance_record import ABSENT
-
 COLUMNS = [
     "Email",
     "Name",
     "Status",
-    "Check-in time",
+    "Start check-in",
+    "End check-in",
     "Distance from classroom (m)",
     "Note",
+    "Comment",
 ]
 
 BOM = "﻿"  # lets Excel open the file as UTF-8 (so Hebrew names look right)
@@ -23,32 +23,32 @@ def _safe(text):
     return "'" + text if text.startswith(_FORMULA_START) else text
 
 
-class CsvExporter:
-    def __init__(self, roster):
-        self.roster = roster
+def _time(record):
+    return "" if record is None else record.check_in_time.strftime("%H:%M")
 
-    def export(self, session):
+
+class CsvExporter:
+    def export(self, entries):
         """
-        The CSV file as bytes (UTF-8 with BOM). Every student of the roster
-        has one row: Present or Flagged from the record, otherwise Absent.
+        The CSV file as bytes (UTF-8 with BOM). `entries` are the LessonEntry
+        objects of the manager: every student of the roster has one row.
         """
         out = io.StringIO()
         out.write(BOM)
         writer = csv.writer(out)
         writer.writerow(COLUMNS)
-        for student in self.roster.students:
-            record = session.record_for(student.email) if session else None
-            if record is None:
-                writer.writerow([student.email, _safe(student.name), ABSENT, "", "", ""])
-            else:
-                writer.writerow(
-                    [
-                        student.email,
-                        _safe(student.name),
-                        record.status,
-                        record.check_in_time.strftime("%H:%M"),
-                        "" if record.distance_meters is None else record.distance_meters,
-                        _safe(record.note),
-                    ]
-                )
+        for entry in entries:
+            distance = entry.distance_meters
+            writer.writerow(
+                [
+                    entry.student.email,
+                    _safe(entry.student.name),
+                    entry.status,
+                    _time(entry.start),
+                    _time(entry.end),
+                    "" if distance is None else distance,
+                    _safe(entry.note),
+                    _safe(entry.comment),
+                ]
+            )
         return out.getvalue().encode("utf-8")
