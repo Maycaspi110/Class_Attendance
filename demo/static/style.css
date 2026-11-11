@@ -28,12 +28,13 @@ a { color: var(--blue); }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 label { display: block; margin-top: 12px; font-size: .9rem; font-weight: 600; }
-input[type=text], input[type=tel], input[type=email], input[type=password], input[type=file] {
+input[type=text], input[type=tel], input[type=email], input[type=password], input[type=file], textarea {
   font: inherit; font-size: 1.05rem; padding: 12px 14px; width: 100%; margin-top: 6px;
   border: 1.5px solid #d5dbe6; border-radius: 12px; background: #fafbfd; color: var(--ink);
   transition: border-color .15s, box-shadow .15s, background .15s;
 }
-input:focus { outline: 0; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 4px rgba(37,99,235,.15); }
+textarea { resize: vertical; }
+input:focus, textarea:focus { outline: 0; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 4px rgba(37,99,235,.15); }
 input.code-input { text-align: center; letter-spacing: .5em; font-size: 1.9rem; font-weight: 700; padding: 14px 8px 14px 22px; }
 
 button {

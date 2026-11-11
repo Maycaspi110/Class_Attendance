@@ -51,16 +51,17 @@
       var d = result.data;
       $("rostercount").textContent = d.roster_count ? "Saved roster: " + d.roster_count + " students." : "No roster saved yet.";
       var pill = $("sessionpill");
-      pill.textContent = d.session_open ? "open" : "closed";
+      var roundName = d.round === "end" ? "end of class" : "start of class";
+      pill.textContent = d.session_open ? "open - " + roundName : "closed";
       pill.className = "pill " + (d.session_open ? "open" : "closed");
       $("startsession").hidden = d.session_open;
+      $("startend").hidden = d.session_open || !d.has_start || d.has_end;
       $("endsession").hidden = !d.session_open;
       $("downloadcsv").disabled = !d.has_session;
     });
   }
 
-  $("startsession").addEventListener("click", function () {
-    var button = $("startsession");
+  function startRound(button, round) {
     button.disabled = true;
     say(sessionMsg, "Getting the location... tap Allow if the phone asks.", "");
     getLocation(function (location, problem) {
@@ -69,23 +70,29 @@
         say(sessionMsg, problem + " Allow location and try again.", "bad");
         return;
       }
-      api("POST", "/api/session/start", location).then(function (result) {
+      var body = { lat: location.lat, lon: location.lon, accuracy: location.accuracy, round: round };
+      api("POST", "/api/session/start", body).then(function (result) {
         button.disabled = false;
         if (needLogin(result)) { return; }
         if (result.data.ok) {
-          say(sessionMsg, "Attendance is open. Show the classroom screen to the students.", "ok");
+          say(sessionMsg, round === "end"
+            ? "The end-of-class check-in is open. Show the classroom screen again. Students can write a comment."
+            : "Attendance is open. Show the classroom screen to the students.", "ok");
         } else {
           say(sessionMsg, result.data.error, "bad");
         }
         refreshState(); refreshResults();
       });
     });
-  });
+  }
+
+  $("startsession").addEventListener("click", function () { startRound($("startsession"), "start"); });
+  $("startend").addEventListener("click", function () { startRound($("startend"), "end"); });
 
   $("endsession").addEventListener("click", function () {
     api("POST", "/api/session/end").then(function (result) {
       if (needLogin(result)) { return; }
-      say(sessionMsg, result.data.ok ? "Attendance is closed." : result.data.error, result.data.ok ? "ok" : "bad");
+      say(sessionMsg, result.data.ok ? "This check-in is closed." : result.data.error, result.data.ok ? "ok" : "bad");
       refreshState(); refreshResults();
     });
   });
@@ -109,9 +116,20 @@
     api("GET", "/api/results").then(function (result) {
       if (needLogin(result) || !result.data.ok) { return; }
       var d = result.data;
-      $("counts").textContent = "Present: " + d.present.length + "   Flagged: " + d.flagged.length + "   Absent: " + d.absent.length;
-      fillList("listpresent", d.present, function (r) { return r.time + (r.distance === null ? "" : " - " + r.distance + " m"); });
-      fillList("listflagged", d.flagged, function (r) { return r.time + (r.distance === null ? "" : " - " + r.distance + " m") + (r.note ? " - " + r.note : ""); });
+      $("counts").textContent = "Present: " + d.present.length
+        + (d.has_end ? "   Late: " + d.late.length + "   Left early: " + d.left_early.length : "")
+        + "   Flagged: " + d.flagged.length + "   Absent: " + d.absent.length;
+      function times(r) {
+        var t = r.start_time && r.end_time ? r.start_time + " / " + r.end_time : r.time;
+        return t + (r.distance === null ? "" : " - " + r.distance + " m");
+      }
+      $("grouplate").hidden = $("groupleft").hidden = !d.has_end;
+      fillList("listlate", d.late, times);
+      fillList("listleft", d.left_early, times);
+      $("groupcomments").hidden = !d.comments.length;
+      fillList("listcomments", d.comments.map(function (c) { return { name: c.name, text: c.comment }; }), function (c) { return c.text; });
+      fillList("listpresent", d.present, times);
+      fillList("listflagged", d.flagged, function (r) { return times(r) + (r.note ? " - " + r.note : ""); });
       fillList("listabsent", d.absent, function (s) { return s.email; });
     });
   }
