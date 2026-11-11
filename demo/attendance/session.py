@@ -5,8 +5,15 @@ OPEN = "open"
 CLOSED = "closed"
 
 
+START_ROUND = "start"  # the check-in at the beginning of the class
+END_ROUND = "end"  # the check-in at the end of the class
+
+
 class Session:
-    def __init__(self):
+    """One check-in round. A lesson has a start round and, if the lecturer wants, an end round."""
+
+    def __init__(self, round_name=START_ROUND):
+        self.round = round_name
         self.classroom_location = None  # (lat, lon)
         self.start_time = None
         self.end_time = None
