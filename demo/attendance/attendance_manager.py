@@ -13,6 +13,7 @@ from .code_generator import INVALID
 from .session import END_ROUND, START_ROUND, Session
 
 MAX_COMMENT_LENGTH = 300
+MAX_LECTURER_ACCURACY_METERS = 3000
 
 # Extra protection: a code has only 10,000 possible values, so a student who
 # types many wrong codes in a row has to wait a short time.
@@ -62,7 +63,13 @@ class AttendanceManager:
                 raise SessionError("Upload and confirm the roster before starting a session.")
             if location is None or not lc.valid_point(*location):
                 raise SessionError("The phone location is missing. Allow location and try again.")
-            if not self.location_checker.accuracy_ok(accuracy):
+            # The lecturer is trusted, so a rough indoor location (Wi-Fi or cell tower) is accepted.
+            # Only a hopeless one is refused. Students are still checked with the strict accuracy.
+            try:
+                rough = 0 <= float(accuracy) <= MAX_LECTURER_ACCURACY_METERS
+            except (TypeError, ValueError):
+                rough = False
+            if not rough:
                 raise SessionError("The phone location is too inaccurate. Try again outdoors or near a window.")
             session = Session(round_name)
             session.start(location, self._datetime(now))
