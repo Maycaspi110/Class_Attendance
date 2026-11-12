@@ -135,7 +135,7 @@ def create_app(test_config=None):
         state.counter = app.config["HEADCOUNTER"]
     elif os.environ.get("GEMINI_API_KEY"):
         state.counter = GeminiCounter(
-            os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL") or "gemini-2.5-flash"
+            os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL") or "gemini-3.5-flash-lite"
         )
 
     def now():
