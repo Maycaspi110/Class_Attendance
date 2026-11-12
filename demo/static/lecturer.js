@@ -74,7 +74,10 @@
       api("POST", "/api/session/start", body).then(function (result) {
         button.disabled = false;
         if (needLogin(result)) { return; }
-        if (result.data.ok) {
+        if (result.data.ok && location.accuracy > 200) {
+          say(sessionMsg, "Attendance is open, but the phone location is rough (about " + Math.round(location.accuracy) +
+            " m), so students may be marked as flagged for distance. Go near a window next time.", "ok");
+        } else if (result.data.ok) {
           say(sessionMsg, round === "end"
             ? "The end-of-class check-in is open. Show the classroom screen again. Students can write a comment."
             : "Attendance is open. Show the classroom screen to the students.", "ok");
