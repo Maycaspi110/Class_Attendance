@@ -194,6 +194,12 @@
   // ---- poll ----
   var pollMsg = $("pollmsg");
 
+  $("lessonpoll").addEventListener("click", function () {
+    $("pollquestion").value = "Did you understand the lesson?";
+    var fill = ["Yes, everything", "Mostly", "Only a little", "No"];
+    [].forEach.call(document.querySelectorAll(".pollopt"), function (el, i) { el.value = fill[i] || ""; });
+  });
+
   $("createpoll").addEventListener("click", function () {
     var options = [].map.call(document.querySelectorAll(".pollopt"), function (el) { return el.value.trim(); }).filter(Boolean);
     api("POST", "/api/poll", { question: $("pollquestion").value, options: options }).then(function (result) {
