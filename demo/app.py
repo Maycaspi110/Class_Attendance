@@ -28,6 +28,7 @@ from attendance.attendance_manager import AttendanceManager, CheckInError, Sessi
 from attendance.attendance_record import ABSENT, FLAGGED, LATE, LEFT_EARLY, PRESENT
 from attendance.code_generator import CodeGenerator
 from attendance.headcount import GeminiCounter, HeadcountError, compare, image_type
+from attendance.summary import GeminiSummarizer, SummaryError, clean_transcript
 from attendance.csv_exporter import CsvExporter
 from attendance.location_checker import LocationChecker, valid_point
 from attendance.poll import Poll, PollError
@@ -38,6 +39,7 @@ DEFAULT_DEV_CODE_SECRET = "dev-only-secret-change-me"
 MAX_LOGIN_FAILURES = 10
 LOGIN_WINDOW_SECONDS = 300
 MAX_PHOTO_BYTES = 6 * 1024 * 1024
+MAX_TRANSCRIPT_BYTES = 1024 * 1024
 
 
 class DemoState:
@@ -51,6 +53,8 @@ class DemoState:
         self.poll_id = 0
         self.counter = None  # counts the people in a photo (None = not set up)
         self.headcounts = []  # the photo counts of this lesson (the photos are never kept)
+        self.summarizer = None  # writes the lesson summary (None = not set up)
+        self.summary = None  # the summary of this lesson, only for the lecturer
         self.login_failures = {}  # ip -> list of times
 
 
@@ -135,6 +139,12 @@ def create_app(test_config=None):
         state.counter = app.config["HEADCOUNTER"]
     elif os.environ.get("GEMINI_API_KEY"):
         state.counter = GeminiCounter(
+            os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL") or "gemini-3.5-flash-lite"
+        )
+    if app.config.get("SUMMARIZER") is not None:  # tests give a fake summarizer
+        state.summarizer = app.config["SUMMARIZER"]
+    elif os.environ.get("GEMINI_API_KEY"):
+        state.summarizer = GeminiSummarizer(
             os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL") or "gemini-3.5-flash-lite"
         )
 
@@ -308,6 +318,7 @@ def create_app(test_config=None):
             return fail(str(error))
         if round_name == START_ROUND:
             state.headcounts = []  # a new lesson
+            state.summary = None
         return jsonify(ok=True)
 
     @app.route("/api/session/end", methods=["POST"])
@@ -377,6 +388,37 @@ def create_app(test_config=None):
         entry.update(compare(people, entry["check_ins"]))
         state.headcounts.append(entry)
         return jsonify(ok=True, **entry)
+
+    @app.route("/api/summary", methods=["GET"])
+    @lecturer_required
+    def summary_get():
+        return jsonify(ok=True, summary=state.summary, ready=state.summarizer is not None)
+
+    @app.route("/api/summary", methods=["POST"])
+    @lecturer_required
+    def summary_create():
+        """Summarize the transcript of the class. Only the lecturer can do this and see the result."""
+        request.max_content_length = MAX_TRANSCRIPT_BYTES
+        if state.summarizer is None:
+            return fail("The AI summary is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        upload = request.files.get("transcript")
+        if upload is None:
+            return fail("Choose a transcript file first.")
+        raw = upload.read(MAX_TRANSCRIPT_BYTES + 1)
+        if len(raw) > MAX_TRANSCRIPT_BYTES:
+            return fail("The transcript file is too large.", 413)
+        text = clean_transcript(raw.decode("utf-8-sig", errors="replace"))
+        if len(text) < 20:
+            return fail("The transcript is empty or too short to summarize.")
+        try:
+            summary = state.summarizer.summarize(text)
+        except SummaryError as error:
+            return fail(str(error), 502)
+        state.summary = {
+            "text": summary,
+            "time": datetime.fromtimestamp(now(), manager.tz).strftime("%H:%M"),
+        }
+        return jsonify(ok=True, summary=state.summary)
 
     @app.route("/api/session/csv")
     @lecturer_required
