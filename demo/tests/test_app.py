@@ -204,7 +204,7 @@ def test_cannot_start_with_a_bad_location(lecturer):
 
 def test_a_rough_indoor_location_is_enough_to_start(lecturer):
     confirm_roster(lecturer)
-    assert start_session(lecturer, accuracy=1200).status_code == 200
+    assert start_session(lecturer, accuracy=400).status_code == 200
 
 
 def test_cannot_start_a_second_session_while_one_is_open(lecturer):

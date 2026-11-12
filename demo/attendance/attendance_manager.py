@@ -13,7 +13,7 @@ from .code_generator import INVALID
 from .session import END_ROUND, START_ROUND, Session
 
 MAX_COMMENT_LENGTH = 300
-MAX_LECTURER_ACCURACY_METERS = 3000
+MAX_LECTURER_ACCURACY_METERS = 500
 
 # Extra protection: a code has only 10,000 possible values, so a student who
 # types many wrong codes in a row has to wait a short time.
