@@ -212,7 +212,7 @@ def create_app(test_config=None):
 
     def safe_next(target):
         """Only our own lecturer pages (and one part of the lecturer page) are allowed after the login."""
-        allowed = {"/lecturer", "/screen"} | {"/lecturer?go=" + part for part in LECTURER_PARTS}
+        allowed = {"/lecturer", "/lecturer/menu", "/screen"} | {"/lecturer?go=" + part for part in LECTURER_PARTS}
         return target if target in allowed else "/lecturer"
 
     @app.route("/login", methods=["GET", "POST"])
@@ -250,6 +250,15 @@ def create_app(test_config=None):
     @app.route("/checkin")
     def checkin():
         return render_template("checkin.html")
+
+    @app.route("/student")
+    def student_menu():
+        return render_template("student.html")
+
+    @app.route("/lecturer/menu")
+    @lecturer_required
+    def lecturer_menu():
+        return render_template("lecturer_menu.html")
 
     @app.route("/homework")
     def homework_page():

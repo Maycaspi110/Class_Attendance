@@ -518,24 +518,53 @@ def test_state_tells_which_rounds_exist(lecturer):
     assert state["has_start"] is True and state["has_end"] is False and state["round"] == "start"
 
 
-def test_the_home_page_lets_you_choose_student_or_lecturer(student):
+def test_the_first_page_has_only_two_tiles_student_and_lecturer(student):
     page = student.get("/")
     assert page.status_code == 200
+    assert b'href="/student"' in page.data and b'href="/lecturer/menu"' in page.data
+    assert page.data.count(b'class="tile ') == 2
+
+
+def test_the_student_menu_has_the_student_tools_and_no_lecturer_tools(student):
+    page = student.get("/student")
+    assert page.status_code == 200
+    assert b'href="/checkin"' in page.data and b'href="/homework"' in page.data
+    assert page.data.count(b'class="tile ') == 2
+    assert b"/lecturer" not in page.data and b"/screen" not in page.data
+
+
+def test_the_lecturer_menu_needs_the_password_and_has_the_lecturer_tools(student, lecturer):
+    assert student.get("/lecturer/menu").status_code == 302  # to the login
+    page = lecturer.get("/lecturer/menu")
+    assert page.status_code == 200
     for link in (
-        b'href="/checkin"',
-        b'href="/homework"',
-        b'href="/screen"',
+        b'href="/lecturer?go=roster"',
         b'href="/lecturer?go=attendance"',
+        b'href="/screen"',
         b'href="/lecturer?go=photo"',
         b'href="/lecturer?go=summary"',
+        b'href="/lecturer?go=poll"',
     ):
-        assert link in page.data
+        assert link in page.data, link
     assert page.data.count(b'class="tile ') == 6
+    assert b'href="/checkin"' not in page.data  # no student tools here
 
 
-def test_every_other_page_links_back_home(student, lecturer):
-    for client, path in ((student, "/checkin"), (student, "/homework"), (student, "/login"), (lecturer, "/lecturer")):
-        assert b'href="/"' in client.get(path).data, path
+def test_every_page_links_back_to_its_menu(student, lecturer):
+    for client, path, back in (
+        (student, "/checkin", b'href="/student"'),
+        (student, "/homework", b'href="/student"'),
+        (student, "/student", b'href="/"'),
+        (student, "/login", b'href="/"'),
+        (lecturer, "/lecturer", b'href="/lecturer/menu"'),
+        (lecturer, "/lecturer/menu", b'href="/"'),
+    ):
+        assert back in client.get(path).data, (path, back)
+
+
+def test_after_the_login_the_lecturer_menu_opens(student):
+    response = student.post("/login?next=/lecturer/menu", data={"password": PASSWORD})
+    assert response.status_code == 302 and response.headers["Location"].endswith("/lecturer/menu")
 
 
 def test_the_lecturer_page_has_a_card_for_every_tile_target(lecturer):

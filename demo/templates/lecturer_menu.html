@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_ui.html" import head, tile %}
+{% block title %}Lecturer{% endblock %}
+{% block bodyclass %}home{% endblock %}
+{% block body %}
+<div class="menubar">
+  <a class="homelink" href="{{ url_for('home') }}">&larr; Home</a>
+  <a class="homelink" href="{{ url_for('logout') }}">Log out</a>
+</div>
+{{ head("Lecturer", "Everything you need to run the class") }}
+<main class="tiles">
+  {{ tile("indigo", "Step 1", "Course roster", "Upload the student list (a CSV file with the names and emails) once.", url_for('lecturer', go='roster'), "roster") }}
+  {{ tile("violet", "Step 2", "Attendance & results", "Open the start and end check-ins, see who came, and download the CSV.", url_for('lecturer', go='attendance'), "people") }}
+  {{ tile("gray", "Projector", "Classroom screen", "A big code and QR code that change every 30 seconds.", url_for('screen'), "screen") }}
+  {{ tile("blue", "Check", "Photo count", "Photograph the room. The AI counts the people and compares with the check-ins.", url_for('lecturer', go='photo'), "camera") }}
+  {{ tile("indigo", "After class", "Class summary", "Upload a recording or a YouTube link. The AI writes a summary only you can see.", url_for('lecturer', go='summary'), "summary") }}
+  {{ tile("violet", "Any time", "Poll", "Ask the class a quick question and see the answers come in.", url_for('lecturer', go='poll'), "poll") }}
+</main>
+{% endblock %}
