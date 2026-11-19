@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Attendance check-in{% endblock %}
 {% block body %}
+<a class="homelink" href="{{ url_for('home') }}">&larr; Home</a>
 <h1>Attendance</h1>
 <p class="sub">Scan the QR code on the classroom screen, or type the code shown there. Then type your email.</p>
 
@@ -32,6 +33,6 @@
   <div id="polloptions"></div>
   <div id="pollmsg" class="msg" role="status"></div>
 </div>
-<p class="muted"><a href="/homework">Homework review: send your work and get an AI review</a></p>
+<p class="muted"><a href="{{ url_for('homework_page') }}">Homework review: send your work and get an AI review</a></p>
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='checkin.js') }}"></script>{% endblock %}

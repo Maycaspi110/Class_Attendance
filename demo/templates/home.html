@@ -1,18 +1,112 @@
 {% extends "base.html" %}
-{% block title %}Class attendance{% endblock %}
+{% block title %}Class Attendance{% endblock %}
+{% block bodyclass %}home{% endblock %}
 {% block body %}
-<h1>Class attendance</h1>
-<p class="sub">Choose who you are.</p>
+<header class="homehead">
+  <div class="logo" aria-hidden="true">
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.3 2.7 3 6 3s6-1.7 6-3v-4.5"/><path d="M22 9v6"/>
+    </svg>
+  </div>
+  <div class="titles">
+    <h1>Class Attendance</h1>
+    <p class="sub">Simple teaching tools for the classroom</p>
+  </div>
+</header>
 
-<div class="card">
-  <h2>I am a student</h2>
-  <a class="choice" href="{{ url_for('checkin') }}">Mark my attendance</a>
-  <a class="choice secondary" href="{{ url_for('homework_page') }}">Homework review</a>
+<div class="legend">
+  <span class="chip"><span class="dot student"></span>For students</span>
+  <span class="chip"><span class="dot lecturer"></span>For the lecturer (password)</span>
 </div>
 
-<div class="card">
-  <h2>I am a lecturer</h2>
-  <a class="choice" href="{{ url_for('lecturer') }}">Open the lecturer page</a>
-  <p class="muted">You need the lecturer password.</p>
-</div>
+<main class="tiles">
+
+  <a class="tile indigo" href="{{ url_for('checkin') }}">
+    <div class="icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16.5 9.5"/>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="role">Student</div>
+      <h2>Mark attendance</h2>
+      <p>Scan the QR code or type the code. Add a comment at the end of the class.</p>
+    </div>
+    <span class="go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17203a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  </a>
+
+  <a class="tile blue" href="{{ url_for('homework_page') }}">
+    <div class="icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="role">Student</div>
+      <h2>Homework review</h2>
+      <p>Send your work and get an AI review, compared with your last version and other works.</p>
+    </div>
+    <span class="go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17203a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  </a>
+
+  <a class="tile violet" href="{{ url_for('lecturer', go='attendance') }}">
+    <div class="icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16.5 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.8 3 2.6 3 4.7"/>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="role">Lecturer</div>
+      <h2>Attendance &amp; results</h2>
+      <p>Upload the roster, open the check-ins, see who came, run a poll, download the CSV.</p>
+    </div>
+    <span class="go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17203a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  </a>
+
+  <a class="tile gray" href="{{ url_for('screen') }}">
+    <div class="icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>
+        <rect x="9" y="7" width="2.6" height="2.6" rx=".4"/><rect x="12.8" y="7" width="2.2" height="2.2" rx=".4"/><rect x="9" y="11" width="2.2" height="2.2" rx=".4"/><path d="M12.8 11.2h2.2v2"/>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="role">Lecturer</div>
+      <h2>Classroom screen</h2>
+      <p>A big code and QR code that change every 30 seconds, for the projector.</p>
+    </div>
+    <span class="go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17203a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  </a>
+
+  <a class="tile blue" href="{{ url_for('lecturer', go='photo') }}">
+    <div class="icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 8a2 2 0 0 1 2-2h2l1.4-2h5.2L16 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.4"/>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="role">Lecturer</div>
+      <h2>Photo count</h2>
+      <p>Photograph the room. The AI counts the people and compares with the check-ins.</p>
+    </div>
+    <span class="go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17203a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  </a>
+
+  <a class="tile indigo" href="{{ url_for('lecturer', go='summary') }}">
+    <div class="icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="13" height="14" rx="2"/><path d="M6.5 9.5h6M6.5 13h4"/><path d="M19.5 4v4M17.5 6h4M20 12v3M18.5 13.5h3"/>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="role">Lecturer</div>
+      <h2>Class summary</h2>
+      <p>Upload a recording or a YouTube link. The AI writes a summary only you can see.</p>
+    </div>
+    <span class="go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17203a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  </a>
+
+</main>
+
+<p class="homefoot">Works on any phone browser. Nothing to install.</p>
 {% endblock %}

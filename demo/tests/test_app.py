@@ -521,8 +521,40 @@ def test_state_tells_which_rounds_exist(lecturer):
 def test_the_home_page_lets_you_choose_student_or_lecturer(student):
     page = student.get("/")
     assert page.status_code == 200
-    for link in (b'href="/checkin"', b'href="/homework"', b'href="/lecturer"'):
+    for link in (
+        b'href="/checkin"',
+        b'href="/homework"',
+        b'href="/screen"',
+        b'href="/lecturer?go=attendance"',
+        b'href="/lecturer?go=photo"',
+        b'href="/lecturer?go=summary"',
+    ):
         assert link in page.data
+    assert page.data.count(b'class="tile ') == 6
+
+
+def test_every_other_page_links_back_home(student, lecturer):
+    for client, path in ((student, "/checkin"), (student, "/homework"), (student, "/login"), (lecturer, "/lecturer")):
+        assert b'href="/"' in client.get(path).data, path
+
+
+def test_the_lecturer_page_has_a_card_for_every_tile_target(lecturer):
+    page = lecturer.get("/lecturer").data
+    for part in ("roster", "attendance", "results", "photo", "summary", "poll"):
+        assert b'id="%s"' % part.encode() in page, part
+
+
+def test_a_tile_for_the_lecturer_goes_through_the_login_to_the_right_card(student):
+    response = student.get("/lecturer?go=photo")
+    assert response.status_code == 302 and "next=/lecturer?go" in response.headers["Location"]
+    after = student.post("/login?next=/lecturer?go=photo", data={"password": PASSWORD})
+    assert after.status_code == 302 and after.headers["Location"].endswith("/lecturer?go=photo")
+
+
+def test_the_login_only_returns_to_our_own_pages(student):
+    for bad in ("/lecturer?go=evil", "//evil.com", "https://evil.com", "/api/results", "/lecturer?go=photo&x=1"):
+        response = student.post("/login", query_string={"next": bad}, data={"password": PASSWORD})
+        assert response.status_code == 302 and response.headers["Location"].endswith("/lecturer"), bad
 
 
 def test_a_student_on_the_same_laptop_as_the_lecturer_is_present(student, lecturer):

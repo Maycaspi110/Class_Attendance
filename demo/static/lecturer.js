@@ -1,5 +1,10 @@
 // The lecturer page. All text from the server is shown with textContent.
 (function () {
+  // A tile on the home page can point to one card, for example /lecturer?go=photo
+  var go = (window.location.search.match(/[?&]go=(\w+)/) || [])[1];
+  var target = go && document.getElementById(go);
+  if (target) { target.scrollIntoView(); }
+
   function needLogin(result) {
     if (result.status === 401) { window.location.href = "/login?next=/lecturer"; return true; }
     return false;

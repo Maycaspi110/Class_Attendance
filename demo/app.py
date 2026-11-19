@@ -56,6 +56,7 @@ MAX_LOGIN_FAILURES = 10
 LOGIN_WINDOW_SECONDS = 300
 MAX_PHOTO_BYTES = 6 * 1024 * 1024
 MAX_TRANSCRIPT_BYTES = 1024 * 1024
+LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll")  # the cards of the lecturer page
 MAX_HOMEWORK_BYTES = 200 * 1024
 
 
@@ -205,12 +206,14 @@ def create_app(test_config=None):
                 return view(*args, **kwargs)
             if request.path.startswith("/api/"):
                 return fail("Please log in again.", 401)
-            return redirect(url_for("login", next=request.path))
+            return redirect(url_for("login", next=request.full_path.rstrip("?")))
 
         return wrapped
 
     def safe_next(target):
-        return target if target in ("/lecturer", "/screen") else "/lecturer"
+        """Only our own lecturer pages (and one part of the lecturer page) are allowed after the login."""
+        allowed = {"/lecturer", "/screen"} | {"/lecturer?go=" + part for part in LECTURER_PARTS}
+        return target if target in allowed else "/lecturer"
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
