@@ -61,7 +61,7 @@
   <label>Transcript file
     <input type="file" id="transcriptfile" accept=".txt,.vtt,.srt,text/plain,text/vtt">
   </label>
-  <label>Or a recording of the class (MP4, WebM, MP3, M4A or WAV, up to 14 MB, a few minutes)
+  <label>Or a recording of the class (MP4, WebM, MP3, M4A or WAV, up to 7 minutes)
     <input type="file" id="mediafile" accept=".mp4,.mov,.webm,.mp3,.m4a,.wav,.ogg,video/*,audio/*">
   </label>
   <label>Or paste a link to a public YouTube video
@@ -90,4 +90,4 @@
   <div id="pollresults"></div>
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='lecturer.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='audio.js') }}"></script><script src="{{ url_for('static', filename='lecturer.js') }}"></script>{% endblock %}

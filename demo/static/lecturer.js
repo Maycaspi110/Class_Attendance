@@ -201,18 +201,37 @@
     var media = $("mediafile").files[0];
     var link = $("videourl").value.trim();
     if (!file && !media && !link) { say(summaryMsg, "Choose a transcript or a recording, or paste a YouTube link first.", "bad"); return; }
-    if (!file && media && media.size > 14 * 1024 * 1024) {
-      say(summaryMsg, "The recording is too large (" + Math.round(media.size / 1048576) + " MB). The limit is 14 MB: record fewer minutes.", "bad");
-      return;
-    }
     var button = $("makesummary");
     button.disabled = true;
-    say(summaryMsg, "Writing the summary... a recording can take up to a minute to upload and read.", "");
     var form = new FormData();
-    if (file) { form.append("transcript", file, file.name); }
-    else if (media) { form.append("media", media, media.name); }
-    else { form.append("video_url", link); }
-    api("POST", "/api/summary", form, true).then(function (result) {
+    var ready;
+    if (file) {
+      form.append("transcript", file, file.name);
+      ready = Promise.resolve(true);
+    } else if (media) {
+      // A recording is big, but its sound is small: only the sound is sent.
+      say(summaryMsg, "Taking the sound out of the recording... this can take a few seconds.", "");
+      ready = extractAudio(media).then(function (audio) {
+        if (audio.blob.size > 14 * 1024 * 1024) {
+          say(summaryMsg, "The recording is too long (" + Math.round(audio.seconds / 60) + " minutes). Use a recording of up to 7 minutes.", "bad");
+          return false;
+        }
+        form.append("media", audio.blob, "sound.wav");
+        return true;
+      }, function () {
+        say(summaryMsg, "Could not read the sound of this file. Check that the recording has sound, or paste a YouTube link instead.", "bad");
+        return false;
+      });
+    } else {
+      form.append("video_url", link);
+      ready = Promise.resolve(true);
+    }
+    ready.then(function (ok) {
+      if (!ok) { button.disabled = false; return null; }
+      say(summaryMsg, "Writing the summary... this can take up to a minute.", "");
+      return api("POST", "/api/summary", form, true);
+    }).then(function (result) {
+      if (!result) { return; }
       button.disabled = false;
       if (needLogin(result)) { return; }
       if (result.data.ok) {
