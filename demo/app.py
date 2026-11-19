@@ -255,7 +255,7 @@ def create_app(test_config=None):
     @app.route("/lecturer")
     @lecturer_required
     def lecturer():
-        return render_template("lecturer.html")
+        return render_template("lecturer.html", version=(os.environ.get("RENDER_GIT_COMMIT") or "local")[:7])
 
     @app.route("/screen")
     @lecturer_required

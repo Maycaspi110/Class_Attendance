@@ -197,18 +197,14 @@
   }
 
   $("makesummary").addEventListener("click", function () {
-    var file = $("transcriptfile").files[0];
     var media = $("mediafile").files[0];
     var link = $("videourl").value.trim();
-    if (!file && !media && !link) { say(summaryMsg, "Choose a transcript or a recording, or paste a YouTube link first.", "bad"); return; }
+    if (!media && !link) { say(summaryMsg, "Choose a recording, or paste a YouTube link first.", "bad"); return; }
     var button = $("makesummary");
     button.disabled = true;
     var form = new FormData();
     var ready;
-    if (file) {
-      form.append("transcript", file, file.name);
-      ready = Promise.resolve(true);
-    } else if (media) {
+    if (media) {
       // A recording is big, but its sound is small: only the sound is sent.
       say(summaryMsg, "Taking the sound out of the recording... this can take a few seconds.", "");
       ready = extractAudio(media).then(function (audio) {
