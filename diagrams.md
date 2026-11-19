@@ -4,7 +4,7 @@
 **Team:** May Caspi and Haim Barabi
 **Related documents:** SRS, Use Cases, Software Components
 
-This document goes one level below the components. The class diagram shows the main classes of the demo, what each one holds and does, and how they are connected. The sequence diagrams show three important scenarios step by step, in time order.
+This document goes one level below the components. The class diagram shows the main classes of the demo, what each one holds and does, and how they are connected. The sequence diagrams show the important scenarios step by step, in time order.
 
 ## 1. Class diagram
 
@@ -22,6 +22,7 @@ classDiagram
   class Session {
     +Location classroomLocation
     +DateTime startTime
+    +String round
     +String status
     +start(location)
     +end()
@@ -43,10 +44,18 @@ classDiagram
     +DateTime checkInTime
     +int distanceMeters
     +String note
+    +String comment
+  }
+  class LessonEntry {
+    +Student student
+    +String status
+    +AttendanceRecord start
+    +AttendanceRecord end
   }
   class AttendanceManager {
-    +checkIn(email, code, location, accuracy) AttendanceRecord
-    +results() List~AttendanceRecord~
+    +startSession(location, accuracy, round)
+    +checkIn(email, code, location, accuracy, comment) AttendanceRecord
+    +lessonEntries() List~LessonEntry~
   }
   class Poll {
     +String question
@@ -60,7 +69,21 @@ classDiagram
     +String option
   }
   class CsvExporter {
-    +export(session) File
+    +export(entries) File
+  }
+  class GeminiCounter {
+    +count(image, type) int
+  }
+  class GeminiSummarizer {
+    +summarize(text) String
+  }
+  class HomeworkStore {
+    +save(assignment, email, text)
+    +previous(assignment, email) Submission
+    +others(assignment, email) List~Submission~
+  }
+  class GeminiReviewer {
+    +review(work, previous, others) String
   }
 
   Roster "1" o-- "*" Student
@@ -72,8 +95,11 @@ classDiagram
   AttendanceManager --> LocationChecker
   Poll "1" *-- "*" PollAnswer
   PollAnswer --> Student
-  CsvExporter --> Session
-  CsvExporter --> Roster
+  CsvExporter --> LessonEntry
+  AttendanceManager --> LessonEntry
+  LessonEntry --> AttendanceRecord
+  HomeworkStore --> Student
+  GeminiReviewer --> HomeworkStore
 ```
 
 ### What each class is for
@@ -82,18 +108,23 @@ classDiagram
 |-------|---------|----------------------|
 | Student | A student: name and email. | identify by email |
 | Roster | The course student list. Loads it from a CSV file and finds a student by email. | upload the roster, identify by email |
-| Session | One attendance session: the classroom location, the start time and whether it is open or closed. | start and end a session |
+| Session | One check-in round ("start" or "end" of the class): the classroom location, the start time and whether it is open or closed. | FR-2, FR-5, FR-18 |
+| LessonEntry | One student in the whole lesson: the start record, the end record and the combined status (Present, Late, Left early, Flagged or Absent). | FR-6, FR-18 |
 | CodeGenerator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells if an entered code is the current one, the previous one or invalid. | changing code, current and previous code |
 | LocationChecker | Calculates the distance between the phone and the classroom, and decides if the location is good, far or too inaccurate. | distance check, flag |
-| AttendanceRecord | One check-in of one student: status (Present or Flagged), time, distance and a note. | flag, one record per student |
+| AttendanceRecord | One check-in of one student in one round: status (Present or Flagged), time, distance, a note and the comment about the lesson. | flag, one record per student, FR-19 |
 | AttendanceManager | The main logic. It checks the roster, the code and the location for each check-in, and keeps one record per student. | roster, code and location checks, one record per student |
 | Poll | A quick poll: a question, answer options, and the counting of answers. | create a poll, see the results |
 | PollAnswer | One answer of one student. A student can answer once. | answer a poll once |
-| CsvExporter | Builds the spreadsheet for the lecturer. | download the CSV |
+| CsvExporter | Builds the spreadsheet for the lecturer from the lesson entries. | download the CSV |
+| GeminiCounter | Sends a photo to the AI and returns the number of people. The comparison with the check-ins is a separate function that gives ok, warning or information. | FR-20 |
+| GeminiSummarizer | Sends the cleaned transcript to the AI and returns the summary. | FR-21 |
+| HomeworkStore | Keeps the latest work of each student for each assignment (in memory, with a limit), and gives the previous work and up to 5 works of other students. | FR-22, FR-23 |
+| GeminiReviewer | Sends the work, the previous version and the other works to the AI and returns the review. | FR-22, FR-23 |
 
 Notes:
 - **Absent** is not saved. A student is Absent when they are on the roster and have no attendance record in the session.
-- Student comments and the class summary are design only and are not in the class diagram.
+- The AI classes call the Google Gemini service. In the tests they are replaced by fake classes, so no real AI is called.
 
 ## 2. Sequence diagram: a student checks in
 
@@ -177,4 +208,56 @@ sequenceDiagram
   Note over E: Present and Flagged come from the records. Absent means on the roster with no record.
   E-->>LP: CSV file
   LP-->>Lec: File is downloaded
+```
+
+## 5. Sequence diagram: the lecturer counts the people in a photo
+
+This scenario is use case UC-5.
+
+```mermaid
+sequenceDiagram
+  actor Lec as Lecturer
+  participant LP as Lecturer page
+  participant HC as Headcounter
+  participant AI as AI service (Gemini)
+
+  Lec->>LP: Chooses a photo, presses Count the people
+  LP->>LP: Makes the photo smaller
+  LP->>HC: Photo
+  HC->>HC: Checks that it is a real JPEG, PNG or WebP photo
+  HC->>AI: Photo and the question "how many people?"
+  AI-->>HC: A number
+  Note over HC: The photo is forgotten. Only the number is kept.
+  HC->>HC: Compares the number with the number of check-ins
+  HC-->>LP: Message: close, warning or information
+  LP-->>Lec: Shows the message
+```
+
+## 6. Sequence diagram: a student gets a homework review
+
+This scenario is use case UC-8.
+
+```mermaid
+sequenceDiagram
+  actor St as Student
+  participant HP as Homework page
+  participant R as Roster
+  participant HS as Homework store
+  participant RV as Reviewer
+  participant AI as AI service (Gemini)
+
+  St->>HP: Email, assignment name and the work
+  HP->>R: findByEmail(email)
+  alt Email is not on the roster
+    R-->>HP: Not found
+    HP-->>St: Error: not on the roster
+  else Email is on the roster
+    HP->>HS: Previous work of this student, and other students' works
+    HS-->>HP: Previous work and up to 5 other works
+    HP->>RV: review(work, previous, others)
+    RV->>AI: The works and the instructions
+    AI-->>RV: The review text
+    HP->>HS: Save the work as the latest version
+    HP-->>St: Only the review (never other students' works or names)
+  end
 ```
