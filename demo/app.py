@@ -28,6 +28,14 @@ from attendance.attendance_manager import AttendanceManager, CheckInError, Sessi
 from attendance.attendance_record import ABSENT, FLAGGED, LATE, LEFT_EARLY, PRESENT
 from attendance.code_generator import CodeGenerator
 from attendance.headcount import GeminiCounter, HeadcountError, compare, image_type
+from attendance.homework import (
+    GeminiReviewer,
+    HomeworkError,
+    HomeworkStore,
+    ReviewServiceError,
+    clean_name,
+    clean_work,
+)
 from attendance.summary import GeminiSummarizer, SummaryError, clean_transcript
 from attendance.csv_exporter import CsvExporter
 from attendance.location_checker import LocationChecker, valid_point
@@ -40,6 +48,7 @@ MAX_LOGIN_FAILURES = 10
 LOGIN_WINDOW_SECONDS = 300
 MAX_PHOTO_BYTES = 6 * 1024 * 1024
 MAX_TRANSCRIPT_BYTES = 1024 * 1024
+MAX_HOMEWORK_BYTES = 200 * 1024
 
 
 class DemoState:
@@ -55,6 +64,8 @@ class DemoState:
         self.headcounts = []  # the photo counts of this lesson (the photos are never kept)
         self.summarizer = None  # writes the lesson summary (None = not set up)
         self.summary = None  # the summary of this lesson, only for the lecturer
+        self.reviewer = None  # writes the homework review (None = not set up)
+        self.homework = HomeworkStore()
         self.login_failures = {}  # ip -> list of times
 
 
@@ -148,6 +159,13 @@ def create_app(test_config=None):
             os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL") or "gemini-3.5-flash-lite"
         )
 
+    if app.config.get("REVIEWER") is not None:  # tests give a fake reviewer
+        state.reviewer = app.config["REVIEWER"]
+    elif os.environ.get("GEMINI_API_KEY"):
+        state.reviewer = GeminiReviewer(
+            os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL") or "gemini-3.5-flash-lite"
+        )
+
     def now():
         return app.config["CLOCK"]()
 
@@ -219,6 +237,10 @@ def create_app(test_config=None):
     @app.route("/checkin")
     def checkin():
         return render_template("checkin.html")
+
+    @app.route("/homework")
+    def homework_page():
+        return render_template("homework.html")
 
     @app.route("/lecturer")
     @lecturer_required
@@ -570,6 +592,39 @@ def create_app(test_config=None):
         except PollError as error:
             return fail(str(error), 409 if "already" in str(error) else 400)
         return jsonify(ok=True, message="Thank you. Your answer was received.")
+
+    @app.route("/api/homework", methods=["POST"])
+    def homework_review():
+        """A student sends a work and gets an AI review. Identified by the roster email, like the check-in."""
+        request.max_content_length = MAX_HOMEWORK_BYTES + 4096
+        if state.reviewer is None:
+            return fail("The AI review is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        student = manager.roster.find_by_email(str(request.form.get("email") or "")[:254])
+        if student is None:
+            return fail("This email is not on the roster.", 403)
+        assignment = clean_name(request.form.get("assignment"))
+        if not assignment:
+            return fail("Write the name of the assignment.")
+        upload = request.files.get("work")
+        if upload is not None and upload.filename:
+            raw = upload.read(MAX_HOMEWORK_BYTES + 1)
+            if len(raw) > MAX_HOMEWORK_BYTES:
+                return fail("The file is too large (the limit is 200 KB).", 413)
+            raw_text = raw.decode("utf-8-sig", errors="replace")
+        else:
+            raw_text = str(request.form.get("text") or "")[:MAX_HOMEWORK_BYTES]
+        try:
+            text = clean_work(raw_text)
+            state.homework.check_wait(student.email, now())
+            previous = state.homework.previous(assignment, student.email)
+            others = state.homework.others(assignment, student.email)
+            review = state.reviewer.review(text, previous.text if previous else None, [w.text for w in others])
+            state.homework.save(assignment, student.email, text, now())
+        except ReviewServiceError as error:
+            return fail(str(error), 502)
+        except HomeworkError as error:
+            return fail(str(error), 429 if "wait" in str(error) else 400)
+        return jsonify(ok=True, review=review, compared_with=len(others), had_previous=previous is not None)
 
     @app.errorhandler(413)
     def too_large(_error):
