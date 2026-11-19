@@ -4,7 +4,7 @@
 **Team:** May Caspi and Haim Barabi
 **Related documents:** SoW, SRS
 
-Each use case is a short story of how a user does one thing with the system. Attendance is the main feature (UC-1 to UC-4). The poll (UC-5) is optional: the lecturer uses it only when needed. The class summary (UC-6) is design only.
+Each use case is a short story of how a user does one thing with the system. Attendance is the main feature (UC-1 to UC-4). The photo count (UC-5), the poll (UC-6), the class summary (UC-7) and the homework review (UC-8) are extra features. All of them are implemented in the demo.
 
 ## UC-1: Lecturer uploads the course roster
 
@@ -34,7 +34,8 @@ Each use case is a short story of how a user does one thing with the system. Att
   2. The system takes the phone location and saves it as the classroom location.
   3. The system opens the session and shows a page for the classroom screen with a 4-digit code and a QR code.
   4. The code changes every 10-30 seconds.
-  5. When the class is over, the lecturer presses "End". The system stops accepting check-ins.
+  5. The lecturer presses "End". The system stops accepting check-ins.
+  6. At the end of the class the lecturer presses "Start end-of-class check-in", and the students check in again. This is a second round of the same lesson.
 - **Other cases:**
   - The location is blocked or too inaccurate: the system tells the lecturer and asks to try again.
 - **After:** The session is open (or closed) and the results are available.
@@ -52,13 +53,13 @@ Each use case is a short story of how a user does one thing with the system. Att
   3. The student allows location when the phone asks.
   4. The student presses "I am here".
   5. The system checks three things: the email is on the roster, the code is the current or the previous one, and the phone is within about 150 m of the classroom.
-  6. The system records the student as Present and shows a confirmation.
+  6. The system records the student for this round and shows a confirmation. In the end-of-class round the student can also write a short comment about the lesson (up to 300 characters).
 - **Other cases:**
   - The email is not on the roster: the system shows an error.
   - The code is wrong or expired: the system shows an error and the student can try again with the new code.
   - The code is valid but the location is far, missing or too inaccurate: the system records the student as Flagged and tells the student that the lecturer will review it. The student is not rejected.
   - The student already checked in: the system says so and does not create a second record.
-- **After:** The student has one record in the session: Present or Flagged.
+- **After:** The student has one record per round (start and end): Present or Flagged. Together they give the lesson status: Present (both rounds), Late (only the end round), Left early (only the start round) or Absent.
 - **Related requirements:** check in from the phone: roster, code, location, flag, messages, one record per student
 
 ## UC-4: Lecturer reviews the results and downloads the spreadsheet
@@ -69,30 +70,67 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Before:** A session was started.
 - **Main flow:**
   1. The lecturer opens the results page.
-  2. The system shows the students in three groups: Present, Flagged and Absent.
+  2. The system shows the students in groups: Present, Late, Left early, Flagged and Absent, and the comments about the lesson.
   3. The lecturer looks at the Flagged students (for example a valid code but a far location) and decides what to do with them.
   4. The lecturer downloads the CSV file.
 - **Other cases:**
   - Nobody checked in: all students appear as Absent.
-- **After:** The lecturer has a CSV file with the columns Email, Name, Status, Check-in time, Distance from classroom (m) and Note.
+- **After:** The lecturer has a CSV file with the columns Email, Name, Status, Start check-in, End check-in, Distance from classroom (m), Note and Comment.
 - **Related requirements:** see the results, download the CSV
 
-## UC-5: Lecturer runs a poll (optional)
+## UC-5: Lecturer checks the number of people with a photo
 
-**Story:** As a lecturer, I want to ask a quick question during the lesson, so that I can see if the students understood.
+**Story:** As a lecturer, I want to photograph the classroom and compare the number of people with the check-ins, so that I can notice check-ins from students who are not in the room.
+
+- **Actor:** Lecturer
+- **Before:** A check-in is open.
+- **Main flow:**
+  1. The lecturer takes or chooses a photo of the classroom and presses "Count the people".
+  2. The system sends the photo to an AI, which returns the number of people. The photo is not saved.
+  3. The system compares the number with the check-ins and shows a message: the numbers are close, or there are many more check-ins than people (a warning), or more people than check-ins.
+- **Other cases:**
+  - The file is not a real photo, or it is too big: the system shows an error.
+  - The AI service is not available or its limit was reached: the system shows a clear message.
+- **After:** The lecturer sees the count. It is a rough number and only a warning: nobody is marked because of it.
+- **Related requirements:** FR-20
+
+## UC-6: Lecturer runs a poll (optional)
+
+**Story:** As a lecturer, I want to ask a quick question during the lesson or at its end, so that I can see if the students understood.
 
 - **Actor:** Lecturer, Student
 - **Main flow:**
-  1. The lecturer writes a question with answer options and opens the poll.
+  1. The lecturer writes a question with answer options (or uses the ready question "Did you understand the lesson?") and opens the poll.
   2. Each student sees the poll on their phone and answers once.
   3. The lecturer sees the results as they come in.
-- **Related requirements:** create a poll, see the results, answer once
+- **Related requirements:** FR-8, FR-9, FR-17
 
-## UC-6: Class summary from student summaries (design only)
+## UC-7: Lecturer gets a summary of the class
 
-**Story:** As a student, I want one reliable summary of the lesson, so that I do not depend on my own notes only.
+**Story:** As a lecturer, I want a short summary of my class from the transcript, so that I can see what was covered.
+
+- **Actor:** Lecturer
+- **Main flow:**
+  1. The lecturer uploads the transcript file of the online class (.txt, .vtt or .srt from Zoom or Meet).
+  2. The system removes the times and numbers and sends the text to an AI.
+  3. The system shows the summary: main topics, key points, students' questions and tasks. Only the lecturer can see it.
+- **Other cases:** the file is empty or too big, or the AI is not available: the system shows an error.
+- **After:** The transcript is not saved. The summary stays in memory until the next lesson starts.
+- **Related requirements:** FR-21
+
+## UC-8: Student gets a deep review of homework
+
+**Story:** As a student, I want a detailed review of my homework and to see how it compares with others, so that I can improve it before I submit it.
 
 - **Actor:** Student
-- **Idea:** After a lesson, students upload their own summaries. An AI agent compares all the summaries and creates one combined summary as a PDF. It keeps what the summaries agree on and marks the points where they differ.
-- **Status:** Design only. It is not built in the demo.
-- **Things to watch:** the AI can make mistakes, so the result must be shown as a draft; and students' notes are their own work, so uploading should be voluntary.
+- **Before:** The student is on the roster.
+- **Main flow:**
+  1. The student opens the homework page and types their email and the name of the assignment.
+  2. The student uploads a text or code file, or pastes the text.
+  3. The system sends the work to an AI, together with the student's previous version and some works of other students for the same assignment.
+  4. The student gets a review: summary, strengths, problems and suggestions, and a comparison with the previous version and with the other works.
+- **Other cases:**
+  - The email is not on the roster, or the work is empty or not a text file: the system shows an error.
+  - The student asks again too fast: the system asks to wait a few seconds.
+- **After:** The latest work is saved in memory for later comparisons. The student never sees another student's work or name.
+- **Related requirements:** FR-22, FR-23
