@@ -5,6 +5,7 @@ forgotten: only the short summary is kept, in memory, until the next lesson star
 """
 import base64
 import json
+import logging
 import re
 import urllib.error
 from urllib.parse import parse_qs, urlparse
@@ -104,12 +105,12 @@ def youtube_link(text):
 class GeminiSummarizer:
     """Summarizes a transcript with the Google Gemini API (it has a free tier)."""
 
-    def __init__(self, api_key, model="gemini-3.5-flash-lite", http_post=None, timeout=25, media_timeout=28):
+    def __init__(self, api_key, model="gemini-3.5-flash-lite", http_post=None, timeout=90, media_timeout=120):
         self.api_key = api_key
         self.model = model
         self._post = http_post or _default_post
         self.timeout = timeout
-        self.media_timeout = media_timeout  # a video takes longer, but the server stops a request after 30 seconds
+        self.media_timeout = media_timeout  # a recording takes longer than text
 
     def summarize(self, text):
         return self._ask([{"text": PROMPT + text[:MAX_TRANSCRIPT_CHARS]}])
@@ -143,8 +144,14 @@ class GeminiSummarizer:
             if media_error and error.code in (400, 403, 404):
                 raise SummaryError(media_error) from None
             raise SummaryError(_http_message(error.code).replace("counting", "summary")) from None
-        except (urllib.error.URLError, TimeoutError, OSError):
-            raise SummaryError("The summary service did not answer. Try again in a minute.") from None
+        except (urllib.error.URLError, TimeoutError, OSError) as error:
+            reason = getattr(error, "reason", error)
+            logging.getLogger(__name__).warning("The AI call failed: %s", type(reason).__name__)
+            if isinstance(reason, TimeoutError) or "timed out" in str(reason):
+                raise SummaryError("The AI took too long to answer. Try a shorter recording.") from None
+            raise SummaryError(
+                "The summary service did not answer (%s). Try again in a minute." % type(reason).__name__
+            ) from None
         return _parse_summary(raw)
 
 

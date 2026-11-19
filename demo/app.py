@@ -8,6 +8,7 @@ import math
 import os
 import secrets
 import socket
+import threading
 import time
 from datetime import datetime
 from functools import wraps
@@ -71,6 +72,8 @@ class DemoState:
         self.headcounts = []  # the photo counts of this lesson (the photos are never kept)
         self.summarizer = None  # writes the lesson summary (None = not set up)
         self.summary = None  # the summary of this lesson, only for the lecturer
+        self.summary_working = False  # the AI is writing a summary right now
+        self.summary_error = None  # why the last summary failed
         self.reviewer = None  # writes the homework review (None = not set up)
         self.homework = HomeworkStore()
         self.login_failures = {}  # ip -> list of times
@@ -421,7 +424,13 @@ def create_app(test_config=None):
     @app.route("/api/summary", methods=["GET"])
     @lecturer_required
     def summary_get():
-        return jsonify(ok=True, summary=state.summary, ready=state.summarizer is not None)
+        return jsonify(
+            ok=True,
+            summary=state.summary,
+            ready=state.summarizer is not None,
+            working=state.summary_working,
+            error=state.summary_error,
+        )
 
     @app.route("/api/summary", methods=["POST"])
     @lecturer_required
@@ -458,14 +467,33 @@ def create_app(test_config=None):
             work = lambda: state.summarizer.summarize_video(video)  # noqa: E731
         else:
             return fail("Choose a transcript or a recording, or paste a YouTube link.")
-        try:
-            summary = work()
-        except SummaryError as error:
-            return fail(str(error), 502)
-        state.summary = {
-            "text": summary,
-            "time": datetime.fromtimestamp(now(), manager.tz).strftime("%H:%M"),
-        }
+        if state.summary_working:
+            return fail("A summary is already being written. Wait for it to finish.", 409)
+
+        def run():
+            """Ask the AI. A recording can take longer than the server allows for one request."""
+            try:
+                text_result = work()
+            except SummaryError as error:
+                state.summary_error = str(error)
+            except Exception:  # never leave the page waiting forever
+                app.logger.exception("The summary failed")
+                state.summary_error = "Something went wrong while writing the summary. Try again."
+            else:
+                state.summary = {
+                    "text": text_result,
+                    "time": datetime.fromtimestamp(now(), manager.tz).strftime("%H:%M"),
+                }
+            finally:
+                state.summary_working = False
+
+        state.summary_working, state.summary_error = True, None
+        if app.config.get("SUMMARY_IN_BACKGROUND", not app.testing):
+            threading.Thread(target=run, daemon=True).start()
+            return jsonify(ok=True, working=True), 202
+        run()  # in the tests the answer is ready at once
+        if state.summary_error:
+            return fail(state.summary_error, 502)
         return jsonify(ok=True, summary=state.summary)
 
     @app.route("/api/session/csv")

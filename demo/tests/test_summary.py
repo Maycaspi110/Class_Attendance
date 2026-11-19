@@ -314,7 +314,7 @@ def test_the_recording_is_sent_inside_the_request_with_a_longer_wait():
     assert summarizer.summarize_media(MP4, "video/mp4") == "A recording summary"
     part = seen["parts"][0]["inline_data"]
     assert part["mime_type"] == "video/mp4" and base64.b64decode(part["data"]) == MP4
-    assert seen["timeout"] == 28 and seen["timeout"] < 30  # the server stops a request after 30 seconds
+    assert seen["timeout"] == 120  # a recording takes longer than text (it runs in the background)
 
 
 def test_a_recording_the_ai_cannot_read_gives_a_clear_message_without_the_key():
@@ -384,3 +384,105 @@ def test_an_empty_request_asks_for_a_source(clock):
     _student, lecturer = make_clients(FakeMediaSummarizer(), clock)
     response = lecturer.post("/api/summary", data={}, content_type="multipart/form-data")
     assert response.status_code == 400 and "recording" in response.get_json()["error"]
+
+
+# ---- the AI works in the background, so a slow answer never stops the web request ----
+
+import threading  # noqa: E402
+import time  # noqa: E402
+
+
+def make_background_clients(summarizer, clock):
+    app = create_app(
+        {
+            "TESTING": True,
+            "LECTURER_PASSWORD": PASSWORD,
+            "CODE_SECRET": "test-secret",
+            "CODE_PERIOD_SECONDS": PERIOD,
+            "CLOCK": clock,
+            "TIMEZONE": "UTC",
+            "SUMMARIZER": summarizer,
+            "SUMMARY_IN_BACKGROUND": True,
+        }
+    )
+    lecturer = app.test_client()
+    assert lecturer.post("/login", data={"password": PASSWORD}).status_code == 302
+    return lecturer
+
+
+def wait_until_done(lecturer):
+    for _ in range(100):
+        data = lecturer.get("/api/summary").get_json()
+        if not data["working"]:
+            return data
+        time.sleep(0.02)
+    raise AssertionError("the summary never finished")
+
+
+class SlowSummarizer(FakeSummarizer):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.go = threading.Event()
+
+    def summarize(self, transcript):
+        self.go.wait(5)
+        return super().summarize(transcript)
+
+
+def test_a_slow_ai_answers_at_once_and_the_page_asks_again(clock):
+    summarizer = SlowSummarizer(text="Slow summary")
+    lecturer = make_background_clients(summarizer, clock)
+    response = send(lecturer)
+    assert response.status_code == 202 and response.get_json()["working"] is True
+    assert lecturer.get("/api/summary").get_json()["working"] is True
+    summarizer.go.set()
+    data = wait_until_done(lecturer)
+    assert data["summary"]["text"] == "Slow summary" and data["error"] is None
+
+
+def test_a_second_summary_cannot_start_while_one_is_working(clock):
+    summarizer = SlowSummarizer()
+    lecturer = make_background_clients(summarizer, clock)
+    assert send(lecturer).status_code == 202
+    assert send(lecturer).status_code == 409
+    summarizer.go.set()
+    wait_until_done(lecturer)
+
+
+def test_a_failure_in_the_background_is_shown_to_the_lecturer(clock):
+    summarizer = SlowSummarizer(error="The free AI limit was reached for now.")
+    lecturer = make_background_clients(summarizer, clock)
+    assert send(lecturer).status_code == 202
+    summarizer.go.set()
+    data = wait_until_done(lecturer)
+    assert "limit" in data["error"] and data["summary"] is None
+
+
+def test_an_unexpected_crash_in_the_background_does_not_leave_the_page_waiting(clock):
+    class Crashing(FakeSummarizer):
+        def summarize(self, transcript):
+            raise RuntimeError("boom")
+
+    lecturer = make_background_clients(Crashing(), clock)
+    assert send(lecturer).status_code == 202
+    data = wait_until_done(lecturer)
+    assert data["working"] is False and "Something went wrong" in data["error"]
+    assert "boom" not in data["error"]  # no technical details for the lecturer
+
+
+def test_a_network_timeout_has_a_clear_message_and_nothing_secret():
+    def post(*args):
+        raise TimeoutError("timed out, key=test-key")
+
+    with pytest.raises(SummaryError) as error:
+        GeminiSummarizer("test-key", http_post=post).summarize("some text")
+    assert "too long" in str(error.value) and "test-key" not in str(error.value)
+
+
+def test_other_network_errors_name_only_the_kind_of_error():
+    def post(*args):
+        raise urllib.error.URLError(ConnectionResetError("reset, key=test-key"))
+
+    with pytest.raises(SummaryError) as error:
+        GeminiSummarizer("test-key", http_post=post).summarize("some text")
+    assert "ConnectionResetError" in str(error.value) and "test-key" not in str(error.value)
