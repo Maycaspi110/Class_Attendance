@@ -198,12 +198,13 @@
 
   $("makesummary").addEventListener("click", function () {
     var file = $("transcriptfile").files[0];
-    if (!file) { say(summaryMsg, "Choose the transcript file first.", "bad"); return; }
+    var link = $("videourl").value.trim();
+    if (!file && !link) { say(summaryMsg, "Choose the transcript file or paste a YouTube link first.", "bad"); return; }
     var button = $("makesummary");
     button.disabled = true;
     say(summaryMsg, "Writing the summary... this can take up to a minute.", "");
     var form = new FormData();
-    form.append("transcript", file, file.name);
+    if (file) { form.append("transcript", file, file.name); } else { form.append("video_url", link); }
     api("POST", "/api/summary", form, true).then(function (result) {
       button.disabled = false;
       if (needLogin(result)) { return; }
