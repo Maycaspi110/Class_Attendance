@@ -36,7 +36,14 @@ from attendance.homework import (
     clean_name,
     clean_work,
 )
-from attendance.summary import GeminiSummarizer, SummaryError, clean_transcript, youtube_link
+from attendance.summary import (
+    MAX_MEDIA_BYTES,
+    GeminiSummarizer,
+    SummaryError,
+    clean_transcript,
+    media_type,
+    youtube_link,
+)
 from attendance.csv_exporter import CsvExporter
 from attendance.location_checker import LocationChecker, valid_point
 from attendance.poll import Poll, PollError
@@ -420,27 +427,39 @@ def create_app(test_config=None):
     @lecturer_required
     def summary_create():
         """Summarize the transcript of the class. Only the lecturer can do this and see the result."""
-        request.max_content_length = MAX_TRANSCRIPT_BYTES
+        request.max_content_length = MAX_MEDIA_BYTES + 1024 * 1024  # room for a recording
         if state.summarizer is None:
             return fail("The AI summary is not set up. Add GEMINI_API_KEY in the server settings.", 503)
         link = str(request.form.get("video_url") or "").strip()[:300]
-        upload = request.files.get("transcript")
-        if link and (upload is None or not upload.filename):
-            video = youtube_link(link)
-            if video is None:
-                return fail("Paste a link to a public YouTube video.")
-            text = None
-        else:
-            if upload is None:
-                return fail("Choose a transcript file or paste a YouTube link.")
-            raw = upload.read(MAX_TRANSCRIPT_BYTES + 1)
+        transcript = request.files.get("transcript")
+        media = request.files.get("media")
+        has_transcript = transcript is not None and bool(transcript.filename)
+        has_media = media is not None and bool(media.filename)
+        if has_transcript:
+            raw = transcript.read(MAX_TRANSCRIPT_BYTES + 1)
             if len(raw) > MAX_TRANSCRIPT_BYTES:
                 return fail("The transcript file is too large.", 413)
             text = clean_transcript(raw.decode("utf-8-sig", errors="replace"))
             if len(text) < 20:
                 return fail("The transcript is empty or too short to summarize.")
+            work = lambda: state.summarizer.summarize(text)  # noqa: E731
+        elif has_media:
+            data = media.read(MAX_MEDIA_BYTES + 1)
+            if len(data) > MAX_MEDIA_BYTES:
+                return fail("The recording is too large. The limit is 14 MB: record fewer minutes.", 413)
+            mime_type = media_type(data)
+            if mime_type is None:
+                return fail("The file must be an MP4, WebM, MP3, M4A or WAV recording.")
+            work = lambda: state.summarizer.summarize_media(data, mime_type)  # noqa: E731
+        elif link:
+            video = youtube_link(link)
+            if video is None:
+                return fail("Paste a link to a public YouTube video.")
+            work = lambda: state.summarizer.summarize_video(video)  # noqa: E731
+        else:
+            return fail("Choose a transcript or a recording, or paste a YouTube link.")
         try:
-            summary = state.summarizer.summarize(text) if text is not None else state.summarizer.summarize_video(video)
+            summary = work()
         except SummaryError as error:
             return fail(str(error), 502)
         state.summary = {

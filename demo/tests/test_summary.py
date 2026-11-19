@@ -1,4 +1,5 @@
 """The lesson summary from a transcript, with a fake AI (no real AI is called)."""
+import base64
 import io
 import json
 import urllib.error
@@ -271,3 +272,115 @@ def test_a_file_wins_over_a_link(clock):
         content_type="multipart/form-data",
     )
     assert response.get_json()["ok"] and "Dana" in summarizer.seen  # the transcript was used
+
+
+# ---- an uploaded recording (video or audio) ----
+
+from attendance.summary import MAX_MEDIA_BYTES, media_type  # noqa: E402
+
+MP4 = b"\x00\x00\x00\x18ftypmp42" + b"0" * 40
+
+
+@pytest.mark.parametrize(
+    "data, kind",
+    [
+        (MP4, "video/mp4"),
+        (b"\x00\x00\x00\x14ftypqt  " + b"0" * 20, "video/quicktime"),
+        (b"\x00\x00\x00\x14ftypM4A " + b"0" * 20, "audio/mp4"),
+        (b"\x1a\x45\xdf\xa3" + b"0" * 20, "video/webm"),
+        (b"ID3" + b"0" * 20, "audio/mp3"),
+        (b"\xff\xfb\x90\x00" + b"0" * 20, "audio/mp3"),
+        (b"RIFF1234WAVEfmt ", "audio/wav"),
+        (b"OggS" + b"0" * 20, "audio/ogg"),
+    ],
+)
+def test_the_recording_type_is_read_from_the_bytes(data, kind):
+    assert media_type(data) == kind
+
+
+@pytest.mark.parametrize("data", [b"", b"<html>not a video</html>", b"MZ\x90\x00 an exe file", b"%PDF-1.4"])
+def test_other_files_are_not_recordings(data):
+    assert media_type(data) is None
+
+
+def test_the_recording_is_sent_inside_the_request_with_a_longer_wait():
+    seen = {}
+
+    def post(url, headers, body, timeout):
+        seen.update(timeout=timeout, parts=json.loads(body)["contents"][0]["parts"], headers=headers)
+        return answer("A recording summary")
+
+    summarizer = GeminiSummarizer("test-key", "test-model", http_post=post)
+    assert summarizer.summarize_media(MP4, "video/mp4") == "A recording summary"
+    part = seen["parts"][0]["inline_data"]
+    assert part["mime_type"] == "video/mp4" and base64.b64decode(part["data"]) == MP4
+    assert seen["timeout"] == 28 and seen["timeout"] < 30  # the server stops a request after 30 seconds
+
+
+def test_a_recording_the_ai_cannot_read_gives_a_clear_message_without_the_key():
+    def post(*args):
+        raise urllib.error.HTTPError("https://example/?key=test-key", 400, "x", {}, None)
+
+    with pytest.raises(SummaryError) as error:
+        GeminiSummarizer("test-key", http_post=post).summarize_media(MP4, "video/mp4")
+    assert "MP4" in str(error.value) and "YouTube" not in str(error.value) and "test-key" not in str(error.value)
+
+
+class FakeMediaSummarizer(FakeSummarizer):
+    def summarize_media(self, data, mime_type):
+        self.seen = (data, mime_type)
+        if self.error:
+            raise SummaryError(self.error)
+        return self.text
+
+
+def send_media(client, data=MP4, name="class.mp4"):
+    return client.post(
+        "/api/summary", data={"media": (io.BytesIO(data), name)}, content_type="multipart/form-data"
+    )
+
+
+def test_the_lecturer_gets_a_summary_from_an_uploaded_recording(clock):
+    summarizer = FakeMediaSummarizer(text="Recording summary")
+    _student, lecturer = make_clients(summarizer, clock)
+    data = send_media(lecturer).get_json()
+    assert data["ok"] and data["summary"]["text"] == "Recording summary"
+    assert summarizer.seen == (MP4, "video/mp4")
+
+
+def test_a_file_that_is_not_a_recording_is_refused_and_the_ai_is_not_called(clock):
+    summarizer = FakeMediaSummarizer()
+    _student, lecturer = make_clients(summarizer, clock)
+    response = send_media(lecturer, data=b"<html>hello</html>", name="class.mp4")  # a wrong name does not help
+    assert response.status_code == 400 and "MP4" in response.get_json()["error"]
+    assert summarizer.seen is None
+
+
+def test_a_recording_over_the_limit_is_refused(clock):
+    summarizer = FakeMediaSummarizer()
+    _student, lecturer = make_clients(summarizer, clock)
+    response = send_media(lecturer, data=MP4 + b"0" * MAX_MEDIA_BYTES)
+    assert response.status_code == 413 and "14 MB" in response.get_json()["error"]
+    assert summarizer.seen is None
+
+
+def test_students_cannot_send_a_recording(clock):
+    student, _lecturer = make_clients(FakeMediaSummarizer(), clock)
+    assert send_media(student).status_code == 401
+
+
+def test_the_transcript_still_wins_over_a_recording(clock):
+    summarizer = FakeMediaSummarizer()
+    _student, lecturer = make_clients(summarizer, clock)
+    response = lecturer.post(
+        "/api/summary",
+        data={"media": (io.BytesIO(MP4), "class.mp4"), "transcript": (io.BytesIO(VTT.encode()), "class.vtt")},
+        content_type="multipart/form-data",
+    )
+    assert response.get_json()["ok"] and "Dana" in summarizer.seen  # the transcript was used
+
+
+def test_an_empty_request_asks_for_a_source(clock):
+    _student, lecturer = make_clients(FakeMediaSummarizer(), clock)
+    response = lecturer.post("/api/summary", data={}, content_type="multipart/form-data")
+    assert response.status_code == 400 and "recording" in response.get_json()["error"]

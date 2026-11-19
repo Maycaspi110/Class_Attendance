@@ -3,6 +3,7 @@
 Only the lecturer sees the summary. The transcript is sent for summarizing and then
 forgotten: only the short summary is kept, in memory, until the next lesson starts.
 """
+import base64
 import json
 import re
 import urllib.error
@@ -60,6 +61,27 @@ def clean_transcript(raw):
     return "\n".join(lines)
 
 
+MAX_MEDIA_BYTES = 14 * 1024 * 1024  # inside the request it grows by a third, and the limit there is 20 MB
+
+
+def media_type(data):
+    """The type of a recording from the first bytes of the file (not from its name), or None."""
+    if data[4:8] == b"ftyp":
+        brand = data[8:12]
+        if brand == b"qt  ":
+            return "video/quicktime"
+        return "audio/mp4" if brand in (b"M4A ", b"M4B ") else "video/mp4"
+    if data[:4] == b"\x1a\x45\xdf\xa3":
+        return "video/webm"
+    if data[:3] == b"ID3" or data[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2"):
+        return "audio/mp3"
+    if data[:4] == b"RIFF" and data[8:12] == b"WAVE":
+        return "audio/wav"
+    if data[:4] == b"OggS":
+        return "audio/ogg"
+    return None
+
+
 def youtube_link(text):
     """The standard address of a public YouTube video from a pasted link, or None. Only YouTube is accepted."""
     try:
@@ -82,30 +104,44 @@ def youtube_link(text):
 class GeminiSummarizer:
     """Summarizes a transcript with the Google Gemini API (it has a free tier)."""
 
-    def __init__(self, api_key, model="gemini-3.5-flash-lite", http_post=None, timeout=25):
+    def __init__(self, api_key, model="gemini-3.5-flash-lite", http_post=None, timeout=25, media_timeout=28):
         self.api_key = api_key
         self.model = model
         self._post = http_post or _default_post
         self.timeout = timeout
+        self.media_timeout = media_timeout  # a video takes longer, but the server stops a request after 30 seconds
 
     def summarize(self, text):
         return self._ask([{"text": PROMPT + text[:MAX_TRANSCRIPT_CHARS]}])
 
     def summarize_video(self, video_url):
         """Summarize a public YouTube video: Gemini watches it from the address."""
-        return self._ask([{"file_data": {"file_uri": video_url}}, {"text": VIDEO_PROMPT}], video=True)
+        return self._ask(
+            [{"file_data": {"file_uri": video_url}}, {"text": VIDEO_PROMPT}],
+            "The AI could not open this video. It must be a public YouTube video, "
+            "and not too long. Check the link, the GEMINI_API_KEY and the model name.",
+        )
 
-    def _ask(self, parts, video=False):
+    def summarize_media(self, data, mime_type):
+        """Summarize a recording (video or audio) that was uploaded: it is sent to Gemini inside the request."""
+        return self._ask(
+            [
+                {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(data).decode("ascii")}},
+                {"text": VIDEO_PROMPT},
+            ],
+            "The AI could not read this recording. Use an MP4, WebM, MP3, M4A or WAV file "
+            "of a few minutes. Check the GEMINI_API_KEY and the model name.",
+            timeout=self.media_timeout,
+        )
+
+    def _ask(self, parts, media_error=None, timeout=None):
         body = json.dumps({"contents": [{"parts": parts}], "generationConfig": {"temperature": 0.2}}).encode("utf-8")
         headers = {"Content-Type": "application/json", "x-goog-api-key": self.api_key}
         try:
-            _status, raw = self._post(GeminiCounter.URL % self.model, headers, body, self.timeout)
+            _status, raw = self._post(GeminiCounter.URL % self.model, headers, body, timeout or self.timeout)
         except urllib.error.HTTPError as error:
-            if video and error.code in (400, 403, 404):
-                raise SummaryError(
-                    "The AI could not open this video. It must be a public YouTube video, "
-                    "and not too long. Check the link, the GEMINI_API_KEY and the model name."
-                ) from None
+            if media_error and error.code in (400, 403, 404):
+                raise SummaryError(media_error) from None
             raise SummaryError(_http_message(error.code).replace("counting", "summary")) from None
         except (urllib.error.URLError, TimeoutError, OSError):
             raise SummaryError("The summary service did not answer. Try again in a minute.") from None
