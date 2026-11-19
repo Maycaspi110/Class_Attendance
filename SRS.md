@@ -48,7 +48,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | FR-18 | The lecturer shall be able to open a second check-in at the end of the class. Students who checked in only at the start are shown as Left early, and students who checked in only at the end are shown as Late. |
 | FR-19 | The student shall be able to write a short comment (up to 300 characters) in the end check-in. The lecturer sees the comments and they are in the CSV. |
 | FR-20 | The lecturer shall be able to upload a photo of the classroom. The system counts the people with an AI and compares the number with the check-ins. The result is a warning only, and the photo is not saved. |
-| FR-21 | The lecturer shall be able to upload the transcript of the class (.txt, .vtt or .srt) and get an AI summary. Only the lecturer can see the summary. |
+| FR-21 | The lecturer shall be able to upload a recording of the class (MP4, WebM, MP3, M4A or WAV, up to about 7 minutes) or paste a link to a public YouTube video, and get an AI summary. The sound is taken out of the recording in the browser. Only the lecturer can see the summary. |
 | FR-22 | The student shall be able to send a homework (a text or code file) with the roster email and get an AI review. |
 | FR-23 | The homework review shall compare the work with the student's previous version and with other students' works. The student shall never see another student's work or name. |
 
@@ -63,7 +63,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | NFR-5 | **Reliable in class:** it works over the classroom network, and the previous code is still accepted for a short time after the code changes. |
 | NFR-6 | **Honest limits:** the system does not claim to be fully cheat-proof, and its known limitations are documented. |
 | NFR-7 | **AI service:** the AI key is kept only in the server settings, never in the code or the browser. AI errors are shown to the user as clear messages. |
-| NFR-8 | **AI privacy:** photos, transcripts and works are sent to the AI service only to get a result, and are not stored. Only the result is kept in memory. |
+| NFR-8 | **AI privacy:** photos, the sound of recordings and works are sent to the AI service only to get a result, and are not stored. Only the result is kept in memory. |
 
 ## 5. Constraints and assumptions
 

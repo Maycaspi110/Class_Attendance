@@ -41,7 +41,7 @@ No method is 100% cheat-proof, and known limitations will be documented in the d
   - Student comments at the end check-in
   - Photo headcount (AI) as a second check
   - Lecturer polls
-  - Lecturer-only AI summary of a class transcript (Zoom or Meet)
+  - Lecturer-only AI summary of a class recording (a screen or Zoom recording, or a public YouTube link)
   - Homework page: a student sends a work and gets an AI review, compared with their previous version and with other students' works
 - **AI:** Google Gemini (free tier), used from the server. The key is kept only in the server settings.
 - **Not included:** integration with Moodle, Zoom, or personal information systems

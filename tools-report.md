@@ -15,7 +15,7 @@ Technical tools considered for the attendance system and the other teaching feat
 | Output | CSV spreadsheet for the lecturer | Open in Excel, including Hebrew text | Works | **Chosen:** CSV file |
 | Hosting | Render (free web service) | The demo opened on a laptop and on phones over the internet | Works. The free server sleeps after about 15 minutes and wakes up in about a minute | **Chosen** for the demo (the university Wi-Fi blocks phone-to-laptop traffic) |
 | AI | Google Gemini API (free tier) | Photo count: a classroom photo uploaded from the lecturer page | Returned 48 people for the photo, and the page compared it with the check-ins | **Chosen** for the photo count, the class summary and the homework review |
-| AI | Class summary from a transcript | Sample transcript of about 5 minutes (tests/sample-transcript.vtt) | **Real test pending** | Built, to be confirmed |
+| AI | Class summary from a recording | A screen recording of about 2 minutes (141 MB), uploaded from the lecturer page | The browser took out the sound (3.7 MB) and Gemini returned a summary | **Chosen** |
 | AI | Homework review | Two sample works for the same assignment | **Real test pending** | Built, to be confirmed |
 
 ## Details
@@ -75,7 +75,7 @@ The AI features use the Gemini API of Google, on the free tier, because there is
 
 **Photo count test:** the lecturer page sent a classroom photo and Gemini returned 48 people, which the page compared with 1 check-in. The count is rough, so it is only a warning for the lecturer.
 
-**Limits and risks:** the free tier has request limits per minute and per day, and an answer can take several seconds. The photo, the transcript and the works are sent to Google, so the demo uses sample data and not real students' work. The terms of the free tier were not checked in detail. The class summary and the homework review were built and tested with a fake AI in the automated tests, and the real test is pending.
+**Limits and risks:** the free tier has request limits per minute and per day, and an answer can take several seconds. The photo, the sound of recordings and the works are sent to Google, so the demo uses sample data and not real students' work. The terms of the free tier were not checked in detail. The homework review was tried with a real student email and works. The first version of the class summary sent the whole video and was refused as too big, and a slow answer stopped the request: so the sound is taken out in the browser, and the AI works in the background.
 
 ## Other features
 - **Student comments:** implemented, a text box in the end-of-class check-in

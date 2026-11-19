@@ -39,7 +39,7 @@ Attendance:
 
 Lecturer polls: a quick poll about the current material, answered from students' phones
 
-Class summary: the lecturer uploads the transcript of the online class, and an AI writes a summary that only the lecturer sees
+Class summary: the lecturer uploads a short recording of the class (or pastes a public YouTube link), and an AI writes a summary that only the lecturer sees. The sound is taken out of the recording in the browser, so only the sound is sent
 
 Homework review: a student (identified by email) sends a work and gets an AI review, compared with their previous version and with other students' works (anonymous)
 
@@ -78,8 +78,8 @@ Each team member prepares their own version of each deliverable. Then we compare
 - **GPS accuracy indoors varies.** Mitigation: a wide radius (about 150 m) and a flag for the lecturer.
 - **A code can be photographed and shared.** Mitigation: the code changes quickly, the location check, and the flag for the lecturer.
 - **Classroom internet may be weak.** Mitigation: test the demo in the classroom before the presentation.
-- **The free AI has limits and can be slow.** Mitigation: short waits between requests, clear error messages, and a short transcript for the demo.
-- **Privacy:** photos, transcripts and works are sent to Google. Mitigation: nothing is saved except the short results in memory, and the demo uses sample data.
+- **The free AI has limits and can be slow.** Mitigation: short waits between requests, clear error messages, and a short recording (2-5 minutes) for the demo.
+- **Privacy:** photos, the sound of recordings and works are sent to Google. Mitigation: nothing is saved except the short results in memory, and the demo uses sample data.
 - **Email is the only identity** for the homework page, so a student could send a work in another student's name. Known limitation of the demo.
 - **The free server sleeps**, and the data in memory is lost. Mitigation: open the site a few minutes before the demo and upload the roster again.
 - **Time is limited.** Mitigation: keep each feature simple (KISS).

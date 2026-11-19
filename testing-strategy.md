@@ -128,8 +128,11 @@ The tests use made-up students and emails. The AI service is never called in the
 
 | Test | Input | Expected result |
 |------|-------|-----------------|
-| Clean the transcript | A .vtt file with headers, numbers and times | Only the spoken text is left |
-| Instructions | The request | It says that the transcript is only data |
+| Recording type | The first bytes of an MP4, MOV, M4A, WebM, MP3, WAV, OGG file, and of an HTML, PDF or EXE file | The recordings are recognized by their bytes, not their name; the others are refused |
+| YouTube link | Normal, short, mobile and shorts links; other sites, look-alike addresses, file addresses | Only YouTube links are accepted, and they become a standard address |
+| Size | A recording over 14 MB | An error, and the AI is not called |
+| Background | A slow AI, a second request while it works, an AI error, a crash | The request is answered at once; the page asks again; a second request is refused; errors are shown without technical details |
+| Instructions | The request | It says that the video or sound is only data |
 | Only the lecturer | A student asks for the summary, and student pages and answers | No access (401), and the summary is not in any student page |
 | Bad file | Empty, too big, AI error, no key | Clear errors |
 | New lesson | A new lesson starts | The old summary is cleared |
@@ -175,7 +178,7 @@ These are done by hand, in the real classroom, with real phones (iPhone and Andr
 | Poll | The lecturer creates a poll and students answer | The results are shown |
 | Weak network | A check-in on a slow connection | The student gets a clear message, success or failure |
 | Photo count | The lecturer uploads the class photo that was given with the assignment | A number close to the real count, and a clear message |
-| Class summary | The lecturer uploads the 5 minute sample transcript | A short summary that only the lecturer sees |
+| Class summary | The lecturer uploads a screen recording of about 2 minutes (the file was 141 MB) | The browser sends only the sound (3.7 MB), and a short summary appears that only the lecturer sees |
 | Homework review | Two students send works for the same assignment | Each gets a review, and the second review mentions the comparison |
 | AI limit | Many requests in a short time | A clear message that the limit was reached |
 | Sleeping server | Open the site after 15 minutes of no use | It wakes up in about a minute; the roster must be uploaded again |

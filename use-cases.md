@@ -107,15 +107,16 @@ Each use case is a short story of how a user does one thing with the system. Att
 
 ## UC-7: Lecturer gets a summary of the class
 
-**Story:** As a lecturer, I want a short summary of my class from the transcript, so that I can see what was covered.
+**Story:** As a lecturer, I want a short summary of my class from its recording, so that I can see what was covered.
 
 - **Actor:** Lecturer
 - **Main flow:**
-  1. The lecturer uploads the transcript file of the online class (.txt, .vtt or .srt from Zoom or Meet).
-  2. The system removes the times and numbers and sends the text to an AI.
-  3. The system shows the summary: main topics, key points, students' questions and tasks. Only the lecturer can see it.
-- **Other cases:** the file is empty or too big, or the AI is not available: the system shows an error.
-- **After:** The transcript is not saved. The summary stays in memory until the next lesson starts.
+  1. The lecturer chooses a recording of the class (a screen recording or a Zoom recording, up to about 7 minutes), or pastes a link to a public YouTube video.
+  2. For a recording, the browser takes the sound out of it. This keeps the upload small, even if the video is 100 MB or more.
+  3. The system sends the sound (or the link) to an AI. The AI works in the background, and the page shows the progress.
+  4. The system shows the summary: main topics, key points, students' questions and tasks. Only the lecturer can see it.
+- **Other cases:** the recording has no sound, is too long, is not a recording, or the AI is not available or too slow: the system shows a clear error.
+- **After:** The recording is not saved. The summary stays in memory until the next lesson starts.
 - **Related requirements:** FR-21
 
 ## UC-8: Student gets a deep review of homework

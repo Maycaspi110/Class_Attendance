@@ -75,7 +75,8 @@ classDiagram
     +count(image, type) int
   }
   class GeminiSummarizer {
-    +summarize(text) String
+    +summarizeMedia(sound, type) String
+    +summarizeVideo(youtubeLink) String
   }
   class HomeworkStore {
     +save(assignment, email, text)
@@ -118,7 +119,7 @@ classDiagram
 | PollAnswer | One answer of one student. A student can answer once. | answer a poll once |
 | CsvExporter | Builds the spreadsheet for the lecturer from the lesson entries. | download the CSV |
 | GeminiCounter | Sends a photo to the AI and returns the number of people. The comparison with the check-ins is a separate function that gives ok, warning or information. | FR-20 |
-| GeminiSummarizer | Sends the cleaned transcript to the AI and returns the summary. | FR-21 |
+| GeminiSummarizer | Sends the sound of a recording, or a YouTube link, to the AI and returns the summary. It runs in the background. | FR-21 |
 | HomeworkStore | Keeps the latest work of each student for each assignment (in memory, with a limit), and gives the previous work and up to 5 works of other students. | FR-22, FR-23 |
 | GeminiReviewer | Sends the work, the previous version and the other works to the AI and returns the review. | FR-22, FR-23 |
 
