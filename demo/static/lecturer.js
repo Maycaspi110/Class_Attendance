@@ -228,12 +228,13 @@
     }
     ready.then(function (ok) {
       if (!ok) { button.disabled = false; return null; }
-      say(summaryMsg, "Writing the summary... this can take up to a minute.", "");
+      say(summaryMsg, "Sending to the AI... it is writing the summary, this can take a minute or two.", "");
       return api("POST", "/api/summary", form, true);
     }).then(function (result) {
       if (!result) { return; }
+      if (needLogin(result)) { button.disabled = false; return; }
+      if (result.data.ok && result.data.working) { waitForSummary(button, 0); return; }
       button.disabled = false;
-      if (needLogin(result)) { return; }
       if (result.data.ok) {
         say(summaryMsg, "The summary is ready. Only you can see it.", "ok");
         showSummary({ ready: true, summary: result.data.summary });
@@ -242,6 +243,29 @@
       }
     });
   });
+
+  // The AI works in the background on the server. Ask every 3 seconds until it is done.
+  function waitForSummary(button, tries) {
+    setTimeout(function () {
+      api("GET", "/api/summary").then(function (result) {
+        var d = result.data;
+        if (d && d.ok && d.working && tries < 60) {
+          say(summaryMsg, "The AI is writing the summary... (" + (tries + 1) * 3 + " seconds)", "");
+          waitForSummary(button, tries + 1);
+          return;
+        }
+        button.disabled = false;
+        if (d && d.ok && d.summary && !d.working) {
+          say(summaryMsg, "The summary is ready. Only you can see it.", "ok");
+          showSummary(d);
+        } else if (d && d.error) {
+          say(summaryMsg, d.error, "bad");
+        } else {
+          say(summaryMsg, "The AI did not finish in time. Try a shorter recording.", "bad");
+        }
+      });
+    }, 3000);
+  }
   loadSummary();
 
   function showHeadcounts(d) {
