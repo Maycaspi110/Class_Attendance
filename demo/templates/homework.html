@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Homework review{% endblock %}
+{% block body %}
+<h1>Homework review</h1>
+<p class="sub">Send your work and get a deep review from an AI. It also compares your work with your previous version and with other students' works. You never see their work or names.</p>
+
+<form class="card" id="form">
+  <label>Your email
+    <input type="email" id="email" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="name@example.com" maxlength="254" required>
+  </label>
+  <label>Name of the assignment
+    <input type="text" id="assignment" maxlength="60" placeholder="For example: Ex2" required>
+  </label>
+  <label>Your work (a text or code file, up to 200 KB)
+    <input type="file" id="work" accept=".txt,.md,.py,.java,.js,.ts,.c,.cpp,.cs,.html,.css,.json,text/plain">
+  </label>
+  <label>Or paste the text here
+    <textarea id="text" rows="6" maxlength="30000" placeholder="Paste your code or text"></textarea>
+  </label>
+  <button type="submit" id="send">Get the review</button>
+  <div id="msg" class="msg" role="status"></div>
+  <p class="muted">Your work is sent to an AI service to write the review, and other students' reviews may be compared with it anonymously. Do not send private information.</p>
+</form>
+
+<div class="card" id="resultbox" hidden>
+  <h2>Your review</h2>
+  <div id="meta" class="muted"></div>
+  <div id="review" class="summarytext"></div>
+</div>
+<p class="muted"><a href="/checkin">Back to the attendance page</a></p>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='homework.js') }}"></script>{% endblock %}
