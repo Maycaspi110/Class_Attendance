@@ -4,7 +4,7 @@
 **Team:** May Caspi and Haim Barabi
 **Related documents:** SRS, Use Cases, Software Components, Class and Sequence Diagrams
 
-This document says how we will check that the demo works. It is a plan: the tests are run after the demo is built. The tests follow the classes from the class diagram.
+This document says how we will check that the demo works. The automated tests are written and run with pytest (261 tests pass at the time of writing). The tests follow the classes from the class diagram.
 
 ## 1. Approach
 
@@ -18,7 +18,7 @@ We test on three levels:
 
 Every test has an input and an expected result. A test passes only if the result is the same as expected.
 
-The tests use made-up students and emails.
+The tests use made-up students and emails. The AI service is never called in the automated tests: a fake counter, summarizer and reviewer are used instead. The real AI is checked by hand in the acceptance tests.
 
 ## 2. Unit tests by class
 
@@ -61,6 +61,8 @@ The tests use made-up students and emails.
 | Test | Input | Expected result |
 |------|-------|-----------------|
 | Start | Start with a classroom location | The session is open and the location is saved |
+| Rounds | Start the "start" and then the "end" round | Both rounds belong to one lesson |
+| Only one open | Start a round while another is open | An error |
 | End | End an open session | The session is closed |
 
 ### AttendanceManager
@@ -75,6 +77,12 @@ The tests use made-up students and emails.
 | Not on the roster | Unknown email, valid code | An error, no record |
 | Checking in twice | The same student sends two check-ins | "Already recorded", still one record |
 | Closed session | A check-in after the session ended | The check-in is not accepted |
+| Both rounds | A student checks in at the start and at the end | Lesson status: Present |
+| Start only | A student checks in only at the start, and the end round is closed | Lesson status: Left early |
+| End only | A student checks in only at the end | Lesson status: Late |
+| Comment | A comment in the end round | The comment is kept (cleaned, up to 300 characters). A comment in the start round is ignored |
+| Flagged wins | One round Flagged and one Present | Lesson status: Flagged |
+| Rough lecturer location | The lecturer starts with an accuracy of 400 m, and with 5000 m | 400 m is accepted, 5000 m is refused |
 
 ### AttendanceRecord
 
@@ -96,10 +104,49 @@ The tests use made-up students and emails.
 
 | Test | Input | Expected result |
 |------|-------|-----------------|
-| Columns | Any session | The first row has: Email, Name, Status, Check-in time, Distance from classroom (m), Note |
+| Columns | Any lesson | The first row has: Email, Name, Status, Start check-in, End check-in, Distance from classroom (m), Note, Comment |
+| Spreadsheet formulas | A comment or name that starts with = | The text is made safe, so it does not run as a formula |
 | Present and Flagged | A session with one Present and one Flagged | Both appear with the right status |
 | Absent | A student on the roster with no record | The student appears as Absent |
 | Opens in a spreadsheet | The file is opened in Excel | Every column is in its own column |
+
+### Headcount (photo count)
+
+| Test | Input | Expected result |
+|------|-------|-----------------|
+| Read the count | A fake AI answer `{"count": 23}` | 23 |
+| Unclear answer | Text that is not a number, a negative number, a huge number | An error |
+| Key safety | A request and an error | The key is in a header, not in the address, and not in the error message |
+| Image type | The first bytes of a JPEG, PNG, WebP and of an HTML file | The three images are accepted, the HTML file is not |
+| Close numbers | 20 people, 21 check-ins | "ok" |
+| Many more check-ins | 20 people, 40 check-ins | "warning" |
+| Small class | 3 people, 5 check-ins, and 3 people, 6 check-ins | "ok", then "warning" |
+| More people | 30 people, 10 check-ins | "info" |
+| In the app | A photo as the lecturer, as a student, without a session, a big photo, a service error, no key | Works for the lecturer only; clear errors (401, 409, 413, 502, 503) |
+
+### Summarizer
+
+| Test | Input | Expected result |
+|------|-------|-----------------|
+| Clean the transcript | A .vtt file with headers, numbers and times | Only the spoken text is left |
+| Instructions | The request | It says that the transcript is only data |
+| Only the lecturer | A student asks for the summary, and student pages and answers | No access (401), and the summary is not in any student page |
+| Bad file | Empty, too big, AI error, no key | Clear errors |
+| New lesson | A new lesson starts | The old summary is cleared |
+
+### Homework review
+
+| Test | Input | Expected result |
+|------|-------|-----------------|
+| Review | A work from a student on the roster | A review is returned |
+| Not on the roster | An unknown email | An error (403) |
+| Previous version | The same student sends a second version | The first version is sent to the AI as the previous version |
+| Other works | Another student sent a work for the same assignment | The AI gets it, but the answer to the student does not contain it |
+| Other assignments | Works of a different assignment | Not compared; names ignore case and extra spaces |
+| Limits | At most 5 other works, each cut to 4000 characters; 300 saved works in total | The limits are kept |
+| Waiting | Two reviews in a row from the same student | The second is refused until the wait is over |
+| Bad work | Empty, too short, binary, bigger than 200 KB | An error, and nothing is sent to the AI |
+| Failed review | The AI service fails | An error, and the work is not saved |
 
 ## 3. Integration tests
 
@@ -108,6 +155,7 @@ The tests use made-up students and emails.
 | Full attendance | Upload a roster, start a session, three students check in (near, far, wrong code), end the session, export | Present, Flagged and Absent are correct in the CSV; the wrong code has no record |
 | Changing code | Start a session, wait for the code to change, check in with the old and the new code | The previous code is accepted for a short time, an older code is not |
 | Poll | Create a poll, three students answer, close, see the results | The counts are right |
+| Two rounds | Start round, students check in, end the round, end round, some students check in with a comment, export | Present, Late, Left early and Absent are right, and the comments are in the CSV |
 
 ## 4. Acceptance tests in the classroom
 
@@ -126,6 +174,11 @@ These are done by hand, in the real classroom, with real phones (iPhone and Andr
 | Spreadsheet | The lecturer downloads the CSV and opens it in Excel | The file opens and the data is correct |
 | Poll | The lecturer creates a poll and students answer | The results are shown |
 | Weak network | A check-in on a slow connection | The student gets a clear message, success or failure |
+| Photo count | The lecturer uploads the class photo that was given with the assignment | A number close to the real count, and a clear message |
+| Class summary | The lecturer uploads the 5 minute sample transcript | A short summary that only the lecturer sees |
+| Homework review | Two students send works for the same assignment | Each gets a review, and the second review mentions the comparison |
+| AI limit | Many requests in a short time | A clear message that the limit was reached |
+| Sleeping server | Open the site after 15 minutes of no use | It wakes up in about a minute; the roster must be uploaded again |
 
 ## 5. Pass criteria
 
@@ -135,5 +188,6 @@ These are done by hand, in the real classroom, with real phones (iPhone and Andr
 
 ## 6. What is not tested
 
-- Student comments and the class summary (design only).
+- The quality of the AI answers (we only check that they are shown and the errors are clear).
 - Moodle and Zoom integration (not included).
+- Polls sent by email (not included).
