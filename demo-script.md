@@ -11,7 +11,7 @@ The demo runs on the Render address, from a phone for the students and a laptop 
 | # | Do | Why |
 |---|----|-----|
 | 1 | Open the site and wait until it loads | The free server sleeps and needs about a minute to wake up |
-| 2 | Log in as the lecturer and upload the roster (`tests/attendance-sample.csv` columns are Email and Name; use the real class list) | The roster is lost when the server sleeps |
+| 2 | Log in as the lecturer and upload the roster (a CSV file with the columns Name and Email, for example the class list) | The roster is lost when the server sleeps |
 | 3 | Open the classroom screen page on the projector | It needs to be ready |
 | 4 | Check that the lecturer's phone has Location on | The classroom location is taken from it |
 | 5 | Have the files ready: a classroom photo, `tests/sample-transcript.vtt`, `tests/sample-homework-a.py`, `tests/sample-homework-b.py` | Used in steps 5-7 |
