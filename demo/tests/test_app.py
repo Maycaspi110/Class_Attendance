@@ -523,3 +523,20 @@ def test_the_home_page_lets_you_choose_student_or_lecturer(student):
     assert page.status_code == 200
     for link in (b'href="/checkin"', b'href="/homework"', b'href="/lecturer"'):
         assert link in page.data
+
+
+def test_a_student_on_the_same_laptop_as_the_lecturer_is_present(student, lecturer):
+    # both readings are rough (Wi-Fi location) and about 250 m apart, as can happen on one laptop
+    confirm_roster(lecturer)
+    assert start_session(lecturer, point=CLASSROOM, accuracy=300).status_code == 200
+    code = screen_code(lecturer)
+    response = check_in(student, "dana.levi@example.com", code, point=(32.1022, 35.2000), accuracy=350)
+    assert response.get_json()["status"] == "Present"
+
+
+def test_a_far_student_is_still_flagged_with_a_rough_lecturer_location(student, lecturer):
+    confirm_roster(lecturer)
+    assert start_session(lecturer, point=CLASSROOM, accuracy=300).status_code == 200
+    code = screen_code(lecturer)
+    response = check_in(student, "dana.levi@example.com", code, point=(32.1090, 35.2000), accuracy=20)
+    assert response.get_json()["status"] == "Flagged"

@@ -112,7 +112,7 @@ def create_app(test_config=None):
         CODE_SECRET=os.environ.get("CODE_SECRET"),
         CODE_PERIOD_SECONDS=_env_int("CODE_PERIOD_SECONDS", 20),
         ALLOWED_RADIUS_METERS=_env_int("ALLOWED_RADIUS_METERS", 150),
-        MAX_ACCURACY_METERS=_env_int("MAX_ACCURACY_METERS", 200),
+        MAX_ACCURACY_METERS=_env_int("MAX_ACCURACY_METERS", 1000),
         TIMEZONE=os.environ.get("TIMEZONE", "Asia/Jerusalem"),
         # RENDER_EXTERNAL_URL is set by the Render hosting service itself.
         PUBLIC_URL=os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL"),

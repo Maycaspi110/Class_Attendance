@@ -15,14 +15,16 @@ class Session:
     def __init__(self, round_name=START_ROUND):
         self.round = round_name
         self.classroom_location = None  # (lat, lon)
+        self.classroom_accuracy = 0  # how exact the lecturer's location was, in meters
         self.start_time = None
         self.end_time = None
         self.status = CLOSED
         self._records = {}  # email -> AttendanceRecord, in check-in order
 
-    def start(self, location, start_time=None):
+    def start(self, location, start_time=None, accuracy=0):
         """Open the session. `location` is the lecturer's phone (lat, lon)."""
         self.classroom_location = (float(location[0]), float(location[1]))
+        self.classroom_accuracy = accuracy
         self.start_time = start_time or datetime.now()
         self.end_time = None
         self.status = OPEN

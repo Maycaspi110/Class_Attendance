@@ -72,7 +72,7 @@ class AttendanceManager:
             if not rough:
                 raise SessionError("The phone location is too inaccurate. Try again outdoors or near a window.")
             session = Session(round_name)
-            session.start(location, self._datetime(now))
+            session.start(location, self._datetime(now), accuracy=float(accuracy))
             if round_name == START_ROUND:
                 self.rounds = {}
             self.rounds[round_name] = session
@@ -114,7 +114,9 @@ class AttendanceManager:
                     "Wrong or expired code. Look at the classroom screen and try again.",
                 )
 
-            result = self.location_checker.check(location, accuracy, session.classroom_location)
+            result = self.location_checker.check(
+                location, accuracy, session.classroom_location, session.classroom_accuracy
+            )
 
             existing = session.record_for(student.email)
             if existing is not None:

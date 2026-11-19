@@ -75,3 +75,36 @@ def test_valid_point():
     assert not valid_point(91, 0)
     assert not valid_point(0, 181)
     assert not valid_point(None, None)
+
+
+# ---- a rough location (a laptop on Wi-Fi) is allowed for, a clearly far one is not ----
+
+ABOUT_300M = (32.1027, 35.2000)
+
+
+def test_a_rough_reading_of_the_same_place_is_good(checker):
+    # two readings of the same laptop can differ by 300 m, both with a rough accuracy
+    assert checker.check(ABOUT_300M, 180, CLASSROOM, classroom_accuracy=180).status == GOOD
+
+
+def test_the_lecturers_rough_location_is_also_allowed_for(checker):
+    assert checker.check(ABOUT_300M, 10, CLASSROOM).status == FAR
+    assert checker.check(ABOUT_300M, 10, CLASSROOM, classroom_accuracy=200).status == GOOD
+
+
+def test_a_far_place_is_far_even_with_a_rough_location(checker):
+    assert checker.check(ABOUT_1KM, 150, CLASSROOM, classroom_accuracy=150).status == FAR
+
+
+def test_the_allowance_has_a_limit(checker):
+    far = LocationChecker(allowed_radius_meters=150, max_accuracy_meters=5000)
+    # 1 km away: even with a huge reported accuracy the allowance stops at 300 + 300 meters
+    assert far.check(ABOUT_1KM, 4000, CLASSROOM, classroom_accuracy=4000).status == FAR
+
+
+def test_a_good_gps_keeps_the_radius_tight(checker):
+    assert checker.check(ABOUT_300M, 8, CLASSROOM, classroom_accuracy=8).status == FAR
+
+
+def test_a_missing_classroom_accuracy_is_like_zero(checker):
+    assert checker.check(ABOUT_100M, 15, CLASSROOM, classroom_accuracy=None).status == GOOD

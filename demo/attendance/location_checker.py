@@ -12,6 +12,10 @@ INACCURATE = "inaccurate"
 
 EARTH_RADIUS_METERS = 6371000
 
+# A rough location (Wi-Fi or cell tower, for example on a laptop) can be wrong by hundreds of meters.
+# The check allows for this: the two accuracies are added to the allowed radius, but only up to this much each.
+MAX_ALLOWANCE_METERS = 300
+
 # distance_meters is None when the phone gave no usable location.
 LocationResult = namedtuple("LocationResult", ["status", "distance_meters"])
 
@@ -56,11 +60,20 @@ class LocationChecker:
             return False
         return 0 <= accuracy <= self.max_accuracy_meters
 
-    def check(self, location, accuracy, classroom_location):
+    @staticmethod
+    def _allowance(accuracy):
+        """How many meters of doubt a location with this accuracy adds to the allowed distance."""
+        try:
+            return max(0.0, min(float(accuracy), MAX_ALLOWANCE_METERS))
+        except (TypeError, ValueError):
+            return 0.0
+
+    def check(self, location, accuracy, classroom_location, classroom_accuracy=0):
         """
         location: (lat, lon) of the phone, or None if the phone gave nothing.
         accuracy: the accuracy in meters reported by the phone.
         classroom_location: (lat, lon) saved when the session started.
+        classroom_accuracy: how exact the lecturer's location was (meters).
         """
         if location is None or not valid_point(*location):
             return LocationResult(INACCURATE, None)
@@ -68,6 +81,6 @@ class LocationChecker:
         distance = self.distance(point, classroom_location)
         if not self.accuracy_ok(accuracy):
             return LocationResult(INACCURATE, distance)
-        if distance > self.allowed_radius_meters:
+        if distance > self.allowed_radius_meters + self._allowance(accuracy) + self._allowance(classroom_accuracy):
             return LocationResult(FAR, distance)
         return LocationResult(GOOD, distance)
