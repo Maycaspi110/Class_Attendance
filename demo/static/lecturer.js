@@ -211,7 +211,7 @@
         say(summaryMsg, "The summary is ready. Only you can see it.", "ok");
         showSummary({ ready: true, summary: result.data.summary });
       } else {
-        say(summaryMsg, result.data.error || "Could not write the summary.", "bad");
+        say(summaryMsg, result.data.error || "Could not write the summary (server answer " + result.status + "). Try again in a minute.", "bad");
       }
     });
   });

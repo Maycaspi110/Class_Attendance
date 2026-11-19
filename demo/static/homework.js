@@ -19,7 +19,7 @@
     api("POST", "/api/homework", form, true).then(function (result) {
       button.disabled = false;
       var d = result.data;
-      if (!d.ok) { say(msg, d.error || "Could not write the review.", "bad"); return; }
+      if (!d.ok) { say(msg, d.error || "Could not write the review (server answer " + result.status + "). Try again in a minute.", "bad"); return; }
       try { localStorage.setItem("attendance_email", $("email").value.trim()); } catch (e) { /* not important */ }
       say(msg, "The review is ready.", "ok");
       var parts = [];

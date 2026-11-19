@@ -48,7 +48,7 @@ def clean_transcript(raw):
 class GeminiSummarizer:
     """Summarizes a transcript with the Google Gemini API (it has a free tier)."""
 
-    def __init__(self, api_key, model="gemini-3.5-flash-lite", http_post=None, timeout=60):
+    def __init__(self, api_key, model="gemini-3.5-flash-lite", http_post=None, timeout=25):
         self.api_key = api_key
         self.model = model
         self._post = http_post or _default_post

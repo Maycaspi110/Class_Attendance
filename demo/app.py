@@ -626,6 +626,12 @@ def create_app(test_config=None):
             return fail(str(error), 429 if "wait" in str(error) else 400)
         return jsonify(ok=True, review=review, compared_with=len(others), had_previous=previous is not None)
 
+    @app.errorhandler(500)
+    def server_error(_error):
+        if request.path.startswith("/api/"):
+            return fail("Something went wrong on the server. Try again.", 500)
+        return "Something went wrong on the server.", 500
+
     @app.errorhandler(413)
     def too_large(_error):
         return fail("The file is too large.", 413)
