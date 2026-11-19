@@ -110,6 +110,15 @@ The tests use made-up students and emails. The AI service is never called in the
 | Absent | A student on the roster with no record | The student appears as Absent |
 | Opens in a spreadsheet | The file is opened in Excel | Every column is in its own column |
 
+### Home page
+
+| Test | Input | Expected result |
+|------|-------|-----------------|
+| Tiles | Open the home page | Six tiles with the right links |
+| Back home | Open the check-in, homework, login and lecturer pages | Each has a link back to the home page |
+| Lecturer tile | A student opens a lecturer tile and logs in | After the login the lecturer page opens at the right card |
+| Safe return | A login with another address as the return address | Always returns to the lecturer page, never to another site |
+
 ### Headcount (photo count)
 
 | Test | Input | Expected result |

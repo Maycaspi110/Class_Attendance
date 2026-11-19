@@ -17,6 +17,7 @@ Design an end-to-end web application for teaching in class. The assignment is ma
 
 ![How attendance works](attendance-flow.png)
 
+0. Everyone starts from one home page with six tiles: Mark attendance and Homework review for students, and Attendance & results, Classroom screen, Photo count and Class summary for the lecturer.
 1. The lecturer uploads the course roster once, and opens attendance from their phone inside the classroom. The system saves that location as the classroom location.
 2. A code (also shown as a QR code) appears on the classroom screen and changes every 10-30 seconds.
 3. A student on the roster opens the web page on their phone, enters their email and the code (or scans the QR code), and is marked present.
