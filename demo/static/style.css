@@ -90,3 +90,7 @@ body.screen .hint { color: #93a4c0; font-size: clamp(1rem, 2.5vw, 1.6rem); margi
 @media (prefers-reduced-motion: reduce) { .card { animation: none; } * { transition: none !important; } }
 
 .summarytext { white-space: pre-wrap; background: #f6f8fd; border: 1px solid #dfe5f2; border-radius: 12px; padding: 14px 16px; margin-top: 12px; line-height: 1.55; }
+
+a.choice { display: block; box-sizing: border-box; text-align: center; text-decoration: none; font-size: 1.02rem; font-weight: 700; padding: 14px; border-radius: 14px; margin-top: 12px; color: #fff; background: linear-gradient(135deg, var(--blue), var(--violet)); box-shadow: 0 6px 16px rgba(37,99,235,.28); }
+a.choice.secondary { background: #eef1f7; color: var(--ink); border: 1.5px solid #cfd7e6; box-shadow: none; }
+a.choice:focus-visible { outline: 3px solid rgba(37,99,235,.4); outline-offset: 2px; }

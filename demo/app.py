@@ -232,7 +232,7 @@ def create_app(test_config=None):
 
     @app.route("/")
     def home():
-        return redirect(url_for("checkin"))
+        return render_template("home.html")
 
     @app.route("/checkin")
     def checkin():

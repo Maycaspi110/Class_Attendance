@@ -516,3 +516,10 @@ def test_state_tells_which_rounds_exist(lecturer):
     lecturer.post("/api/session/end")
     state = lecturer.get("/api/state").get_json()
     assert state["has_start"] is True and state["has_end"] is False and state["round"] == "start"
+
+
+def test_the_home_page_lets_you_choose_student_or_lecturer(student):
+    page = student.get("/")
+    assert page.status_code == 200
+    for link in (b'href="/checkin"', b'href="/homework"', b'href="/lecturer"'):
+        assert link in page.data

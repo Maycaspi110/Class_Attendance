@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Class attendance{% endblock %}
+{% block body %}
+<h1>Class attendance</h1>
+<p class="sub">Choose who you are.</p>
+
+<div class="card">
+  <h2>I am a student</h2>
+  <a class="choice" href="{{ url_for('checkin') }}">Mark my attendance</a>
+  <a class="choice secondary" href="{{ url_for('homework_page') }}">Homework review</a>
+</div>
+
+<div class="card">
+  <h2>I am a lecturer</h2>
+  <a class="choice" href="{{ url_for('lecturer') }}">Open the lecturer page</a>
+  <p class="muted">You need the lecturer password.</p>
+</div>
+{% endblock %}
