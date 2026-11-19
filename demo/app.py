@@ -36,7 +36,7 @@ from attendance.homework import (
     clean_name,
     clean_work,
 )
-from attendance.summary import GeminiSummarizer, SummaryError, clean_transcript
+from attendance.summary import GeminiSummarizer, SummaryError, clean_transcript, youtube_link
 from attendance.csv_exporter import CsvExporter
 from attendance.location_checker import LocationChecker, valid_point
 from attendance.poll import Poll, PollError
@@ -423,17 +423,24 @@ def create_app(test_config=None):
         request.max_content_length = MAX_TRANSCRIPT_BYTES
         if state.summarizer is None:
             return fail("The AI summary is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        link = str(request.form.get("video_url") or "").strip()[:300]
         upload = request.files.get("transcript")
-        if upload is None:
-            return fail("Choose a transcript file first.")
-        raw = upload.read(MAX_TRANSCRIPT_BYTES + 1)
-        if len(raw) > MAX_TRANSCRIPT_BYTES:
-            return fail("The transcript file is too large.", 413)
-        text = clean_transcript(raw.decode("utf-8-sig", errors="replace"))
-        if len(text) < 20:
-            return fail("The transcript is empty or too short to summarize.")
+        if link and (upload is None or not upload.filename):
+            video = youtube_link(link)
+            if video is None:
+                return fail("Paste a link to a public YouTube video.")
+            text = None
+        else:
+            if upload is None:
+                return fail("Choose a transcript file or paste a YouTube link.")
+            raw = upload.read(MAX_TRANSCRIPT_BYTES + 1)
+            if len(raw) > MAX_TRANSCRIPT_BYTES:
+                return fail("The transcript file is too large.", 413)
+            text = clean_transcript(raw.decode("utf-8-sig", errors="replace"))
+            if len(text) < 20:
+                return fail("The transcript is empty or too short to summarize.")
         try:
-            summary = state.summarizer.summarize(text)
+            summary = state.summarizer.summarize(text) if text is not None else state.summarizer.summarize_video(video)
         except SummaryError as error:
             return fail(str(error), 502)
         state.summary = {

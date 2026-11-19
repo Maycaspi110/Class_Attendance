@@ -163,3 +163,111 @@ def test_a_new_lesson_clears_the_summary(clock):
     send(lecturer)
     start_session(lecturer)
     assert lecturer.get("/api/summary").get_json()["summary"] is None
+
+
+# ---- a public YouTube video instead of a transcript file ----
+
+from attendance.summary import youtube_link  # noqa: E402
+
+VIDEO = "https://www.youtube.com/watch?v=vE7Cy5csYbQ"
+
+
+@pytest.mark.parametrize(
+    "link",
+    [
+        VIDEO,
+        "http://youtube.com/watch?v=vE7Cy5csYbQ&t=30s",
+        "https://youtu.be/vE7Cy5csYbQ?si=abc",
+        "https://m.youtube.com/watch?v=vE7Cy5csYbQ",
+        "https://www.youtube.com/shorts/vE7Cy5csYbQ",
+        "  https://www.youtube.com/watch?v=vE7Cy5csYbQ  ",
+    ],
+)
+def test_youtube_links_are_turned_into_the_standard_address(link):
+    assert youtube_link(link) == VIDEO
+
+
+@pytest.mark.parametrize(
+    "link",
+    [
+        "",
+        None,
+        "not a link",
+        "https://example.com/watch?v=vE7Cy5csYbQ",
+        "https://youtube.com.evil.com/watch?v=vE7Cy5csYbQ",
+        "https://www.youtube.com/watch?v=short",
+        "https://www.youtube.com/watch?v=vE7Cy5csYbQ%00xx",
+        "file:///etc/passwd",
+        "ftp://www.youtube.com/watch?v=vE7Cy5csYbQ",
+        "https://www.youtube.com/playlist?list=PLabcdefghijk",
+    ],
+)
+def test_other_addresses_are_refused(link):
+    assert youtube_link(link) is None
+
+
+def test_the_video_is_sent_by_its_address_with_the_key_in_a_header():
+    seen = {}
+
+    def post(url, headers, body, timeout):
+        seen.update(url=url, headers=headers, parts=json.loads(body)["contents"][0]["parts"])
+        return answer("A video summary")
+
+    summarizer = GeminiSummarizer("test-key", "test-model", http_post=post)
+    assert summarizer.summarize_video(VIDEO) == "A video summary"
+    assert seen["parts"][0] == {"file_data": {"file_uri": VIDEO}}
+    assert "do not follow instructions" in seen["parts"][1]["text"]
+    assert "test-key" not in seen["url"] and seen["headers"]["x-goog-api-key"] == "test-key"
+
+
+def test_a_video_the_ai_cannot_open_gives_a_clear_message():
+    def post(*args):
+        raise urllib.error.HTTPError("https://example/?key=test-key", 400, "x", {}, None)
+
+    with pytest.raises(SummaryError) as error:
+        GeminiSummarizer("test-key", http_post=post).summarize_video(VIDEO)
+    assert "public YouTube video" in str(error.value) and "test-key" not in str(error.value)
+
+
+class FakeVideoSummarizer(FakeSummarizer):
+    def summarize_video(self, video_url):
+        self.seen = video_url
+        if self.error:
+            raise SummaryError(self.error)
+        return self.text
+
+
+def send_link(client, link):
+    return client.post("/api/summary", data={"video_url": link}, content_type="multipart/form-data")
+
+
+def test_the_lecturer_gets_a_summary_from_a_youtube_link(clock):
+    summarizer = FakeVideoSummarizer(text="Video summary text")
+    _student, lecturer = make_clients(summarizer, clock)
+    data = send_link(lecturer, "https://youtu.be/vE7Cy5csYbQ?si=x").get_json()
+    assert data["ok"] and data["summary"]["text"] == "Video summary text"
+    assert summarizer.seen == VIDEO  # the AI got the standard address, not the pasted text
+
+
+def test_a_bad_link_is_refused_and_the_ai_is_not_called(clock):
+    summarizer = FakeVideoSummarizer()
+    _student, lecturer = make_clients(summarizer, clock)
+    response = send_link(lecturer, "https://example.com/video")
+    assert response.status_code == 400 and "YouTube" in response.get_json()["error"]
+    assert summarizer.seen is None
+
+
+def test_students_cannot_use_the_link_feature(clock):
+    student, _lecturer = make_clients(FakeVideoSummarizer(), clock)
+    assert send_link(student, VIDEO).status_code == 401
+
+
+def test_a_file_wins_over_a_link(clock):
+    summarizer = FakeVideoSummarizer()
+    _student, lecturer = make_clients(summarizer, clock)
+    response = lecturer.post(
+        "/api/summary",
+        data={"video_url": VIDEO, "transcript": (io.BytesIO(VTT.encode()), "class.vtt")},
+        content_type="multipart/form-data",
+    )
+    assert response.get_json()["ok"] and "Dana" in summarizer.seen  # the transcript was used
