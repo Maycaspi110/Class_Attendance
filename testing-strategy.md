@@ -114,8 +114,10 @@ The tests use made-up students and emails. The AI service is never called in the
 
 | Test | Input | Expected result |
 |------|-------|-----------------|
-| Tiles | Open the home page | Six tiles with the right links |
-| Back home | Open the check-in, homework, login and lecturer pages | Each has a link back to the home page |
+| First page | Open the home page | Only two tiles: student and lecturer |
+| Student menu | Open the student menu | Two tiles (check-in and homework), and no lecturer links |
+| Lecturer menu | Open it without and with the password | Without the password it goes to the login; with it, six lecturer tiles and no student tools |
+| Back links | Open every page | Each has a link back to its own menu |
 | Lecturer tile | A student opens a lecturer tile and logs in | After the login the lecturer page opens at the right card |
 | Safe return | A login with another address as the return address | Always returns to the lecturer page, never to another site |
 
