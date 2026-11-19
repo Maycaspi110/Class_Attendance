@@ -56,10 +56,13 @@
 
 <div class="card">
   <h2>5. Lesson summary (only you see it)</h2>
-  <p class="muted">Upload the transcript of the online class (a .txt, .vtt or .srt file from Zoom or Meet), or paste a link to a public YouTube video of the class. The AI writes a short summary. Students never see it. Nothing is saved except the summary. For the demo, use a short transcript or video of about 2-5 minutes.</p>
+  <p class="muted">Upload the transcript of the online class (a .txt, .vtt or .srt file from Zoom or Meet), or upload a short recording of the class (a screen recording or a Zoom recording), or paste a link to a public YouTube video. The AI writes a short summary. Students never see it. Nothing is saved except the summary. For the demo, use a short transcript or video of about 2-5 minutes.</p>
   <div id="summaryoff" class="msg warn" hidden>The AI summary is not set up on this server yet (GEMINI_API_KEY is missing).</div>
   <label>Transcript file
     <input type="file" id="transcriptfile" accept=".txt,.vtt,.srt,text/plain,text/vtt">
+  </label>
+  <label>Or a recording of the class (MP4, WebM, MP3, M4A or WAV, up to 14 MB, a few minutes)
+    <input type="file" id="mediafile" accept=".mp4,.mov,.webm,.mp3,.m4a,.wav,.ogg,video/*,audio/*">
   </label>
   <label>Or paste a link to a public YouTube video
     <input type="url" id="videourl" maxlength="300" placeholder="https://www.youtube.com/watch?v=...">

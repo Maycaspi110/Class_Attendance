@@ -198,13 +198,20 @@
 
   $("makesummary").addEventListener("click", function () {
     var file = $("transcriptfile").files[0];
+    var media = $("mediafile").files[0];
     var link = $("videourl").value.trim();
-    if (!file && !link) { say(summaryMsg, "Choose the transcript file or paste a YouTube link first.", "bad"); return; }
+    if (!file && !media && !link) { say(summaryMsg, "Choose a transcript or a recording, or paste a YouTube link first.", "bad"); return; }
+    if (!file && media && media.size > 14 * 1024 * 1024) {
+      say(summaryMsg, "The recording is too large (" + Math.round(media.size / 1048576) + " MB). The limit is 14 MB: record fewer minutes.", "bad");
+      return;
+    }
     var button = $("makesummary");
     button.disabled = true;
-    say(summaryMsg, "Writing the summary... this can take up to a minute.", "");
+    say(summaryMsg, "Writing the summary... a recording can take up to a minute to upload and read.", "");
     var form = new FormData();
-    if (file) { form.append("transcript", file, file.name); } else { form.append("video_url", link); }
+    if (file) { form.append("transcript", file, file.name); }
+    else if (media) { form.append("media", media, media.name); }
+    else { form.append("video_url", link); }
     api("POST", "/api/summary", form, true).then(function (result) {
       button.disabled = false;
       if (needLogin(result)) { return; }
