@@ -13,6 +13,10 @@ Technical tools considered for the attendance system and the other teaching feat
 | Presence | IP address | University Wi-Fi vs mobile data | Same address in two places | **Not used** as a check (at most a weak hint) |
 | Hosting | HTTPS hosting (GitHub Pages) | Publish a test page | Works | **Chosen:** GitHub Pages (works) |
 | Output | CSV spreadsheet for the lecturer | Open in Excel, including Hebrew text | Works | **Chosen:** CSV file |
+| Hosting | Render (free web service) | The demo opened on a laptop and on phones over the internet | Works. The free server sleeps after about 15 minutes and wakes up in about a minute | **Chosen** for the demo (the university Wi-Fi blocks phone-to-laptop traffic) |
+| AI | Google Gemini API (free tier) | Photo count: a classroom photo uploaded from the lecturer page | Returned 48 people for the photo, and the page compared it with the check-ins | **Chosen** for the photo count, the class summary and the homework review |
+| AI | Class summary from a transcript | Sample transcript of about 5 minutes (tests/sample-transcript.vtt) | **Real test pending** | Built, to be confirmed |
+| AI | Homework review | Two sample works for the same assignment | **Real test pending** | Built, to be confirmed |
 
 ## Details
 
@@ -61,14 +65,25 @@ A web page cannot read the Wi-Fi network or router. The server can see the IP ad
 HTTPS hosting (GitHub Pages). The test page was published with GitHub Pages and is served over HTTPS (Enforce HTTPS is on). It opened on a laptop and on an iPhone. On both devices the browser asked for location permission and returned a measurement. This works only because the page is served over HTTPS. Accuracy was about 10 m on the phone and about 183 m on the laptop (which has no GPS).
 
 ### CSV spreadsheet
-CSV spreadsheet. A sample attendance file (tests/attendance-sample.csv; columns: Email, Name, Status, Check-in time, Distance from classroom, Note; four made-up students with the statuses Present, Flagged and Absent) was opened by double-click in Microsoft Excel on Windows. Each column appeared in its own column and all four rows were shown correctly. The sheet was displayed right to left because of the Hebrew language settings, and the column widths had to be widened to read the long headers. Names written in Hebrew were not tested.
+CSV spreadsheet. A sample attendance file (tests/attendance-sample.csv; it was opened in Excel in its first version with the columns Email, Name, Status, Check-in time, Distance from classroom, Note, and it was updated later with the start and end check-in columns and the comment; four made-up students with the statuses Present, Flagged and Absent) was opened by double-click in Microsoft Excel on Windows. Each column appeared in its own column and all four rows were shown correctly. The sheet was displayed right to left because of the Hebrew language settings, and the column widths had to be widened to read the long headers. Names written in Hebrew were not tested.
 
-## Other features (design only, not tested)
+### Render hosting
+The first plan was GitHub Pages, but the demo needs a server (codes, check-ins, AI calls), and the phones could not reach a laptop on the university Wi-Fi, because the network blocks traffic between devices. The demo therefore runs as a free web service on Render, which gives an HTTPS address that works from any phone. The free service sleeps after about 15 minutes without use and wakes up in about a minute, so the site should be opened a few minutes before the demo. The data is kept in memory and is lost when the server sleeps, so the roster is uploaded again. The AI key is kept only in the Render settings.
 
-- **Real-time comments:** TBD
-- **Polls:** TBD
-- **Class summary:** students upload their own summaries, and an AI agent combines them into one PDF summary
-- **LLM homework review:** language model that reviews homework and compares it to other submissions
+### AI (Google Gemini)
+The AI features use the Gemini API of Google, on the free tier, because there is no budget for a paid API plan. The server calls the API with a key that is kept only in the server settings, so the phones never see it. All three features use the same key: counting people in a photo, summarizing a transcript and reviewing homework. The model name is a setting, because Google replaces models over time: the first model we used (gemini-2.5-flash) was no longer available and was replaced.
+
+**Photo count test:** the lecturer page sent a classroom photo and Gemini returned 48 people, which the page compared with 1 check-in. The count is rough, so it is only a warning for the lecturer.
+
+**Limits and risks:** the free tier has request limits per minute and per day, and an answer can take several seconds. The photo, the transcript and the works are sent to Google, so the demo uses sample data and not real students' work. The terms of the free tier were not checked in detail. The class summary and the homework review were built and tested with a fake AI in the automated tests, and the real test is pending.
+
+## Other features
+- **Student comments:** implemented, a text box in the end-of-class check-in
+- **Polls:** implemented, a question with 2-6 options
+- **Class summary and homework review:** implemented with the AI above
+- **Students uploading their own summaries:** dropped
+
+
 
 ## Notes
 

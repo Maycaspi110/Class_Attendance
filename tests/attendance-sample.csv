@@ -1,5 +1,5 @@
-﻿Email,Name,Status,Check-in time,Distance from classroom (m),Note
-dana.levi@example.com,Dana Levi,Present,10:02,12,
-noa.cohen@example.com,Noa Cohen,Present,10:04,35,
-ron.mizrahi@example.com,Ron Mizrahi,Flagged,10:05,780,Valid code but location far from the classroom
-lior.peretz@example.com,Lior Peretz,Absent,,,
+﻿Email,Name,Status,Start check-in,End check-in,Distance from classroom (m),Note,Comment
+dana.levi@example.com,Dana Levi,Present,10:02,11:48,12,,The lesson was clear
+noa.cohen@example.com,Noa Cohen,Late,,11:50,35,,
+ron.mizrahi@example.com,Ron Mizrahi,Flagged,10:05,11:49,780,Start: valid code but location far from the classroom,
+lior.peretz@example.com,Lior Peretz,Absent,,,,,
