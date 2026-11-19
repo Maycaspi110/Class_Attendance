@@ -20,7 +20,7 @@ Build a simple web app for teaching in class that works on students' own smartph
 | 6 | Software components | Diagram + text |
 | 7 | Class and sequence diagrams | Diagrams |
 | 8 | Testing strategy | Document |
-| 9 | Working demo: attendance and polls | Smartphone web app |
+| 9 | Working demo: attendance, comments, photo count, polls, class summary and homework review | Smartphone web app |
 | 10 | 10-minute demo in class | Live demo |
 | 11 | Conclusion | Document |
 
@@ -32,16 +32,22 @@ Attendance:
 - Course roster, so only registered students can check in
 - Changing code (every 10-30 seconds), also shown as a QR code
 - Location check: within about 150 m of the classroom; students who are far are flagged, not rejected
-- CSV spreadsheet for the lecturer (Present, Flagged, Absent)
+- Two check-ins (start and end of class): Present, Late, Left early, Flagged, Absent
+- CSV spreadsheet for the lecturer, with the comments
+- Student comments about the lesson, at the end check-in
+- Photo count: an AI counts the people in a photo of the classroom, compared with the check-ins (a warning only)
 
 Lecturer polls: a quick poll about the current material, answered from students' phones
 
-**Design only (not implemented):**
-- Student comments, suggestions and questions
-- Class summary: students upload their own summaries, and an AI agent combines them into one PDF summary
+Class summary: the lecturer uploads the transcript of the online class, and an AI writes a summary that only the lecturer sees
+
+Homework review: a student (identified by email) sends a work and gets an AI review, compared with their previous version and with other students' works (anonymous)
+
+AI service: Google Gemini on the free tier, called from the server. The students' phones never get the key.
 
 **Not included:**
-- LLM homework review
+- Students uploading their own class summaries (dropped)
+- Polls sent by email
 - Integration with Moodle, Zoom or personal information systems
 - A system that is 100% cheat-proof (known limitations are documented)
 
@@ -60,7 +66,7 @@ These come from the tools report:
 2. Write the SRS, then the use cases
 3. Design the components, class diagrams and sequence diagrams
 4. Write the testing strategy
-5. Build the demo: attendance and polls (reusing existing code from the test pages)
+5. Build the demo: attendance, comments, photo count, polls, class summary and homework review
 6. Run the demo in class and write the conclusion
 
 ## 6. Who does what
@@ -72,4 +78,8 @@ Each team member prepares their own version of each deliverable. Then we compare
 - **GPS accuracy indoors varies.** Mitigation: a wide radius (about 150 m) and a flag for the lecturer.
 - **A code can be photographed and shared.** Mitigation: the code changes quickly, the location check, and the flag for the lecturer.
 - **Classroom internet may be weak.** Mitigation: test the demo in the classroom before the presentation.
-- **Time is limited.** Mitigation: implement only attendance and polls; everything else stays as design.
+- **The free AI has limits and can be slow.** Mitigation: short waits between requests, clear error messages, and a short transcript for the demo.
+- **Privacy:** photos, transcripts and works are sent to Google. Mitigation: nothing is saved except the short results in memory, and the demo uses sample data.
+- **Email is the only identity** for the homework page, so a student could send a work in another student's name. Known limitation of the demo.
+- **The free server sleeps**, and the data in memory is lost. Mitigation: open the site a few minutes before the demo and upload the roster again.
+- **Time is limited.** Mitigation: keep each feature simple (KISS).

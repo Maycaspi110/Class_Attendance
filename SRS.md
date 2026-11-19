@@ -6,14 +6,14 @@
 
 ## 1. Purpose and scope
 
-This document lists what the system must do (functional requirements) and how it must behave (non-functional requirements). The main feature is automatic attendance. Lecturer polls are also implemented in the demo. Student comments and the class summary are design only and are not covered by requirements here.
+This document lists what the system must do (functional requirements) and how it must behave (non-functional requirements). The main feature is automatic attendance. Student comments, the photo count, lecturer polls, the class summary and the homework review are also implemented in the demo.
 
 ## 2. Users
 
 | User | Description |
 |------|-------------|
 | Lecturer | Runs the session in class, uses a phone and the classroom screen, and receives the attendance spreadsheet. |
-| Student | Uses a personal smartphone browser to check in and to answer polls. |
+| Student | Uses a personal smartphone browser to check in, to comment, to answer polls and to send homework. |
 
 ## 3. Functional requirements
 
@@ -45,6 +45,12 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | FR-15 | The system shall show the student a clear message: check-in received, or the reason it failed (wrong or expired code, email not on the roster). |
 | FR-16 | A student shall have only one attendance record per session. Checking in again shall not create a duplicate. |
 | FR-17 | The student shall be able to answer an open poll once. |
+| FR-18 | The lecturer shall be able to open a second check-in at the end of the class. Students who checked in only at the start are shown as Left early, and students who checked in only at the end are shown as Late. |
+| FR-19 | The student shall be able to write a short comment (up to 300 characters) in the end check-in. The lecturer sees the comments and they are in the CSV. |
+| FR-20 | The lecturer shall be able to upload a photo of the classroom. The system counts the people with an AI and compares the number with the check-ins. The result is a warning only, and the photo is not saved. |
+| FR-21 | The lecturer shall be able to upload the transcript of the class (.txt, .vtt or .srt) and get an AI summary. Only the lecturer can see the summary. |
+| FR-22 | The student shall be able to send a homework (a text or code file) with the roster email and get an AI review. |
+| FR-23 | The homework review shall compare the work with the student's previous version and with other students' works. The student shall never see another student's work or name. |
 
 ## 4. Non-functional requirements
 
@@ -56,6 +62,8 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | NFR-4 | **Privacy:** the system keeps only the data it needs (roster, check-ins, poll answers). The location is used only to check the distance. |
 | NFR-5 | **Reliable in class:** it works over the classroom network, and the previous code is still accepted for a short time after the code changes. |
 | NFR-6 | **Honest limits:** the system does not claim to be fully cheat-proof, and its known limitations are documented. |
+| NFR-7 | **AI service:** the AI key is kept only in the server settings, never in the code or the browser. AI errors are shown to the user as clear messages. |
+| NFR-8 | **AI privacy:** photos, transcripts and works are sent to the AI service only to get a result, and are not stored. Only the result is kept in memory. |
 
 ## 5. Constraints and assumptions
 
@@ -65,7 +73,9 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 - The roster file may have other columns (for example an ID number). The system ignores them and does not keep them.
 - In the prototype the secret used to create the code is visible in the browser. A real system would create the codes on a server.
 - In the demo the data is kept in memory and is lost when the server restarts. A real system would keep it in a database.
-- Not included: Moodle or Zoom integration, LLM homework review, comments and class summary (design only).
+- The photo count is a rough number. It is a warning for the lecturer and nobody is marked because of it.
+- The homework page identifies the student only by the roster email, like the check-in, so it can be misused. A real system would add a login.
+- Not included: Moodle or Zoom integration, students uploading their own class summaries, polls sent by email.
 
 ## 6. Open points
 
