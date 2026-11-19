@@ -88,3 +88,5 @@ body.screen .pagelink { color: #fff; font-weight: 700; margin-top: 0; }
 body.screen .hint { color: #93a4c0; font-size: clamp(1rem, 2.5vw, 1.6rem); margin-top: 2vh; }
 
 @media (prefers-reduced-motion: reduce) { .card { animation: none; } * { transition: none !important; } }
+
+.summarytext { white-space: pre-wrap; background: #f6f8fd; border: 1px solid #dfe5f2; border-radius: 12px; padding: 14px 16px; margin-top: 12px; line-height: 1.55; }

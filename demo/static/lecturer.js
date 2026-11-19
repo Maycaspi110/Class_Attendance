@@ -180,6 +180,43 @@
     });
   });
 
+  // ---- lesson summary (only the lecturer) ----
+  var summaryMsg = $("summarymsg");
+
+  function showSummary(d) {
+    $("summaryoff").hidden = d.ready !== false;
+    var box = $("summarytext");
+    box.hidden = !d.summary;
+    box.textContent = d.summary ? d.summary.text : "";
+  }
+
+  function loadSummary() {
+    api("GET", "/api/summary").then(function (result) {
+      if (result.data && result.data.ok) { showSummary(result.data); }
+    });
+  }
+
+  $("makesummary").addEventListener("click", function () {
+    var file = $("transcriptfile").files[0];
+    if (!file) { say(summaryMsg, "Choose the transcript file first.", "bad"); return; }
+    var button = $("makesummary");
+    button.disabled = true;
+    say(summaryMsg, "Writing the summary... this can take up to a minute.", "");
+    var form = new FormData();
+    form.append("transcript", file, file.name);
+    api("POST", "/api/summary", form, true).then(function (result) {
+      button.disabled = false;
+      if (needLogin(result)) { return; }
+      if (result.data.ok) {
+        say(summaryMsg, "The summary is ready. Only you can see it.", "ok");
+        showSummary({ ready: true, summary: result.data.summary });
+      } else {
+        say(summaryMsg, result.data.error || "Could not write the summary.", "bad");
+      }
+    });
+  });
+  loadSummary();
+
   function showHeadcounts(d) {
     $("headcountoff").hidden = d.headcount_ready;
     var body = $("listheadcounts");
