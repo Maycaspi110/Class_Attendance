@@ -68,10 +68,10 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 ## 5. Constraints and assumptions
 
 - Students have a smartphone with a browser and allow location access.
-- GPS accuracy inside a building can be lower than outdoors. The radius is wide on purpose, and far or inaccurate locations are flagged for the lecturer to decide.
+- GPS accuracy inside a building can be lower than outdoors, and a laptop guesses its location from the Wi-Fi. The radius is wide on purpose. The allowed distance is the radius plus the accuracy of the student's location and the accuracy of the lecturer's location (each counted up to 300 m), so one laptop is not flagged because of two rough readings. Far or inaccurate locations are flagged for the lecturer to decide.
 - The demo uses made-up students and emails.
 - The roster file may have other columns (for example an ID number). The system ignores them and does not keep them.
-- In the prototype the secret used to create the code is visible in the browser. A real system would create the codes on a server.
+- In the demo app the codes are created and checked on the server, and the browser never gets the secret. (Only the early test page `tests/code-test.html` had the secret in the browser.)
 - In the demo the data is kept in memory and is lost when the server restarts. A real system would keep it in a database.
 - The photo count is a rough number. It is a warning for the lecturer and nobody is marked because of it.
 - The homework page identifies the student only by the roster email, like the check-in, so it can be misused. A real system would add a login.

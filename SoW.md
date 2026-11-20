@@ -55,19 +55,20 @@ AI service: Google Gemini on the free tier, called from the server. The students
 
 These come from the tools report:
 - A typed code that changes, plus a QR code (tested on iPhone and Android)
-- GitHub Pages for HTTPS hosting
+- Render (a free web service) for the demo: it gives an HTTPS address that phones can reach. GitHub Pages was only used for the early test pages
+- Google Gemini (free tier) for the AI features, called from the server
 - CSV file for the lecturer's spreadsheet
-- GPS (browser geolocation) for the distance check: to be confirmed after the tests in class
+- GPS (browser geolocation) for the distance check. The allowed distance is the radius (about 150 m) plus the accuracy of the two locations, so a laptop is not flagged because of a rough Wi-Fi location
 - Bluetooth rejected (not supported on iPhone)
 
 ## 5. Work plan
 
-1. Finish the tools report (GPS and IP tests in class)
-2. Write the SRS, then the use cases
-3. Design the components, class diagrams and sequence diagrams
-4. Write the testing strategy
-5. Build the demo: attendance, comments, photo count, polls, class summary and homework review
-6. Run the demo in class and write the conclusion
+1. Finish the tools report (done)
+2. Write the SRS, then the use cases (done)
+3. Design the components, class diagrams and sequence diagrams (done)
+4. Write the testing strategy (done)
+5. Build the demo (done): attendance, comments, photo count, polls, class summary and homework review
+6. Run the demo in class and write the conclusion (the conclusion is written, the demo is in class)
 
 ## 6. Who does what
 

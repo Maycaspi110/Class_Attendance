@@ -71,7 +71,7 @@ flowchart LR
 | Component | What it does | Related requirements |
 |-----------|--------------|--------------|
 | Code generator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells whether a code is the current or the previous one. | changing code, current and previous code |
-| Location checker | Calculates the distance between the student's phone and the classroom location, and takes the accuracy of the phone into account. | distance check, flag |
+| Location checker | Calculates the distance between the student's phone and the classroom location. The allowed distance is the radius plus the accuracy of the student's location and of the lecturer's location (each up to 300 m). A location worse than the accuracy limit, or missing, is "inaccurate". | distance check, flag |
 | Attendance manager | The main logic. For each check-in it checks the roster, the code and the location, and records Present or Flagged, for the start or the end round. It combines the two rounds into the lesson status (Present, Late, Left early, Flagged, Absent) and keeps the comments. | FR-1 to FR-7, FR-11 to FR-16, FR-18, FR-19 |
 | Poll manager | Saves a poll, receives one answer per student and counts the answers. | create a poll, one answer per student, see the results |
 | CSV exporter | Builds the spreadsheet for the lecturer (Email, Name, Status, Start check-in, End check-in, Distance from classroom, Note, Comment). | FR-7 |
@@ -105,4 +105,4 @@ flowchart LR
 
 - **AI:** the AI answers are a help and can be wrong. The photo count is a warning, and the homework review is advice.
 - **Demo:** for the demo the server can be small, and the exact technology is chosen in the implementation step.
-- **Known limit:** in the prototype the secret used to create the code is visible in the browser. In this design the code generator lives on the server, so a real system does not have this problem.
+- **Known limit:** the codes are created and checked on the server, so the browser never gets the secret. A code can still be photographed and sent to a friend during its short validity.

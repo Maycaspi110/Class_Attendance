@@ -21,10 +21,11 @@ classDiagram
   }
   class Session {
     +Location classroomLocation
+    +int classroomAccuracy
     +DateTime startTime
     +String round
     +String status
-    +start(location)
+    +start(location, accuracy)
     +end()
     +isOpen() boolean
   }
@@ -36,7 +37,7 @@ classDiagram
   class LocationChecker {
     +int allowedRadiusMeters
     +distance(a, b) int
-    +check(location, accuracy, classroomLocation) LocationResult
+    +check(location, accuracy, classroomLocation, classroomAccuracy) LocationResult
   }
   class AttendanceRecord {
     +Student student
@@ -112,7 +113,7 @@ classDiagram
 | Session | One check-in round ("start" or "end" of the class): the classroom location, the start time and whether it is open or closed. | FR-2, FR-5, FR-18 |
 | LessonEntry | One student in the whole lesson: the start record, the end record and the combined status (Present, Late, Left early, Flagged or Absent). | FR-6, FR-18 |
 | CodeGenerator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells if an entered code is the current one, the previous one or invalid. | changing code, current and previous code |
-| LocationChecker | Calculates the distance between the phone and the classroom, and decides if the location is good, far or too inaccurate. | distance check, flag |
+| LocationChecker | Calculates the distance between the phone and the classroom, and decides if the location is good, far or too inaccurate. The allowed distance grows with the two accuracies (each up to 300 m). | distance check, flag |
 | AttendanceRecord | One check-in of one student in one round: status (Present or Flagged), time, distance, a note and the comment about the lesson. | flag, one record per student, FR-19 |
 | AttendanceManager | The main logic. It checks the roster, the code and the location for each check-in, and keeps one record per student. | roster, code and location checks, one record per student |
 | Poll | A quick poll: a question, answer options, and the counting of answers. | create a poll, see the results |
@@ -153,7 +154,7 @@ sequenceDiagram
     alt Code is invalid
       AM-->>SP: Error: wrong or expired code
     else Code is valid
-      AM->>LC: check(location, accuracy, classroomLocation)
+      AM->>LC: check(location, accuracy, classroomLocation, classroomAccuracy)
       LC-->>AM: Distance and result (good, far or inaccurate)
       Note over AM: Good location gives Present. Far, missing or inaccurate location gives Flagged. If the student already has a record, the manager answers "already recorded" and saves nothing.
       AM->>DB: Save attendance record

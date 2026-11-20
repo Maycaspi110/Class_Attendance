@@ -52,8 +52,12 @@ The tests use made-up students and emails. The AI service is never called in the
 | Same point | Phone at the classroom location | Distance 0 |
 | Known distance | Two points about 100 m apart | Distance is about 100 m |
 | Near | Distance inside the radius (150 m), good accuracy | "good" |
-| Far | Distance outside the radius | "far" |
-| Inaccurate | Accuracy worse than the allowed limit (the limit is set after the tests in class) | "inaccurate" |
+| Far | Distance outside the radius (with good accuracy) | "far" |
+| Inaccurate | Accuracy worse than the allowed limit (1000 m) | "inaccurate" |
+| Rough readings of the same place | Two readings 300 m apart, each with an accuracy of 180 m | "good" (the accuracies are added to the radius) |
+| The lecturer's rough location | The same distance, with a good student accuracy and a rough lecturer accuracy | "far" without the lecturer accuracy, "good" with it |
+| Far with a rough location | About 1 km away with an accuracy of 150 m, or even 4000 m | "far" (the allowance stops at 300 m for each) |
+| Good GPS | 300 m away with an accuracy of 8 m | "far" (the radius stays tight) |
 | No location | The phone gave no location | "inaccurate" (treated as missing) |
 
 ### Session
