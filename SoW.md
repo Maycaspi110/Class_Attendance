@@ -23,6 +23,7 @@ Build a simple web app for teaching in class that works on students' own smartph
 | 9 | Working demo: attendance, comments, photo count, polls, class summary and homework review | Smartphone web app |
 | 10 | 10-minute demo in class | Live demo |
 | 11 | Conclusion | Document |
+| 12 | Submission through the form | By 25/11/2026 |
 
 ## 3. Scope
 
@@ -46,6 +47,7 @@ Homework review: a student (identified by email) sends a work and gets an AI rev
 AI service: Google Gemini on the free tier, called from the server. The students' phones never get the key.
 
 **Not included:**
+- Comments during the class: a student writes a comment (up to 300 characters) in the end check-in only
 - Students uploading their own class summaries (dropped)
 - Polls sent by email
 - Integration with Moodle, Zoom or personal information systems

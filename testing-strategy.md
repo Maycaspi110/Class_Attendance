@@ -210,3 +210,9 @@ These are done by hand, in the real classroom, with real phones (iPhone and Andr
 - The quality of the AI answers (I only check that they are shown and the errors are clear).
 - Moodle and Zoom integration (not included).
 - Polls sent by email (not included).
+
+## 7. Status
+
+- **Automated tests:** 329 pass.
+- **Done by hand:** the changing code (10 and 30 seconds) and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the pages on phones through Render, the photo count with a classroom photo, the class summary with a 2 minute recording, the homework review, and a check-in from a laptop.
+- **Not done yet:** the acceptance tests in section 4 with many phones at once in the real classroom, and the demo in class.

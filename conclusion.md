@@ -18,7 +18,7 @@ A web app that students open on their own phones, with nothing to install. It ru
 
 ## How I checked it
 
-- 262 automated tests (pytest) for the classes, the pages and the errors. The AI is replaced by a fake one in the tests.
+- 329 automated tests (pytest) for the classes, the pages and the errors. The AI is replaced by a fake one in the tests.
 - Manual tests: the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the website on phones through Render, and the AI photo count.
 
 ## What I learned
@@ -38,6 +38,7 @@ A web app that students open on their own phones, with nothing to install. It ru
 ## Next steps (if the project continues)
 
 - A real database and a proper login for students.
-- Codes created and checked only on the server, with a paid hosting plan that does not sleep.
-- Polls sent by email.
+- A paid hosting plan that does not sleep.
+- Comments during the class (today a comment is written in the end check-in only).
+- Polls sent by email (left out on purpose, to keep the demo small).
 - Checking the privacy terms and moving to a paid AI plan.

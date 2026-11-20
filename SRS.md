@@ -51,6 +51,8 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | FR-21 | The lecturer shall be able to upload a recording of the class (MP4, WebM, MP3, M4A or WAV, up to about 7 minutes) or paste a link to a public YouTube video, and get an AI summary. The sound is taken out of the recording in the browser. Only the lecturer can see the summary. |
 | FR-22 | The student shall be able to send a homework (a text or code file) with the roster email and get an AI review. |
 | FR-23 | The homework review shall compare the work with the student's previous version and with other students' works. The student shall never see another student's work or name. |
+| FR-24 | A student who types 5 wrong codes in a row shall wait one minute, to stop guessing of the 4-digit code. |
+| FR-25 | The lecturer can start a check-in only if the accuracy of the lecturer's location is 500 m or better. |
 
 ## 4. Non-functional requirements
 
@@ -80,4 +82,4 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 ## 6. Open points
 
 - Roster file format (planned: CSV).
-- Final values for the code period (10-30 seconds) and the radius, to be confirmed after the tests in class.
+- Decided: the code period is 10-30 seconds (30 on the demo server) and the radius is 150 m by default, with the accuracy of the two locations added. Both can be set in the server settings.

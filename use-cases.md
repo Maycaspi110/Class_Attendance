@@ -21,7 +21,7 @@ Each use case is a short story of how a user does one thing with the system. Att
   - The file is missing the name or email column: the system shows an error and asks for another file.
   - The same email appears twice: the system shows a warning and the lecturer fixes the file.
 - **After:** The roster is saved and ready for a session.
-- **Related requirements:** upload the roster
+- **Related requirements:** FR-1
 
 ## UC-2: Lecturer starts and ends an attendance session
 
@@ -39,7 +39,7 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Other cases:**
   - The location is blocked or too inaccurate: the system tells the lecturer and asks to try again.
 - **After:** The session is open (or closed) and the results are available.
-- **Related requirements:** start a session, show the code and QR, accept the current and previous code, end a session
+- **Related requirements:** FR-2, FR-3, FR-4, FR-5, FR-18, FR-25
 
 ## UC-3: Student checks in
 
@@ -60,7 +60,7 @@ Each use case is a short story of how a user does one thing with the system. Att
   - The code is valid but the location is far, missing or too inaccurate: the system records the student as Flagged and tells the student that the lecturer will review it. The student is not rejected.
   - The student already checked in: the system says so and does not create a second record.
 - **After:** The student has one record per round (start and end): Present or Flagged. Together they give the lesson status: Present (both rounds), Late (only the end round), Left early (only the start round) or Absent.
-- **Related requirements:** check in from the phone: roster, code, location, flag, messages, one record per student
+- **Related requirements:** FR-10 to FR-16, FR-19, FR-24
 
 ## UC-4: Lecturer reviews the results and downloads the spreadsheet
 
@@ -76,7 +76,7 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Other cases:**
   - Nobody checked in: all students appear as Absent.
 - **After:** The lecturer has a CSV file with the columns Email, Name, Status, Start check-in, End check-in, Distance from classroom (m), Note and Comment.
-- **Related requirements:** see the results, download the CSV
+- **Related requirements:** FR-6, FR-7
 
 ## UC-5: Lecturer checks the number of people with a photo
 
@@ -94,7 +94,7 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **After:** The lecturer sees the count. It is a rough number and only a warning: nobody is marked because of it.
 - **Related requirements:** FR-20
 
-## UC-6: Lecturer runs a poll (optional)
+## UC-6: Lecturer runs a poll
 
 **Story:** As a lecturer, I want to ask a quick question during the lesson or at its end, so that I can see if the students understood.
 
