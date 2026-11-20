@@ -75,6 +75,8 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 - The roster file may have other columns (for example an ID number). The system ignores them and does not keep them.
 - In the demo app the codes are created and checked on the server, and the browser never gets the secret. (Only the early test page `tests/code-test.html` had the secret in the browser.)
 - In the demo the data is kept in memory and is lost when the server restarts. A real system would keep it in a database.
+- The homework review never shows another student's work or name, but it can describe the approach of another work in general words.
+- A firewall in front of the demo server (the hosting service) can stop an uploaded text that looks like an attack, for example a README with SQL words or a path such as `../../etc/passwd`. Then the lecturer or student sees only a 403 answer, and has to remove that text.
 - The photo count is a rough number. It is a warning for the lecturer and nobody is marked because of it.
 - The homework page identifies the student only by the roster email, like the check-in, so it can be misused. A real system would add a login.
 - Not included: Moodle or Zoom integration, students uploading their own class summaries, polls sent by email.
