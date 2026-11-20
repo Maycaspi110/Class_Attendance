@@ -56,6 +56,15 @@ MAX_LOGIN_FAILURES = 10
 LOGIN_WINDOW_SECONDS = 300
 MAX_PHOTO_BYTES = 6 * 1024 * 1024
 MAX_TRANSCRIPT_BYTES = 1024 * 1024
+# What a tile of the lecturer menu shows: the title, and the cards that belong to it
+LECTURER_SECTIONS = {
+    "roster": ("Course roster", ("roster",)),
+    "attendance": ("Attendance & results", ("attendance", "results")),
+    "results": ("Attendance & results", ("attendance", "results")),
+    "photo": ("Photo count", ("photo",)),
+    "summary": ("Class summary", ("summary",)),
+    "poll": ("Poll", ("poll",)),
+}
 LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll")  # the cards of the lecturer page
 MAX_HOMEWORK_BYTES = 200 * 1024
 
@@ -267,7 +276,13 @@ def create_app(test_config=None):
     @app.route("/lecturer")
     @lecturer_required
     def lecturer():
-        return render_template("lecturer.html", version=(os.environ.get("RENDER_GIT_COMMIT") or "local")[:7])
+        title, visible = LECTURER_SECTIONS.get(request.args.get("go"), ("Lecturer", None))
+        return render_template(
+            "lecturer.html",
+            version=(os.environ.get("RENDER_GIT_COMMIT") or "local")[:7],
+            title=title,
+            visible=visible,
+        )
 
     @app.route("/screen")
     @lecturer_required

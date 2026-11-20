@@ -601,3 +601,37 @@ def test_a_far_student_is_still_flagged_with_a_rough_lecturer_location(student, 
     code = screen_code(lecturer)
     response = check_in(student, "dana.levi@example.com", code, point=(32.1090, 35.2000), accuracy=20)
     assert response.get_json()["status"] == "Flagged"
+
+
+def _shown_cards(page_bytes):
+    """The ids of the cards of the lecturer page that are not hidden."""
+    import re
+
+    tags = re.findall(rb'<div class="card" id="(\w+)"([^>]*)>', page_bytes)
+    return {name.decode() for name, rest in tags if b"hidden" not in rest}
+
+
+def test_the_lecturer_page_without_a_choice_shows_every_card(lecturer):
+    assert _shown_cards(lecturer.get("/lecturer").data) == {"roster", "attendance", "results", "photo", "summary", "poll"}
+
+
+def test_a_tile_shows_only_its_own_part_of_the_lecturer_page(lecturer):
+    expected = {
+        "roster": {"roster"},
+        "attendance": {"attendance", "results"},
+        "photo": {"photo"},
+        "summary": {"summary"},
+        "poll": {"poll"},
+    }
+    for part, cards in expected.items():
+        assert _shown_cards(lecturer.get("/lecturer", query_string={"go": part}).data) == cards, part
+
+
+def test_an_unknown_choice_shows_the_whole_page(lecturer):
+    page = lecturer.get("/lecturer", query_string={"go": "<script>"}).data
+    assert len(_shown_cards(page)) == 6 and b"<script>alert" not in page
+
+
+def test_the_page_title_follows_the_choice(lecturer):
+    assert b"<h1>Course roster</h1>" in lecturer.get("/lecturer?go=roster").data
+    assert b"<h1>Lecturer</h1>" in lecturer.get("/lecturer").data
