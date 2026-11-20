@@ -118,7 +118,8 @@ The tests use made-up students and emails. The AI service is never called in the
 | Student menu | Open the student menu | Two tiles (check-in and homework), and no lecturer links |
 | Lecturer menu | Open it without and with the password | Without the password it goes to the login; with it, six lecturer tiles and no student tools |
 | Back links | Open every page | Each has a link back to its own menu |
-| Lecturer tile | A student opens a lecturer tile and logs in | After the login the lecturer page opens at the right card |
+| Lecturer tile | A student opens a lecturer tile and logs in | After the login the lecturer page opens with only the cards of that tile |
+| One part only | Open each tile of the lecturer menu | Only its own cards are shown (the roster tile shows only the roster; the attendance tile shows attendance and results); an unknown choice shows the whole page |
 | Safe return | A login with another address as the return address | Always returns to the lecturer page, never to another site |
 
 ### Headcount (photo count)
