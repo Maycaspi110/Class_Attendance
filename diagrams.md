@@ -1,7 +1,7 @@
 # Class Diagram and Sequence Diagrams
 
 **Project:** Class Attendance & Teaching Tool
-**Team:** May Caspi and Haim Barabi
+**Author:** May Caspi
 **Related documents:** SRS, Use Cases, Software Components
 
 This document goes one level below the components. The class diagram shows the main classes of the demo, what each one holds and does, and how they are connected. The sequence diagrams show the important scenarios step by step, in time order.

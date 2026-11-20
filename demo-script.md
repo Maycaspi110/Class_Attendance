@@ -1,7 +1,7 @@
 # Demo Script (10 minutes)
 
 **Project:** Class Attendance & Teaching Tool
-**Team:** May Caspi and Haim Barabi
+**Author:** May Caspi
 **Related documents:** README, Use Cases, Testing Strategy
 
 The demo runs on the Render address, from a phone for the students and a laptop for the lecturer and the classroom screen.

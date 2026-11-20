@@ -1,7 +1,7 @@
 # Use Cases
 
 **Project:** Class Attendance & Teaching Tool
-**Team:** May Caspi and Haim Barabi
+**Author:** May Caspi
 **Related documents:** SoW, SRS
 
 Each use case is a short story of how a user does one thing with the system. Attendance is the main feature (UC-1 to UC-4). The photo count (UC-5), the poll (UC-6), the class summary (UC-7) and the homework review (UC-8) are extra features. All of them are implemented in the demo.

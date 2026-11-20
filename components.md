@@ -1,7 +1,7 @@
 # Software Components
 
 **Project:** Class Attendance & Teaching Tool
-**Team:** May Caspi and Haim Barabi
+**Author:** May Caspi
 **Related documents:** SRS, Use Cases
 
 This document lists the main parts of the software, what each part does, and which parts talk to each other. It does not describe code. Classes and sequences are in the next document.

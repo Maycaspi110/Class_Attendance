@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)
 
 **Project:** Class Attendance & Teaching Tool
-**Team:** May Caspi and Haim Barabi
+**Author:** May Caspi
 **Related documents:** README, SoW, tools report
 
 ## 1. Purpose and scope

@@ -2,13 +2,13 @@
 
 **Project:** Class Attendance & Teaching Tool
 **Course:** Introduction to Software Engineering, Ariel University
-**Team:** May Caspi and Haim Barabi
+**Author:** May Caspi
 
 ## 1. Purpose
 
 Build a simple web app for teaching in class that works on students' own smartphones, with nothing to install. The main goal is **automatic attendance**: the lecturer starts a session, students check in with a changing code, and the lecturer gets a spreadsheet.
 
-## 2. What we will deliver
+## 2. What I will deliver
 
 | # | Deliverable | Form |
 |---|-------------|------|
@@ -72,7 +72,7 @@ These come from the tools report:
 
 ## 6. Who does what
 
-Each team member prepares their own version of each deliverable. Then we compare the two versions and combine them into the final one.
+May Caspi prepares all the deliverables: the documents, the design, the code and the demo.
 
 ## 7. Assumptions and risks
 

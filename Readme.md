@@ -3,11 +3,11 @@
 A simple web-based tool for teaching in class. Students use it from any smartphone through the browser, with nothing to install.
 
 > Course: Introduction to Software Engineering, Ariel University
-> Ex2 - Vibe Coding & Deep Designing | Author: May Caspi and Haim Barabi
+> Ex2 - Vibe Coding & Deep Designing | Author: May Caspi
 
 ## Problem
 
-Taking attendance in class is slow and manual, and current online teaching tools are too complicated. We want a simple tool that works in a real classroom, on students' own phones.
+Taking attendance in class is slow and manual, and current online teaching tools are too complicated. The goal is a simple tool that works in a real classroom, on students' own phones.
 
 ## Goal
 

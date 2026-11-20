@@ -1,20 +1,20 @@
 # Testing Strategy
 
 **Project:** Class Attendance & Teaching Tool
-**Team:** May Caspi and Haim Barabi
+**Author:** May Caspi
 **Related documents:** SRS, Use Cases, Software Components, Class and Sequence Diagrams
 
-This document says how we will check that the demo works. The automated tests are written and run with pytest (261 tests pass at the time of writing). The tests follow the classes from the class diagram.
+This document says how I will check that the demo works. The automated tests are written and run with pytest (329 tests pass at the time of writing). The tests follow the classes from the class diagram.
 
 ## 1. Approach
 
-We test on three levels:
+I test on three levels:
 
 | Level | What is tested | How |
 |-------|----------------|-----|
 | Unit tests | Each class alone (for example the code generator, the location checker). | Automated: small test programs that run on a computer in a few seconds. |
 | Integration tests | A full flow through several classes (for example a check-in from start to finish). | Automated, with made-up students. |
-| Acceptance tests | The real system in the real classroom, with real phones. | Manual: a checklist that we go through together. |
+| Acceptance tests | The real system in the real classroom, with real phones. | Manual: a checklist that I go through. |
 
 Every test has an input and an expected result. A test passes only if the result is the same as expected.
 
@@ -207,6 +207,6 @@ These are done by hand, in the real classroom, with real phones (iPhone and Andr
 
 ## 6. What is not tested
 
-- The quality of the AI answers (we only check that they are shown and the errors are clear).
+- The quality of the AI answers (I only check that they are shown and the errors are clear).
 - Moodle and Zoom integration (not included).
 - Polls sent by email (not included).
