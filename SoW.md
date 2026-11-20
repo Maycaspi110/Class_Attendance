@@ -13,7 +13,7 @@ Build a simple web app for teaching in class that works on students' own smartph
 | # | Deliverable | Form |
 |---|-------------|------|
 | 1 | README: problem, goal, scope | Document (done) |
-| 2 | Tools report: tools tested in real life | Document (in progress) |
+| 2 | Tools report: tools tested in real life | Document (done) |
 | 3 | This SoW | Document |
 | 4 | SRS: functional and non-functional requirements | Document |
 | 5 | Use cases | Document |

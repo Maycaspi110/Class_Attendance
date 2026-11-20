@@ -16,7 +16,7 @@ Technical tools considered for the attendance system and the other teaching feat
 | Hosting | Render (free web service) | The demo opened on a laptop and on phones over the internet | Works. The free server sleeps after about 15 minutes and wakes up in about a minute | **Chosen** for the demo (the university Wi-Fi blocks phone-to-laptop traffic) |
 | AI | Google Gemini API (free tier) | Photo count: a classroom photo uploaded from the lecturer page | Returned 48 people for the photo, and the page compared it with the check-ins | **Chosen** for the photo count, the class summary and the homework review |
 | AI | Class summary from a recording | A screen recording of about 2 minutes (141 MB), uploaded from the lecturer page | The browser took out the sound (3.7 MB) and Gemini returned a summary | **Chosen** |
-| AI | Homework review | Two sample works for the same assignment | **Real test pending** | Built, to be confirmed |
+| AI | Homework review | A work sent from the homework page with a roster email, then a second work for the same assignment | A review came back, with the comparison to the other work | **Chosen** |
 
 ## Details
 
@@ -71,7 +71,7 @@ CSV spreadsheet. A sample attendance file (tests/attendance-sample.csv; it was o
 The first plan was GitHub Pages, but the demo needs a server (codes, check-ins, AI calls), and the phones could not reach a laptop on the university Wi-Fi, because the network blocks traffic between devices. The demo therefore runs as a free web service on Render, which gives an HTTPS address that works from any phone. The free service sleeps after about 15 minutes without use and wakes up in about a minute, so the site should be opened a few minutes before the demo. The data is kept in memory and is lost when the server sleeps, so the roster is uploaded again. The AI key is kept only in the Render settings.
 
 ### AI (Google Gemini)
-The AI features use the Gemini API of Google, on the free tier, because there is no budget for a paid API plan. The server calls the API with a key that is kept only in the server settings, so the phones never see it. All three features use the same key: counting people in a photo, summarizing a transcript and reviewing homework. The model name is a setting, because Google replaces models over time: the first model we used (gemini-2.5-flash) was no longer available and was replaced.
+The AI features use the Gemini API of Google, on the free tier, because there is no budget for a paid API plan. The server calls the API with a key that is kept only in the server settings, so the phones never see it. All three features use the same key: counting people in a photo, summarizing a class recording and reviewing homework. The model name is a setting, because Google replaces models over time: the first model we used (gemini-2.5-flash) was no longer available and was replaced.
 
 **Photo count test:** the lecturer page sent a classroom photo and Gemini returned 48 people, which the page compared with 1 check-in. The count is rough, so it is only a warning for the lecturer.
 
