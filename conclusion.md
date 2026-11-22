@@ -4,6 +4,8 @@
 **Author:** May Caspi
 **Related documents:** README, SoW, SRS, Testing Strategy
 
+The demo runs at https://class-attendance-ogqg.onrender.com (a free server: the first visit after a pause takes about a minute).
+
 ## What I built
 
 A web app that students open on their own phones, with nothing to install. It runs on a free Render server, and the AI features use the free Google Gemini service.

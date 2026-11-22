@@ -4,6 +4,8 @@ A small web app for teaching in class. Students use their own phone and a code t
 
 The design is in the main folder: `SRS.md`, `use-cases.md`, `components.md`, `diagrams.md`, `testing-strategy.md`. The numbers (radius, limits) are in the SRS.
 
+**Live demo:** https://class-attendance-ogqg.onrender.com (the free server sleeps, the first visit takes about a minute)
+
 ## Pages
 
 | Page | Address | Who |

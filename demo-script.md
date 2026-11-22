@@ -6,6 +6,8 @@
 
 The demo runs on the Render address, from a phone for the students and a laptop for the lecturer and the classroom screen.
 
+**Address of the demo:** https://class-attendance-ogqg.onrender.com
+
 ## Before the demo (15 minutes before)
 
 | # | Do | Why |

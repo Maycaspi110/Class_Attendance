@@ -5,6 +5,10 @@ A simple web-based tool for teaching in class. Students use it from any smartpho
 > Course: Introduction to Software Engineering, Ariel University
 > Ex2 - Vibe Coding & Deep Designing | Author: May Caspi
 
+**Live demo:** https://class-attendance-ogqg.onrender.com
+(students: open it on a phone and press *I am a student*; lecturer: press *I am a lecturer*, the password is given in class. The free server sleeps when it is not used, so the first visit can take about a minute.)
+**The app and how to run it:** [demo/README.md](demo/README.md)
+
 ## Problem
 
 Taking attendance in class is slow and manual, and current online teaching tools are too complicated. The goal is a simple tool that works in a real classroom, on students' own phones.
