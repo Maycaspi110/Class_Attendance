@@ -14,6 +14,10 @@
 
   function filled() { return $("email").value.trim() && $("assignment").value.trim(); }
 
+  function waitText(seconds) {
+    return seconds >= 5400 ? Math.round(seconds / 3600) + " hours" : Math.max(1, Math.round(seconds / 60)) + " minutes";
+  }
+
   function showStatus(d) {
     var bar = $("comparebar");
     bar.max = d.needed;
@@ -27,16 +31,16 @@
       return;
     }
     if (c && c.state === "done") {
-      say(statusEl, "This is your comparison with the class (you can do it once).", "ok");
       $("comparetext").textContent = c.text;
       $("comparetext").hidden = false;
-      return;
     }
     var count = d.count + " of " + d.needed + " students sent their work.";
     if (!d.reviewed) {
       say(statusEl, count + " Send your work first, then the comparison can open.", "");
     } else if (!d.unlocked) {
       say(statusEl, count + " The comparison opens when " + d.needed + " students sent their work.", "");
+    } else if (d.compare_wait > 0) {
+      say(statusEl, count + " This is your comparison. You can compare again in about " + waitText(d.compare_wait) + " (for example after you improve your work).", "ok");
     } else {
       say(statusEl, count + " The comparison is open." + (c && c.state === "error" ? " The last try failed: " + c.error : ""), "ok");
       compareBtn.disabled = false;
@@ -76,7 +80,7 @@
       var d = result.data;
       if (!d.ok) { say(msg, d.error || "Could not write the review (server answer " + result.status + "). Try again in a minute.", "bad"); refreshStatus(); return; }
       try { localStorage.setItem("attendance_email", $("email").value.trim()); } catch (e) { /* not important */ }
-      say(msg, "The review is ready. You got your one review for this assignment.", "ok");
+      say(msg, "The review is ready. You can send an improved version and get a new review in about " + waitText(d.review_wait) + ".", "ok");
       $("review").textContent = d.review;
       $("resultbox").hidden = false;
       $("resultbox").scrollIntoView();
