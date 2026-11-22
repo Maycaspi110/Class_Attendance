@@ -29,4 +29,4 @@ services:
       - key: CODE_PERIOD_SECONDS
         value: "30"
       - key: ALLOWED_RADIUS_METERS
-        sync: false            # Render asks you for it. Example: 100
+        value: "150"           # the allowed distance from the classroom, in meters
