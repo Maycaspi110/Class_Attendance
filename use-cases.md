@@ -4,7 +4,7 @@
 **Author:** May Caspi
 **Related documents:** SoW, SRS
 
-Each use case is a short story of how a user does one thing with the system. Attendance is the main feature (UC-1 to UC-4). The photo count (UC-5), the poll (UC-6), the class summary (UC-7) and the homework review (UC-8) are extra features. All of them are implemented in the demo.
+Each use case is a short story of how a user does one thing with the system. Attendance is the main feature (UC-1 to UC-4). The photo count (UC-5), the poll (UC-6), the class summary (UC-7), the homework review (UC-8) and the homework report for the lecturer (UC-9) are extra features. All of them are implemented in the demo.
 
 ## UC-1: Lecturer uploads the course roster
 
@@ -137,3 +137,22 @@ Each use case is a short story of how a user does one thing with the system. Att
   - The AI is not available: a clear error, and the student can try the comparison again.
 - **After:** The work stays in memory for the overview. The student can compare once a day. The student never sees another student's work or name.
 - **Related requirements:** FR-22, FR-23
+
+## UC-9: Lecturer gets a report about all the works of an assignment
+
+**Story:** As a lecturer, I want one report about all the works of an assignment on the due date, so that I can see if the class understood the assignment and what to explain again.
+
+- **Actor:** Lecturer
+- **Before:** The lecturer is logged in. Students sent works for the assignment (UC-8).
+- **Main flow:**
+  1. The lecturer opens the "Homework report" tile and chooses the assignment name. The page shows how many students sent a work.
+  2. The lecturer pastes what the assignment asks for and chooses the due date. Until the due date, the button is gray.
+  3. On the due date, the lecturer presses "Write the class report".
+  4. The AI reads all the works together and writes one report: do the works match the assignment, which mistakes repeat or what was not clear, what was interesting or special, and what to explain again. It can take a few minutes.
+  5. The lecturer reads the report. Only the lecturer sees it.
+- **Other cases:**
+  - Before the due date: the system says when the report opens.
+  - No student sent a work, or the text of the assignment is missing: the system shows an error.
+  - The AI is not available: a clear error, the old report stays, and the lecturer can try again.
+- **After:** The report is kept in memory until the server restarts. It does not name any student and does not describe works one by one.
+- **Related requirements:** FR-27

@@ -16,11 +16,11 @@ A web app that students open on their own phones, with nothing to install. It ru
 | 2 | Student comments | A comment box in the end-of-class check-in. The comments appear for the lecturer and in the CSV | Works |
 | 3 | Lecturer polls | A question with 2-6 options, answered from the phones, with a ready "Did you understand the lesson?" question | Works |
 | 4 | AI summary of the class | The lecturer uploads a recording (or a public YouTube link). The browser takes out the sound, and the AI writes a summary that only the lecturer sees | Works. Tried with a real 2 minute screen recording |
-| 5 | Homework review and comparison | A student sends a work and gets an AI review, once a day, and a new version replaces the old one. From 8 works the student can compare their work with a general overview of the class, once a day. No one sees another work | Works |
+| 5 | Homework review and comparison | A student sends a work and gets an AI review, once a day, and a new version replaces the old one. From 8 works the student can compare their work with a general overview of the class, once a day. No one sees another work. On the due date the lecturer gets one report about the whole class | Works |
 
 ## How I checked it
 
-- 344 automated tests (pytest) for the classes, the pages and the errors. The AI is replaced by a fake one in the tests.
+- 358 automated tests (pytest) for the classes, the pages and the errors. The AI is replaced by a fake one in the tests.
 - Manual tests: the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the website on phones through Render, and the AI photo count.
 
 ## What I learned

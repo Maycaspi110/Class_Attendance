@@ -53,7 +53,8 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | FR-23 | When at least 8 students (a server setting) sent their work for the same assignment, each of them can compare their own work with the class, once a day. The AI makes one general overview of all the works (only what several works share, no details of a single work) and compares the work of the student with it. Before that the comparison is closed and shows how many works are missing. The student shall never see another student's work or name. |
 | FR-24 | A student who types 5 wrong codes in a row shall wait one minute, to stop guessing of the 4-digit code. |
 | FR-25 | The lecturer can start a check-in only if the accuracy of the lecturer's location is 500 m or better. |
-| FR-26 | The lecturer pages (the menu, the roster, attendance and results, the photo count, the class summary, the poll and the classroom screen) shall need the lecturer password. The first page lets everyone choose student or lecturer, and each tile of the lecturer menu shows only its own part. |
+| FR-26 | The lecturer pages (the menu, the roster, attendance and results, the photo count, the class summary, the poll, the homework report and the classroom screen) shall need the lecturer password. The first page lets everyone choose student or lecturer, and each tile of the lecturer menu shows only its own part. |
+| FR-27 | On the due date of an assignment (or later) the lecturer can ask for a class report. The AI reads all the works of the assignment together and writes one report for the lecturer: do the works match what the assignment asks for, which mistakes repeat or what was not clear, and what was interesting or special. The report is about the class, not about each student, and has no names. Only the lecturer can see it. Before the due date the button is closed. |
 
 ## 4. Non-functional requirements
 

@@ -25,7 +25,7 @@ Design an end-to-end web application for teaching in class. The assignment is ma
 
 ![How attendance works](attendance-flow.png)
 
-0. Everyone starts from one home page with two tiles: student and lecturer. The student menu has Mark attendance and Homework review. The lecturer menu (with the lecturer password) has Course roster, Attendance & results, Classroom screen, Photo count, Class summary and Poll.
+0. Everyone starts from one home page with two tiles: student and lecturer. The student menu has Mark attendance and Homework review. The lecturer menu (with the lecturer password) has Course roster, Attendance & results, Classroom screen, Photo count, Class summary, Poll and Homework report.
 1. The lecturer uploads the course roster once, and opens attendance from their phone inside the classroom. The system saves that location as the classroom location.
 2. A code (also shown as a QR code) appears on the classroom screen and changes every 10-30 seconds.
 3. A student on the roster opens the web page on their phone, enters their email and the code (or scans the QR code), and is marked present.
@@ -51,6 +51,6 @@ No method is 100% cheat-proof, and known limitations will be documented in the d
   - Photo headcount (AI) as a second check
   - Lecturer polls
   - Lecturer-only AI summary of a class recording (a screen or Zoom recording, or a public YouTube link)
-  - Homework page: a student sends a work and gets an AI review once a day. When at least 8 students sent their work, a student can compare their work with a general overview of the class, once a day
+  - Homework page: a student sends a work and gets an AI review once a day. When at least 8 students sent their work, a student can compare their work with a general overview of the class, once a day. On the due date the lecturer gets one AI report about all the works together (do they match the assignment, repeated mistakes, interesting ideas)
 - **AI:** Google Gemini (free tier), used from the server. The key is kept only in the server settings.
 - **Not included:** integration with Moodle, Zoom, or personal information systems; students uploading their own summaries; polls sent by email
