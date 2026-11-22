@@ -32,6 +32,8 @@ from attendance.headcount import GeminiCounter, HeadcountError, compare, image_t
 from attendance.homework import (
     GeminiReviewer,
     HomeworkError,
+    DEFAULT_MIN_WORKS,
+    REFRESH_EVERY,
     HomeworkStore,
     ReviewServiceError,
     clean_name,
@@ -123,6 +125,7 @@ def create_app(test_config=None):
         CODE_PERIOD_SECONDS=_env_int("CODE_PERIOD_SECONDS", 20),
         ALLOWED_RADIUS_METERS=_env_int("ALLOWED_RADIUS_METERS", 150),
         MAX_ACCURACY_METERS=_env_int("MAX_ACCURACY_METERS", 1000),
+        HOMEWORK_MIN_WORKS=max(1, _env_int("HOMEWORK_MIN_WORKS", DEFAULT_MIN_WORKS)),
         TIMEZONE=os.environ.get("TIMEZONE", "Asia/Jerusalem"),
         # RENDER_EXTERNAL_URL is set by the Render hosting service itself.
         PUBLIC_URL=os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL"),
@@ -674,18 +677,37 @@ def create_app(test_config=None):
             return fail(str(error), 409 if "already" in str(error) else 400)
         return jsonify(ok=True, message="Thank you. Your answer was received.")
 
+    def homework_student():
+        """The student (by the roster email) and the assignment name of a homework request, or an error answer."""
+        student = manager.roster.find_by_email(str(request.values.get("email") or "")[:254])
+        if student is None:
+            return None, None, fail("This email is not on the roster.", 403)
+        assignment = clean_name(request.values.get("assignment"))
+        if not assignment:
+            return None, None, fail("Write the name of the assignment.")
+        return student, assignment, None
+
+    def homework_status(assignment, email):
+        count = state.homework.count(assignment)
+        needed = app.config["HOMEWORK_MIN_WORKS"]
+        reviewed = state.homework.work_of(assignment, email) is not None
+        return {
+            "count": count,
+            "needed": needed,
+            "reviewed": reviewed,
+            "unlocked": reviewed and count >= needed,
+            "comparison": state.homework.comparison(assignment, email),  # None, or the state of the comparison
+        }
+
     @app.route("/api/homework", methods=["POST"])
     def homework_review():
-        """A student sends a work and gets an AI review. Identified by the roster email, like the check-in."""
+        """A student sends a work and gets one AI review. Identified by the roster email, like the check-in."""
         request.max_content_length = MAX_HOMEWORK_BYTES + 4096
         if state.reviewer is None:
             return fail("The AI review is not set up. Add GEMINI_API_KEY in the server settings.", 503)
-        student = manager.roster.find_by_email(str(request.form.get("email") or "")[:254])
-        if student is None:
-            return fail("This email is not on the roster.", 403)
-        assignment = clean_name(request.form.get("assignment"))
-        if not assignment:
-            return fail("Write the name of the assignment.")
+        student, assignment, error = homework_student()
+        if error:
+            return error
         upload = request.files.get("work")
         if upload is not None and upload.filename:
             raw = upload.read(MAX_HOMEWORK_BYTES + 1)
@@ -695,17 +717,74 @@ def create_app(test_config=None):
         else:
             raw_text = str(request.form.get("text") or "")[:MAX_HOMEWORK_BYTES]
         try:
+            if state.homework.work_of(assignment, student.email) is not None:
+                return fail("You already sent a work for this assignment and got its review.", 409)
             text = clean_work(raw_text)
             state.homework.check_wait(student.email, now())
-            previous = state.homework.previous(assignment, student.email)
-            others = state.homework.others(assignment, student.email)
-            review = state.reviewer.review(text, previous.text if previous else None, [w.text for w in others])
+            review = state.reviewer.review(text)
             state.homework.save(assignment, student.email, text, now())
         except ReviewServiceError as error:
+            state.homework.note_failure(student.email, now())
             return fail(str(error), 502)
         except HomeworkError as error:
             return fail(str(error), 429 if "wait" in str(error) else 400)
-        return jsonify(ok=True, review=review, compared_with=len(others), had_previous=previous is not None)
+        return jsonify(ok=True, review=review, **homework_status(assignment, student.email))
+
+    @app.route("/api/homework/status")
+    def homework_state():
+        """How many works the assignment has, and what this student can do now."""
+        student, assignment, error = homework_student()
+        if error:
+            return error
+        return jsonify(ok=True, **homework_status(assignment, student.email))
+
+    @app.route("/api/homework/compare", methods=["POST"])
+    def homework_compare():
+        """Compare the work of a student with the class. It opens when enough students sent their work, and works once."""
+        if state.reviewer is None:
+            return fail("The AI review is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        student, assignment, error = homework_student()
+        if error:
+            return error
+        status = homework_status(assignment, student.email)
+        if not status["reviewed"]:
+            return fail("Send your work and get its review first.", 409)
+        if status["count"] < status["needed"]:
+            return fail(
+                "The comparison opens when %d students sent their work (now %d)." % (status["needed"], status["count"]), 409
+            )
+        if not state.homework.start_comparison(assignment, student.email):
+            return fail("You already compared this work with the class.", 409)
+        email = student.email
+
+        def run():
+            """The AI makes the class overview (only when it is missing or old) and compares one work with it."""
+            store = state.homework
+            try:
+                overview = store.overview(assignment)
+                if overview is None or store.count(assignment) - overview["count"] >= REFRESH_EVERY:
+                    with store.overview_lock:  # one overview at a time, the others wait and use it
+                        overview = store.overview(assignment)
+                        count = store.count(assignment)
+                        if overview is None or count - overview["count"] >= REFRESH_EVERY:
+                            store.set_overview(assignment, state.reviewer.overview(store.texts(assignment)), count)
+                            overview = store.overview(assignment)
+                comparison = state.reviewer.compare(store.work_of(assignment, email).text, overview["text"])
+                store.finish_comparison(assignment, email, text=comparison)
+            except ReviewServiceError as failure:
+                store.finish_comparison(assignment, email, error=str(failure))
+            except Exception:  # never leave the page waiting forever
+                app.logger.exception("The homework comparison failed")
+                store.finish_comparison(assignment, email, error="Something went wrong. Try again.")
+
+        if app.config.get("HOMEWORK_IN_BACKGROUND", not app.testing):
+            threading.Thread(target=run, daemon=True).start()  # the AI can be slower than one web request may last
+            return jsonify(ok=True, working=True), 202
+        run()  # in the tests the answer is ready at once
+        result = state.homework.comparison(assignment, email)
+        if result["state"] == "error":
+            return fail(result["error"], 502)
+        return jsonify(ok=True, **homework_status(assignment, email))
 
     @app.errorhandler(500)
     def server_error(_error):
