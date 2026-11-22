@@ -108,17 +108,17 @@ classDiagram
 
 | Class | Purpose | Related requirements |
 |-------|---------|----------------------|
-| Student | A student: name and email. | identify by email |
-| Roster | The course student list. Loads it from a CSV file and finds a student by email. | upload the roster, identify by email |
+| Student | A student: name and email. | FR-11 |
+| Roster | The course student list. Loads it from a CSV file and finds a student by email. | FR-1, FR-11 |
 | Session | One check-in round ("start" or "end" of the class): the classroom location, the start time and whether it is open or closed. | FR-2, FR-5, FR-18 |
 | LessonEntry | One student in the whole lesson: the start record, the end record and the combined status (Present, Late, Left early, Flagged or Absent). | FR-6, FR-18 |
-| CodeGenerator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells if an entered code is the current one, the previous one or invalid. | changing code, current and previous code |
-| LocationChecker | Calculates the distance between the phone and the classroom, and decides if the location is good, far or too inaccurate. The allowed distance grows with the two accuracies (each up to 300 m). | distance check, flag |
-| AttendanceRecord | One check-in of one student in one round: status (Present or Flagged), time, distance, a note and the comment about the lesson. | flag, one record per student, FR-19 |
-| AttendanceManager | The main logic. It checks the roster, the code and the location for each check-in, and keeps one record per student. | roster, code and location checks, one record per student |
-| Poll | A quick poll: a question, answer options, and the counting of answers. | create a poll, see the results |
-| PollAnswer | One answer of one student. A student can answer once. | answer a poll once |
-| CsvExporter | Builds the spreadsheet for the lecturer from the lesson entries. | download the CSV |
+| CodeGenerator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells if an entered code is the current one, the previous one or invalid. | FR-3, FR-4 |
+| LocationChecker | Calculates the distance between the phone and the classroom, and decides if the location is good, far or too inaccurate. The allowed distance grows with the two accuracies (each up to 300 m). | FR-13, FR-14, FR-25 |
+| AttendanceRecord | One check-in of one student in one round: status (Present or Flagged), time, distance, a note and the comment about the lesson. | FR-14, FR-16, FR-19 |
+| AttendanceManager | The main logic. It checks the roster, the code and the location for each check-in, and keeps one record per student. | FR-11, FR-13, FR-14, FR-16, FR-24 |
+| Poll | A quick poll: a question, answer options, and the counting of answers. | FR-8, FR-9 |
+| PollAnswer | One answer of one student. A student can answer once. | FR-17 |
+| CsvExporter | Builds the spreadsheet for the lecturer from the lesson entries. | FR-7 |
 | GeminiCounter | Sends a photo to the AI and returns the number of people. The comparison with the check-ins is a separate function that gives ok, warning or information. | FR-20 |
 | GeminiSummarizer | Sends the sound of a recording, or a YouTube link, to the AI and returns the summary. It runs in the background. | FR-21 |
 | HomeworkStore | Keeps the latest work of each student for each assignment (in memory, with a limit), and gives the previous work and up to 5 works of other students. | FR-22, FR-23 |
@@ -143,7 +143,7 @@ sequenceDiagram
   participant DB as Storage
 
   St->>SP: Types email and code, allows location
-  SP->>AM: checkIn(email, code, location, accuracy)
+  SP->>AM: checkIn(email, code, location, accuracy, comment)
   AM->>R: findByEmail(email)
   R-->>AM: Student or not found
   alt Email is not on the roster
@@ -262,4 +262,30 @@ sequenceDiagram
     HP->>HS: Save the work as the latest version
     HP-->>St: Only the review (never other students' works or names)
   end
+```
+
+## 7. Sequence diagram: the lecturer gets a summary of the class
+
+This scenario is use case UC-7. The AI can take longer than the server allows for one request, so it works in the background and the page asks again.
+
+```mermaid
+sequenceDiagram
+  actor Lec as Lecturer
+  participant LP as Lecturer page
+  participant SU as Summarizer
+  participant AI as AI service (Gemini)
+
+  Lec->>LP: Chooses a recording, presses Write the summary
+  LP->>LP: Takes the sound out of the recording (16 kHz mono)
+  LP->>SU: The sound
+  SU-->>LP: Started (answered at once)
+  SU->>AI: The sound and the instructions
+  loop Every 3 seconds
+    LP->>SU: Is it ready?
+    SU-->>LP: Working
+  end
+  AI-->>SU: The summary text
+  LP->>SU: Is it ready?
+  SU-->>LP: The summary (or a clear error)
+  LP-->>Lec: Shows the summary
 ```

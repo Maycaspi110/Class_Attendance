@@ -6,8 +6,12 @@ A simple web-based tool for teaching in class. Students use it from any smartpho
 > Ex2 - Vibe Coding & Deep Designing | Author: May Caspi
 
 **Live demo:** https://class-attendance-ogqg.onrender.com
-(students: open it on a phone and press *I am a student*; lecturer: press *I am a lecturer*, the password is given in class. The free server sleeps when it is not used, so the first visit can take about a minute.)
+
+(Students: open it on a phone and press *I am a student*. Lecturer: press *I am a lecturer*, the password is given in class. The free server sleeps when it is not used, so the first visit can take about a minute.)
+
 **The app and how to run it:** [demo/README.md](demo/README.md)
+
+**Documents:** [SoW](SoW.md), [SRS](SRS.md), [use cases](use-cases.md), [components](components.md), [diagrams](diagrams.md), [testing strategy](testing-strategy.md), [tools report](tools-report.md), [demo script](demo-script.md), [conclusion](conclusion.md)
 
 ## Problem
 
@@ -49,4 +53,4 @@ No method is 100% cheat-proof, and known limitations will be documented in the d
   - Lecturer-only AI summary of a class recording (a screen or Zoom recording, or a public YouTube link)
   - Homework page: a student sends a work and gets an AI review, compared with their previous version and with other students' works
 - **AI:** Google Gemini (free tier), used from the server. The key is kept only in the server settings.
-- **Not included:** integration with Moodle, Zoom, or personal information systems
+- **Not included:** integration with Moodle, Zoom, or personal information systems; students uploading their own summaries; polls sent by email

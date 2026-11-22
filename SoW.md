@@ -8,22 +8,22 @@
 
 Build a simple web app for teaching in class that works on students' own smartphones, with nothing to install. The main goal is **automatic attendance**: the lecturer starts a session, students check in with a changing code, and the lecturer gets a spreadsheet.
 
-## 2. What I will deliver
+## 2. Deliverables (the 12 steps of the assignment)
 
-| # | Deliverable | Form |
-|---|-------------|------|
-| 1 | README: problem, goal, scope | Document (done) |
-| 2 | Tools report: tools tested in real life | Document (done) |
-| 3 | This SoW | Document |
-| 4 | SRS: functional and non-functional requirements | Document |
-| 5 | Use cases | Document |
-| 6 | Software components | Diagram + text |
-| 7 | Class and sequence diagrams | Diagrams |
-| 8 | Testing strategy | Document |
-| 9 | Working demo: attendance, comments, photo count, polls, class summary and homework review | Smartphone web app |
-| 10 | 10-minute demo in class | Live demo |
-| 11 | Conclusion | Document |
-| 12 | Submission through the form | By 25/11/2026 |
+| Step | Deliverable | Status |
+|------|-------------|--------|
+| 1 | Repository and README: problem, goal, scope | Done |
+| 2 | Submission through the form | By 25/11/2026 |
+| 3 | Tools report: tools tested in real life | Done |
+| 4 | This SoW | Done |
+| 5 | SRS: functional and non-functional requirements | Done |
+| 6 | Use cases | Done |
+| 7 | Software components | Done |
+| 8 | Class and sequence diagrams | Done |
+| 9 | Testing strategy | Done |
+| 10 | Working demo: attendance, comments, photo count, polls, class summary and homework review (a smartphone web app) | Done |
+| 11 | 10-minute demo in class | In class |
+| 12 | Conclusion | Written, to be completed after the demo |
 
 ## 3. Scope
 

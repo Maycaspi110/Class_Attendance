@@ -70,10 +70,10 @@ flowchart LR
 
 | Component | What it does | Related requirements |
 |-----------|--------------|--------------|
-| Code generator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells whether a code is the current or the previous one. | changing code, current and previous code |
-| Location checker | Calculates the distance between the student's phone and the classroom location. The allowed distance is the radius plus the accuracy of the student's location and of the lecturer's location (each up to 300 m). A location worse than the accuracy limit, or missing, is "inaccurate". | distance check, flag |
+| Code generator | Creates the 4-digit code for the current time slot (10-30 seconds) and tells whether a code is the current or the previous one. | FR-3, FR-4 |
+| Location checker | Calculates the distance between the student's phone and the classroom location. The allowed distance is the radius plus the accuracy of the student's location and of the lecturer's location (each up to 300 m). A location worse than the accuracy limit, or missing, is "inaccurate". | FR-13, FR-14, FR-25 |
 | Attendance manager | The main logic. For each check-in it checks the roster, the code and the location, and records Present or Flagged, for the start or the end round. It combines the two rounds into the lesson status (Present, Late, Left early, Flagged, Absent) and keeps the comments. | FR-1 to FR-7, FR-11 to FR-16, FR-18, FR-19 |
-| Poll manager | Saves a poll, receives one answer per student and counts the answers. | create a poll, one answer per student, see the results |
+| Poll manager | Saves a poll, receives one answer per student and counts the answers. | FR-8, FR-9, FR-17 |
 | CSV exporter | Builds the spreadsheet for the lecturer (Email, Name, Status, Start check-in, End check-in, Distance from classroom, Note, Comment). | FR-7 |
 | Headcounter | Sends the classroom photo to the AI service, gets the number of people, and compares it with the number of check-ins (ok, warning or information). The photo is not saved. | FR-20 |
 | Summarizer | Receives the sound of a class recording (the browser takes it out of the video) or a YouTube link, asks the AI service for a summary in the background, and keeps the result. Only the lecturer gets it. | FR-21 |

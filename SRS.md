@@ -41,18 +41,19 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | FR-11 | The student shall identify with an email address. Only emails on the roster are accepted. |
 | FR-12 | The student shall be able to enter the code by typing it or by scanning the QR code. |
 | FR-13 | The system shall ask for the phone location and check that the student is within the allowed distance from the classroom (default: about 150 m). |
-| FR-14 | If the code is valid but the location is far, missing or too inaccurate, the student shall be marked Flagged for the lecturer, not rejected. |
+| FR-14 | If the code is valid but the location is far, missing or too inaccurate (an accuracy worse than 1000 m), the student shall be marked Flagged for the lecturer, not rejected. |
 | FR-15 | The system shall show the student a clear message: check-in received, or the reason it failed (wrong or expired code, email not on the roster). |
 | FR-16 | A student shall have only one attendance record per session. Checking in again shall not create a duplicate. |
 | FR-17 | The student shall be able to answer an open poll once. |
 | FR-18 | The lecturer shall be able to open a second check-in at the end of the class. Students who checked in only at the start are shown as Left early, and students who checked in only at the end are shown as Late. |
 | FR-19 | The student shall be able to write a short comment (up to 300 characters) in the end check-in. The lecturer sees the comments and they are in the CSV. |
 | FR-20 | The lecturer shall be able to upload a photo of the classroom. The system counts the people with an AI and compares the number with the check-ins. The result is a warning only, and the photo is not saved. |
-| FR-21 | The lecturer shall be able to upload a recording of the class (MP4, WebM, MP3, M4A or WAV, up to about 7 minutes) or paste a link to a public YouTube video, and get an AI summary. The sound is taken out of the recording in the browser. Only the lecturer can see the summary. |
-| FR-22 | The student shall be able to send a homework (a text or code file) with the roster email and get an AI review. |
+| FR-21 | The lecturer shall be able to upload a recording of the class (MP4, WebM, MP3, M4A or WAV, up to about 7 minutes, so at most 14 MB of sound) or paste a link to a public YouTube video, and get an AI summary. The sound is taken out of the recording in the browser. Only the lecturer can see the summary. |
+| FR-22 | The student shall be able to send a homework (a text or code file, up to 200 KB) with the roster email and get an AI review. |
 | FR-23 | The homework review shall compare the work with the student's previous version and with other students' works. The student shall never see another student's work or name. |
 | FR-24 | A student who types 5 wrong codes in a row shall wait one minute, to stop guessing of the 4-digit code. |
 | FR-25 | The lecturer can start a check-in only if the accuracy of the lecturer's location is 500 m or better. |
+| FR-26 | The lecturer pages (the menu, the roster, attendance and results, the photo count, the class summary, the poll and the classroom screen) shall need the lecturer password. The first page lets everyone choose student or lecturer, and each tile of the lecturer menu shows only its own part. |
 
 ## 4. Non-functional requirements
 

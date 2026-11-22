@@ -65,5 +65,6 @@ By hand, with real phones (iPhone and Android).
 - All unit and integration tests pass: **329 pass**.
 - Each acceptance test passes, or the failure is written down with a decision. Known limits (for example a code sent to a friend) are not failures.
 - **Done by hand:** the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the pages on phones through Render, the photo count, the class summary with a 2 minute recording, the homework review, and a check-in from a laptop.
+- **Evidence:** the `evidence` folder has the pytest output and screenshots (photo count, results, poll, and the first code and QR tests).
 - **Not done yet:** many phones at once in the real classroom, and the demo in class.
 - **Not tested:** the quality of the AI answers (only that they are shown and the errors are clear), Moodle and Zoom, and polls sent by email (not included).

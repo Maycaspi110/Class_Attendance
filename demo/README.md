@@ -32,6 +32,7 @@ The three features use the Google Gemini API (free tier) from the server. The ke
 
 - **Photo count:** the browser shrinks the photo, the server checks it is a real image, Gemini returns a number, and it is compared with the check-ins (a gap above max(2, 15 percent) is a warning). The photo is not saved.
 - **Class summary:** a recording (MP4, WebM, MP3, M4A, WAV) or a public YouTube link. For a recording the browser takes out the sound (about 2 MB per minute), so a 140 MB screen recording is about 4 MB. The AI works in the background, and only the lecturer sees the summary.
+  (The server also accepts a transcript text file for the summary, `.txt`, `.vtt` or `.srt`, but the page does not offer it.)
 - **Homework review:** the work, the previous version and up to 5 anonymous works of others go to Gemini. The student gets only the review. 20 seconds between two reviews of one student.
 
 ## Run it on your computer
