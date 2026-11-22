@@ -21,6 +21,7 @@ REFRESH_EVERY = 5  # the overview is made again only after this many new works
 MAX_SUBMISSIONS = 300  # in total, so the memory of the free server is never filled
 MAX_ASSIGNMENT_NAME = 60
 WAIT_SECONDS = 20  # the wait after a failed review
+DEFAULT_COOLDOWN_SECONDS = 24 * 3600  # a student gets one review and one comparison per assignment each day
 MAX_REVIEW_CHARS = 8000
 
 Submission = namedtuple("Submission", ["email", "text", "time"])
@@ -124,14 +125,17 @@ class HomeworkStore:
         return [w.text[:MAX_OVERVIEW_CHARS] for w in works[:MAX_WORKS_IN_OVERVIEW]]
 
     def save(self, assignment, email, text, now):
-        """Keep the work. A student has one work per assignment, and gets only one review for it."""
+        """Keep the work. A student has one work per assignment: a new version replaces the old one."""
         with self._lock:
             works = self._works.setdefault(self._key(assignment), {})
-            if email in works:
-                raise HomeworkError("You already sent a work for this assignment and got its review.")
-            if self.total() >= MAX_SUBMISSIONS:
+            if email not in works and self.total() >= MAX_SUBMISSIONS:
                 raise HomeworkError("The demo server reached its limit of saved works.")
             works[email] = Submission(email, text, now)
+
+    def review_wait(self, assignment, email, now, cooldown):
+        """Seconds until this student can get another review for this assignment (0 = now)."""
+        work = self.work_of(assignment, email)
+        return 0 if work is None else max(0, int(cooldown - (now - work.time) + 0.999))
 
     # ---- the class overview (made once, and made again only after REFRESH_EVERY new works)
 
@@ -139,9 +143,9 @@ class HomeworkStore:
         with self._lock:
             return self._overviews.get(self._key(assignment))
 
-    def set_overview(self, assignment, text, count):
+    def set_overview(self, assignment, text, count, now=0):
         with self._lock:
-            self._overviews[self._key(assignment)] = {"text": text, "count": count}
+            self._overviews[self._key(assignment)] = {"text": text, "count": count, "time": now}
 
     # ---- the comparison of one student: once
 
@@ -150,22 +154,32 @@ class HomeworkStore:
             state = self._comparisons.get((self._key(assignment), email))
             return dict(state) if state else None
 
-    def start_comparison(self, assignment, email):
-        """True if the comparison can start: it never ran, or the last try failed. False if it works or is done."""
+    def comparison_wait(self, assignment, email, now, cooldown):
+        """Seconds until this student can compare again (0 = now), or -1 while a comparison is working."""
         with self._lock:
-            key = (self._key(assignment), email)
-            state = self._comparisons.get(key)
-            if state is not None and state["state"] != "error":
-                return False
-            self._comparisons[key] = {"state": "working", "text": None, "error": None}
-            return True
+            state = self._comparisons.get((self._key(assignment), email))
+            if state is None or state["state"] == "error":
+                return 0
+            if state["state"] == "working":
+                return -1
+            return max(0, int(cooldown - (now - state["time"]) + 0.999))
 
-    def finish_comparison(self, assignment, email, text=None, error=None):
+    def start_comparison(self, assignment, email, now, cooldown):
+        """Start a comparison. Returns 0 when it started, or the wait in seconds (-1: one is working now)."""
+        with self._lock:
+            wait = self.comparison_wait(assignment, email, now, cooldown)
+            if wait != 0:
+                return wait
+            self._comparisons[(self._key(assignment), email)] = {"state": "working", "text": None, "error": None, "time": now}
+            return 0
+
+    def finish_comparison(self, assignment, email, now, text=None, error=None):
         with self._lock:
             self._comparisons[(self._key(assignment), email)] = {
                 "state": "done" if error is None else "error",
                 "text": text,
                 "error": error,
+                "time": now,
             }
 
 

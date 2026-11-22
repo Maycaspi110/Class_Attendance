@@ -32,6 +32,7 @@ from attendance.headcount import GeminiCounter, HeadcountError, compare, image_t
 from attendance.homework import (
     GeminiReviewer,
     HomeworkError,
+    DEFAULT_COOLDOWN_SECONDS,
     DEFAULT_MIN_WORKS,
     REFRESH_EVERY,
     HomeworkStore,
@@ -126,6 +127,7 @@ def create_app(test_config=None):
         ALLOWED_RADIUS_METERS=_env_int("ALLOWED_RADIUS_METERS", 150),
         MAX_ACCURACY_METERS=_env_int("MAX_ACCURACY_METERS", 1000),
         HOMEWORK_MIN_WORKS=max(1, _env_int("HOMEWORK_MIN_WORKS", DEFAULT_MIN_WORKS)),
+        HOMEWORK_COOLDOWN_SECONDS=max(0, _env_int("HOMEWORK_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS)),
         TIMEZONE=os.environ.get("TIMEZONE", "Asia/Jerusalem"),
         # RENDER_EXTERNAL_URL is set by the Render hosting service itself.
         PUBLIC_URL=os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL"),
@@ -677,6 +679,10 @@ def create_app(test_config=None):
             return fail(str(error), 409 if "already" in str(error) else 400)
         return jsonify(ok=True, message="Thank you. Your answer was received.")
 
+    def wait_text(seconds):
+        """A wait in words: about 5 hours, or 12 minutes."""
+        return "%d hours" % round(seconds / 3600) if seconds >= 5400 else "%d minutes" % max(1, round(seconds / 60))
+
     def homework_student():
         """The student (by the roster email) and the assignment name of a homework request, or an error answer."""
         student = manager.roster.find_by_email(str(request.values.get("email") or "")[:254])
@@ -691,11 +697,14 @@ def create_app(test_config=None):
         count = state.homework.count(assignment)
         needed = app.config["HOMEWORK_MIN_WORKS"]
         reviewed = state.homework.work_of(assignment, email) is not None
+        cooldown = app.config["HOMEWORK_COOLDOWN_SECONDS"]
         return {
             "count": count,
             "needed": needed,
             "reviewed": reviewed,
             "unlocked": reviewed and count >= needed,
+            "review_wait": state.homework.review_wait(assignment, email, now(), cooldown),  # seconds until a new review
+            "compare_wait": state.homework.comparison_wait(assignment, email, now(), cooldown),
             "comparison": state.homework.comparison(assignment, email),  # None, or the state of the comparison
         }
 
@@ -717,8 +726,14 @@ def create_app(test_config=None):
         else:
             raw_text = str(request.form.get("text") or "")[:MAX_HOMEWORK_BYTES]
         try:
-            if state.homework.work_of(assignment, student.email) is not None:
-                return fail("You already sent a work for this assignment and got its review.", 409)
+            wait = state.homework.review_wait(assignment, student.email, now(), app.config["HOMEWORK_COOLDOWN_SECONDS"])
+            if wait > 0:
+                return fail(
+                    "You already got a review for this assignment today. You can get another one in about %s."
+                    % wait_text(wait),
+                    409,
+                    wait=wait,
+                )
             text = clean_work(raw_text)
             state.homework.check_wait(student.email, now())
             review = state.reviewer.review(text)
@@ -753,29 +768,45 @@ def create_app(test_config=None):
             return fail(
                 "The comparison opens when %d students sent their work (now %d)." % (status["needed"], status["count"]), 409
             )
-        if not state.homework.start_comparison(assignment, student.email):
-            return fail("You already compared this work with the class.", 409)
+        wait = state.homework.start_comparison(assignment, student.email, now(), app.config["HOMEWORK_COOLDOWN_SECONDS"])
+        if wait < 0:
+            return fail("The comparison is working now. Wait for it.", 409)
+        if wait > 0:
+            return fail(
+                "You already compared this work with the class today. You can compare again in about %s." % wait_text(wait),
+                409,
+                wait=wait,
+            )
         email = student.email
 
         def run():
             """The AI makes the class overview (only when it is missing or old) and compares one work with it."""
             store = state.homework
             try:
+                cooldown = app.config["HOMEWORK_COOLDOWN_SECONDS"]
+
+                def old(overview):  # missing, 5 new works since it was made, or made a day ago
+                    return (
+                        overview is None
+                        or store.count(assignment) - overview["count"] >= REFRESH_EVERY
+                        or now() - overview["time"] >= max(cooldown, 1)
+                    )
+
                 overview = store.overview(assignment)
-                if overview is None or store.count(assignment) - overview["count"] >= REFRESH_EVERY:
+                if old(overview):
                     with store.overview_lock:  # one overview at a time, the others wait and use it
                         overview = store.overview(assignment)
-                        count = store.count(assignment)
-                        if overview is None or count - overview["count"] >= REFRESH_EVERY:
-                            store.set_overview(assignment, state.reviewer.overview(store.texts(assignment)), count)
+                        if old(overview):
+                            count = store.count(assignment)
+                            store.set_overview(assignment, state.reviewer.overview(store.texts(assignment)), count, now())
                             overview = store.overview(assignment)
                 comparison = state.reviewer.compare(store.work_of(assignment, email).text, overview["text"])
-                store.finish_comparison(assignment, email, text=comparison)
+                store.finish_comparison(assignment, email, now(), text=comparison)
             except ReviewServiceError as failure:
-                store.finish_comparison(assignment, email, error=str(failure))
+                store.finish_comparison(assignment, email, now(), error=str(failure))
             except Exception:  # never leave the page waiting forever
                 app.logger.exception("The homework comparison failed")
-                store.finish_comparison(assignment, email, error="Something went wrong. Try again.")
+                store.finish_comparison(assignment, email, now(), error="Something went wrong. Try again.")
 
         if app.config.get("HOMEWORK_IN_BACKGROUND", not app.testing):
             threading.Thread(target=run, daemon=True).start()  # the AI can be slower than one web request may last

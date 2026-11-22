@@ -57,7 +57,7 @@ class FakeReviewer:
         return "A comparison with the class."
 
 
-def make_client(reviewer, clock, min_works=None, roster=None, background=False):
+def make_client(reviewer, clock, min_works=None, roster=None, background=False, cooldown=None):
     config = {
         "TESTING": True,
         "LECTURER_PASSWORD": PASSWORD,
@@ -70,6 +70,8 @@ def make_client(reviewer, clock, min_works=None, roster=None, background=False):
         config["REVIEWER"] = reviewer
     if min_works is not None:
         config["HOMEWORK_MIN_WORKS"] = min_works
+    if cooldown is not None:
+        config["HOMEWORK_COOLDOWN_SECONDS"] = cooldown
     if background:
         config["HOMEWORK_IN_BACKGROUND"] = True
     app = create_app(config)
@@ -406,3 +408,76 @@ def test_http_errors_are_clear_and_do_not_show_the_key():
     with pytest.raises(ReviewServiceError) as error:
         GeminiReviewer("test-key", http_post=post).review("work")
     assert "limit" in str(error.value) and "test-key" not in str(error.value)
+
+
+# ---- once a day: a new version of the work can get a new review and a new comparison ----
+
+DAY = 24 * 3600
+
+
+def test_the_second_review_in_one_day_is_refused_with_the_wait(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+    assert send(student).status_code == 200
+    clock.t += 3600
+    again = send(student, work=WORK + "# a change\n")
+    data = again.get_json()
+    assert again.status_code == 409 and "23 hours" in data["error"] and 0 < data["wait"] <= DAY - 3600
+    assert len(reviewer.reviews) == 1
+
+
+def test_after_a_day_a_new_version_gets_a_new_review_and_replaces_the_old_one(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock, min_works=2)
+    send_many(student, 2)
+    first_count = status(student, email(1)).get_json()["count"]
+    clock.t += DAY + 1
+    data = send(student, who=email(1), work="def improved():\n    return 100\n").get_json()
+    assert data["ok"] and data["count"] == first_count  # the same student, still one work
+    assert reviewer.reviews[-1] == "def improved():\n    return 100"
+    compare(student, email(1))
+    assert reviewer.compares[-1][0] == "def improved():\n    return 100"  # the comparison uses the new version
+
+
+def test_the_status_says_when_the_next_review_and_comparison_are_possible(clock):
+    student = make_client(FakeReviewer(), clock, min_works=2)
+    send_many(student, 2)
+    state = status(student, email(1)).get_json()
+    assert 0 < state["review_wait"] <= DAY and state["compare_wait"] == 0
+    compare(student, email(1))
+    state = status(student, email(1)).get_json()
+    assert 0 < state["compare_wait"] <= DAY
+    clock.t += DAY + 1
+    state = status(student, email(1)).get_json()
+    assert state["review_wait"] == 0 and state["compare_wait"] == 0
+
+
+def test_the_comparison_can_be_made_again_after_a_day_but_not_before(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock, min_works=2)
+    send_many(student, 2)
+    assert compare(student, email(1)).status_code == 200
+    clock.t += 3600
+    refused = compare(student, email(1))
+    assert refused.status_code == 409 and "today" in refused.get_json()["error"]
+    clock.t += DAY
+    assert compare(student, email(1)).status_code == 200
+    assert len(reviewer.compares) == 2
+
+
+def test_the_overview_is_made_again_after_a_day(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock, min_works=2)
+    send_many(student, 2)
+    compare(student, email(1))
+    clock.t += DAY + 1
+    compare(student, email(2))
+    assert len(reviewer.overviews) == 2
+
+
+def test_a_wait_of_zero_means_no_daily_limit(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock, cooldown=0)
+    assert send(student).status_code == 200
+    assert send(student, work=WORK + "# a change\n").status_code == 200
+    assert len(reviewer.reviews) == 2
