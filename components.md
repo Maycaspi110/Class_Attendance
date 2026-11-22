@@ -77,7 +77,7 @@ flowchart LR
 | CSV exporter | Builds the spreadsheet for the lecturer (Email, Name, Status, Start check-in, End check-in, Distance from classroom, Note, Comment). | FR-7 |
 | Headcounter | Sends the classroom photo to the AI service, gets the number of people, and compares it with the number of check-ins (ok, warning or information). The photo is not saved. | FR-20 |
 | Summarizer | Receives the sound of a class recording (the browser takes it out of the video) or a YouTube link, asks the AI service for a summary in the background, and keeps the result. Only the lecturer gets it. | FR-21 |
-| Homework reviewer | Keeps the latest work of each student for each assignment, and asks the AI service for a review that compares it with the student's previous version and with other students' works (anonymous, at most 5, cut to a short length). | FR-22, FR-23 |
+| Homework reviewer | Keeps the work of each student for each assignment. Gives one review of a work. When enough works exist, it asks the AI service for one general overview of all the works (made again only after 5 new works) and compares the work of a student with that overview, once. | FR-22, FR-23 |
 
 ### External service
 
@@ -99,7 +99,7 @@ flowchart LR
 - **A poll:** the lecturer page sends the question to the poll manager. Students answer through the student page, and the answers are saved in the storage.
 - **Photo count:** the lecturer page sends the photo to the headcounter, which gets the number from the AI service and compares it with the number of check-ins.
 - **Class summary:** the lecturer page takes the sound out of the recording and sends it to the summarizer, which gets the summary from the AI service in the background. The page asks every few seconds until it is ready. Only the lecturer page can read it.
-- **Homework:** the homework page sends the work to the homework reviewer. The reviewer sends the work and the other works to the AI service, saves the work and returns only the review.
+- **Homework:** the homework page sends the work to the homework reviewer, which gets one review from the AI service, saves the work and returns only the review. When enough works exist, the comparison button asks the reviewer for the class overview (made once and kept) and for the comparison of one work with it. The page asks every few seconds until the answer is ready.
 
 ## 4. Notes
 

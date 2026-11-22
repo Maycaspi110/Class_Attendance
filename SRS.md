@@ -49,8 +49,8 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | FR-19 | The student shall be able to write a short comment (up to 300 characters) in the end check-in. The lecturer sees the comments and they are in the CSV. |
 | FR-20 | The lecturer shall be able to upload a photo of the classroom. The system counts the people with an AI and compares the number with the check-ins. The result is a warning only, and the photo is not saved. |
 | FR-21 | The lecturer shall be able to upload a recording of the class (MP4, WebM, MP3, M4A or WAV, up to about 7 minutes, so at most 14 MB of sound) or paste a link to a public YouTube video, and get an AI summary. The sound is taken out of the recording in the browser. Only the lecturer can see the summary. |
-| FR-22 | The student shall be able to send a homework (a text or code file, up to 200 KB) with the roster email and get an AI review. |
-| FR-23 | The homework review shall compare the work with the student's previous version and with other students' works. The student shall never see another student's work or name. |
+| FR-22 | The student shall be able to send a homework (a text or code file, up to 200 KB) with the roster email and get one AI review (summary, strengths, problems and suggestions) for each assignment. |
+| FR-23 | When at least 8 students (a server setting) sent their work for the same assignment, each of them can compare their own work with the class, once. The AI makes one general overview of all the works (only what several works share, no details of a single work) and compares the work of the student with it. Before that the comparison is closed and shows how many works are missing. The student shall never see another student's work or name. |
 | FR-24 | A student who types 5 wrong codes in a row shall wait one minute, to stop guessing of the 4-digit code. |
 | FR-25 | The lecturer can start a check-in only if the accuracy of the lecturer's location is 500 m or better. |
 | FR-26 | The lecturer pages (the menu, the roster, attendance and results, the photo count, the class summary, the poll and the classroom screen) shall need the lecturer password. The first page lets everyone choose student or lecturer, and each tile of the lecturer menu shows only its own part. |
@@ -76,7 +76,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 - The roster file may have other columns (for example an ID number). The system ignores them and does not keep them.
 - In the demo app the codes are created and checked on the server, and the browser never gets the secret. (Only the early test page `tests/code-test.html` had the secret in the browser.)
 - In the demo the data is kept in memory and is lost when the server restarts. A real system would keep it in a database.
-- The homework review never shows another student's work or name, but it can describe the approach of another work in general words.
+- The homework review never shows another student's work or name. The comparison uses a general overview of all the works, which is told to describe only what several works share, so a single work should not be recognized. With few works this is not a guarantee.
 - A firewall in front of the demo server (the hosting service) can stop an uploaded text that looks like an attack, for example a README with SQL words or a path such as `../../etc/passwd`. Then the lecturer or student sees only a 403 answer, and has to remove that text.
 - The photo count is a rough number. It is a warning for the lecturer and nobody is marked because of it.
 - The homework page identifies the student only by the roster email, like the check-in, so it can be misused. A real system would add a login.

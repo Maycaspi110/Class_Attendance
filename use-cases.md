@@ -119,19 +119,21 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **After:** The recording is not saved. The summary stays in memory until the next lesson starts.
 - **Related requirements:** FR-21
 
-## UC-8: Student gets a deep review of homework
+## UC-8: Student gets a review of homework and compares it with the class
 
-**Story:** As a student, I want a detailed review of my homework and to see how it compares with others, so that I can improve it before I submit it.
+**Story:** As a student, I want a detailed review of my homework, and to see how it compares with the rest of the class, so that I can improve it before I submit it.
 
 - **Actor:** Student
 - **Before:** The student is on the roster.
 - **Main flow:**
-  1. The student opens the homework page and types their email and the name of the assignment.
-  2. The student uploads a text or code file, or pastes the text.
-  3. The system sends the work to an AI, together with the student's previous version and some works of other students for the same assignment.
-  4. The student gets a review: summary, strengths, problems and suggestions, and a comparison with the previous version and with the other works.
+  1. The student opens the homework page, types their email and the name of the assignment, and uploads a text or code file (or pastes the text).
+  2. The system sends the work to an AI. The student gets one review: summary, strengths, problems and suggestions.
+  3. The page shows how many students sent their work, for example "5 of 8". Until 8 students did, the comparison button is gray.
+  4. When 8 or more students sent their work, the button opens. The student presses it.
+  5. The AI makes one general overview of all the works of the assignment (only what several works share), and compares the work of the student with it: how close it is to the general direction, what is different, and how to improve. The student reads the result.
 - **Other cases:**
   - The email is not on the roster, or the work is empty or not a text file: the system shows an error.
-  - The student asks again too fast: the system asks to wait a few seconds.
-- **After:** The latest work is saved in memory for later comparisons. The student never sees another student's work or name.
+  - The student sends a second work for the same assignment: the system says that the one review was already used.
+  - The AI is not available: a clear error, and the student can try the comparison again.
+- **After:** The work stays in memory for the overview. The student can compare once. The student never sees another student's work or name.
 - **Related requirements:** FR-22, FR-23

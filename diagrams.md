@@ -81,11 +81,15 @@ classDiagram
   }
   class HomeworkStore {
     +save(assignment, email, text)
-    +previous(assignment, email) Submission
-    +others(assignment, email) List~Submission~
+    +count(assignment) int
+    +texts(assignment) List~String~
+    +overview(assignment) Overview
+    +comparison(assignment, email) Comparison
   }
   class GeminiReviewer {
-    +review(work, previous, others) String
+    +review(work) String
+    +overview(works) String
+    +compare(work, overview) String
   }
 
   Roster "1" o-- "*" Student
@@ -121,8 +125,8 @@ classDiagram
 | CsvExporter | Builds the spreadsheet for the lecturer from the lesson entries. | FR-7 |
 | GeminiCounter | Sends a photo to the AI and returns the number of people. The comparison with the check-ins is a separate function that gives ok, warning or information. | FR-20 |
 | GeminiSummarizer | Sends the sound of a recording, or a YouTube link, to the AI and returns the summary. It runs in the background. | FR-21 |
-| HomeworkStore | Keeps the latest work of each student for each assignment (in memory, with a limit), and gives the previous work and up to 5 works of other students. | FR-22, FR-23 |
-| GeminiReviewer | Sends the work, the previous version and the other works to the AI and returns the review. | FR-22, FR-23 |
+| HomeworkStore | Keeps the work of each student for each assignment (in memory, with a limit), the class overview, and the state of each comparison (once per student). | FR-22, FR-23 |
+| GeminiReviewer | Asks the AI for one review of a work, for one overview of all the works, and for the comparison of a work with the overview. | FR-22, FR-23 |
 
 Notes:
 - **Absent** is not saved. A student is Absent when they are on the roster and have no attendance record in the session.
@@ -235,9 +239,9 @@ sequenceDiagram
   LP-->>Lec: Shows the message
 ```
 
-## 6. Sequence diagram: a student gets a homework review
+## 6. Sequence diagram: homework review and the comparison with the class
 
-This scenario is use case UC-8.
+This scenario is use case UC-8. The review comes first. The comparison opens when enough works exist.
 
 ```mermaid
 sequenceDiagram
@@ -254,14 +258,27 @@ sequenceDiagram
     R-->>HP: Not found
     HP-->>St: Error: not on the roster
   else Email is on the roster
-    HP->>HS: Previous work of this student, and other students' works
-    HS-->>HP: Previous work and up to 5 other works
-    HP->>RV: review(work, previous, others)
-    RV->>AI: The works and the instructions
+    HP->>RV: review(work)
+    RV->>AI: The work and the instructions
     AI-->>RV: The review text
-    HP->>HS: Save the work as the latest version
-    HP-->>St: Only the review (never other students' works or names)
+    HP->>HS: Save the work
+    HP-->>St: The review, and "N of 8 works" (the button is gray)
   end
+
+  Note over St,AI: Later, when 8 or more works exist
+  St->>HP: Presses "Compare with the class"
+  HP->>HS: Is there an overview, and is it new enough?
+  opt No overview, or 5 or more new works since it was made
+    HP->>RV: overview(all the works, each cut short)
+    RV->>AI: The works and the instructions
+    AI-->>RV: The class overview
+    HP->>HS: Keep the overview
+  end
+  HP->>RV: compare(work, overview)
+  RV->>AI: The overview and the work
+  AI-->>RV: The comparison
+  HP->>HS: Keep the result (once per student)
+  HP-->>St: Only the comparison (never other works or names)
 ```
 
 ## 7. Sequence diagram: the lecturer gets a summary of the class
