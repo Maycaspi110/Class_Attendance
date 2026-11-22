@@ -77,7 +77,7 @@ flowchart LR
 | CSV exporter | Builds the spreadsheet for the lecturer (Email, Name, Status, Start check-in, End check-in, Distance from classroom, Note, Comment). | FR-7 |
 | Headcounter | Sends the classroom photo to the AI service, gets the number of people, and compares it with the number of check-ins (ok, warning or information). The photo is not saved. | FR-20 |
 | Summarizer | Receives the sound of a class recording (the browser takes it out of the video) or a YouTube link, asks the AI service for a summary in the background, and keeps the result. Only the lecturer gets it. | FR-21 |
-| Homework reviewer | Keeps the work of each student for each assignment. Gives one review of a work. When enough works exist, it asks the AI service for one general overview of all the works (made again only after 5 new works) and compares the work of a student with that overview, once. | FR-22, FR-23 |
+| Homework reviewer | Keeps the work of each student for each assignment. Gives a review of a work (once a day for each student and assignment; a new version replaces the old one). When enough works exist, it asks the AI service for one general overview of all the works (made again only after 5 new works) and compares the work of a student with that overview, once a day. | FR-22, FR-23 |
 
 ### External service
 

@@ -125,7 +125,7 @@ classDiagram
 | CsvExporter | Builds the spreadsheet for the lecturer from the lesson entries. | FR-7 |
 | GeminiCounter | Sends a photo to the AI and returns the number of people. The comparison with the check-ins is a separate function that gives ok, warning or information. | FR-20 |
 | GeminiSummarizer | Sends the sound of a recording, or a YouTube link, to the AI and returns the summary. It runs in the background. | FR-21 |
-| HomeworkStore | Keeps the work of each student for each assignment (in memory, with a limit), the class overview, and the state of each comparison (once per student). | FR-22, FR-23 |
+| HomeworkStore | Keeps the work of each student for each assignment (in memory, with a limit), the class overview, and the state of each comparison (once a day for each student). | FR-22, FR-23 |
 | GeminiReviewer | Asks the AI for one review of a work, for one overview of all the works, and for the comparison of a work with the overview. | FR-22, FR-23 |
 
 Notes:
@@ -262,7 +262,7 @@ sequenceDiagram
     RV->>AI: The work and the instructions
     AI-->>RV: The review text
     HP->>HS: Save the work
-    HP-->>St: The review, and "N of 8 works" (the button is gray)
+    HP-->>St: The review, and "N of 8 works" (the button is gray). A new review: after a day
   end
 
   Note over St,AI: Later, when 8 or more works exist
@@ -277,7 +277,7 @@ sequenceDiagram
   HP->>RV: compare(work, overview)
   RV->>AI: The overview and the work
   AI-->>RV: The comparison
-  HP->>HS: Keep the result (once per student)
+  HP->>HS: Keep the result (once a day for each student)
   HP-->>St: Only the comparison (never other works or names)
 ```
 

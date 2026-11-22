@@ -33,7 +33,7 @@ The three features use the Google Gemini API (free tier) from the server. The ke
 - **Photo count:** the browser shrinks the photo, the server checks it is a real image, Gemini returns a number, and it is compared with the check-ins (a gap above max(2, 15 percent) is a warning). The photo is not saved.
 - **Class summary:** a recording (MP4, WebM, MP3, M4A, WAV) or a public YouTube link. For a recording the browser takes out the sound (about 2 MB per minute), so a 140 MB screen recording is about 4 MB. The AI works in the background, and only the lecturer sees the summary.
   (The server also accepts a transcript text file for the summary, `.txt`, `.vtt` or `.srt`, but the page does not offer it.)
-- **Homework review:** one review per student and assignment. From `HOMEWORK_MIN_WORKS` works (default 8) a student can compare their work with the class, once: Gemini writes one general overview of all the works (only what several works share, made again after 5 new works) and compares the work with it. The student never sees another work. The comparison runs in the background.
+- **Homework review:** one review per student and assignment each day (a new version replaces the old one). From `HOMEWORK_MIN_WORKS` works (default 8) a student can compare their work with the class, once a day: Gemini writes one general overview of all the works (only what several works share, made again after 5 new works) and compares the work with it. The student never sees another work. The comparison runs in the background.
 
 ## Run it on your computer
 
@@ -62,6 +62,7 @@ To try it with a phone on the same Wi-Fi, set `$env:HOST = "0.0.0.0"` before you
 | `MAX_ACCURACY_METERS` | A student accuracy worse than this is "inaccurate" | `1000` |
 | `GEMINI_API_KEY` | The key for the AI features (only here, never in a file) | not set |
 | `HOMEWORK_MIN_WORKS` | How many works an assignment needs before the comparison opens | `8` |
+| `HOMEWORK_COOLDOWN_SECONDS` | The time between two reviews (and two comparisons) of one student for one assignment. `0` means no limit | `86400` (a day) |
 | `GEMINI_MODEL` | The Gemini model name (Google replaces models over time) | `gemini-3.5-flash-lite` |
 | `TIMEZONE` | The time zone of the times in the CSV | `Asia/Jerusalem` |
 | `SECRET_KEY`, `SECURE_COOKIES`, `TRUST_PROXY`, `REQUIRE_SECRETS` | Login cookie and hosting settings: `SECURE_COOKIES`, `TRUST_PROXY` and `REQUIRE_SECRETS` are `1` on Render | random / not set |

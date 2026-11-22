@@ -4,7 +4,7 @@
 **Author:** May Caspi
 **Related documents:** SRS, Use Cases, Software Components, Class and Sequence Diagrams
 
-The tests follow the classes of the class diagram. The automated tests are written with pytest (338 pass). The numbers (radius, limits) are in the SRS.
+The tests follow the classes of the class diagram. The automated tests are written with pytest (344 pass). The numbers (radius, limits) are in the SRS.
 
 ## 1. Approach
 
@@ -30,7 +30,7 @@ Every test has an input and an expected result. The automated tests use made-up 
 | CsvExporter | The columns, Present / Flagged / Absent rows, text that starts with `=` is made safe | `test_csv_exporter.py` |
 | Headcount | The count is read from the AI answer, unclear answers, the key is never in the address or in an error, the file type is read from its bytes, ok / warning / info comparison | `test_headcount.py`, `test_headcount_app.py` |
 | Summarizer | Recording type from the bytes, only YouTube links, the size limit, the work in the background, only the lecturer can see the summary, clear errors | `test_summary.py` |
-| Homework review | One review per student and assignment, not on the roster, a failed review is not saved, the comparison is closed below 8 works and open from 8, a student who sent nothing cannot compare, once per student, the class overview is made once and again only after 5 new works, other works are never shown, a slow AI is answered in the background, the limits (200 KB, 40 works of 3000 characters in the overview) | `test_homework.py` |
+| Homework review | One review per student and assignment each day (a new version replaces the old one after a day), not on the roster, a failed review is not saved, the comparison is closed below 8 works and open from 8, a student who sent nothing cannot compare, once a day for each student, the class overview is made once and again after 5 new works or a day, other works are never shown, a slow AI is answered in the background, the limits (200 KB, 40 works of 3000 characters in the overview) | `test_homework.py` |
 | App and pages | A lecturer location worse than 500 m is refused, the first page has two tiles, each menu has its own tiles and links back, the lecturer menu needs the password, each tile shows only its own part, the login returns only to our own pages | `test_app.py` |
 
 ## 3. Integration tests
@@ -62,7 +62,7 @@ By hand, with real phones (iPhone and Android).
 
 ## 5. Pass criteria and status
 
-- All unit and integration tests pass: **338 pass**.
+- All unit and integration tests pass: **344 pass**.
 - Each acceptance test passes, or the failure is written down with a decision. Known limits (for example a code sent to a friend) are not failures.
 - **Done by hand:** the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the pages on phones through Render, the photo count, the class summary with a 2 minute recording, the homework review, and a check-in from a laptop.
 - **Evidence:** the `evidence` folder has the pytest output and screenshots (photo count, results, poll, and the first code and QR tests).

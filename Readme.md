@@ -51,6 +51,6 @@ No method is 100% cheat-proof, and known limitations will be documented in the d
   - Photo headcount (AI) as a second check
   - Lecturer polls
   - Lecturer-only AI summary of a class recording (a screen or Zoom recording, or a public YouTube link)
-  - Homework page: a student sends a work and gets one AI review. When at least 8 students sent their work, a student can compare their work with a general overview of the class, once
+  - Homework page: a student sends a work and gets an AI review once a day. When at least 8 students sent their work, a student can compare their work with a general overview of the class, once a day
 - **AI:** Google Gemini (free tier), used from the server. The key is kept only in the server settings.
 - **Not included:** integration with Moodle, Zoom, or personal information systems; students uploading their own summaries; polls sent by email
