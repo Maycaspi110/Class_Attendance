@@ -3,7 +3,7 @@
 {% block body %}
 <a class="homelink" href="{{ url_for('student_menu') }}">&larr; Student menu</a>
 <h1>Homework review</h1>
-<p class="sub">Send your work and get a deep review from an AI. It also compares your work with your previous version and with other students' works. You never see their work or names.</p>
+<p class="sub">Send your work and get one AI review. When enough students sent their work, you can also compare yours with the class. You never see anyone else's work or name.</p>
 
 <form class="card" id="form">
   <label>Your email
@@ -18,16 +18,23 @@
   <label>Or paste the text here
     <textarea id="text" rows="6" maxlength="30000" placeholder="Paste your code or text"></textarea>
   </label>
-  <button type="submit" id="send">Get the review</button>
+  <button type="submit" id="send">Get the review (only once)</button>
   <div id="msg" class="msg" role="status"></div>
-  <p class="muted">Your work is sent to an AI service to write the review, and other students' reviews may be compared with it anonymously. Do not send private information.</p>
+  <p class="muted">Your work is sent to an AI service to write the review. Do not send private information. You get one review for each assignment.</p>
 </form>
 
 <div class="card" id="resultbox" hidden>
   <h2>Your review</h2>
-  <div id="meta" class="muted"></div>
   <div id="review" class="summarytext"></div>
 </div>
-<p class="muted"><a href="/checkin">Back to the attendance page</a></p>
+
+<div class="card" id="comparebox">
+  <h2>Compare with the class</h2>
+  <p class="muted">Opens when enough students sent their work (the number is shown below). The AI compares your work with a general overview of all the works: how close you are to the general direction, what is different, and how to improve. You can do it once.</p>
+  <progress id="comparebar" max="8" value="0"></progress>
+  <div id="comparestatus" class="msg" role="status">Type your email and the name of the assignment.</div>
+  <button type="button" id="compare" class="secondary" disabled>Compare with the class</button>
+  <div id="comparetext" class="summarytext" hidden></div>
+</div>
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='homework.js') }}"></script>{% endblock %}

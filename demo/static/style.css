@@ -159,3 +159,5 @@ body.home { max-width: 980px; padding: 40px 24px 32px;
 body.home .tiles .tile { min-height: 190px; }
 .homehead { margin-bottom: 24px; }
 .choose { margin-top: 0; }
+
+progress { width: 100%; height: 10px; margin: 6px 0 2px; accent-color: #6a5acd; }
