@@ -544,9 +544,10 @@ def test_the_lecturer_menu_needs_the_password_and_has_the_lecturer_tools(student
         b'href="/lecturer?go=photo"',
         b'href="/lecturer?go=summary"',
         b'href="/lecturer?go=poll"',
+        b'href="/lecturer?go=homework"',
     ):
         assert link in page.data, link
-    assert page.data.count(b'class="tile ') == 6
+    assert page.data.count(b'class="tile ') == 7
     assert b'href="/checkin"' not in page.data  # no student tools here
 
 
@@ -569,7 +570,7 @@ def test_after_the_login_the_lecturer_menu_opens(student):
 
 def test_the_lecturer_page_has_a_card_for_every_tile_target(lecturer):
     page = lecturer.get("/lecturer").data
-    for part in ("roster", "attendance", "results", "photo", "summary", "poll"):
+    for part in ("roster", "attendance", "results", "photo", "summary", "poll", "homework"):
         assert b'id="%s"' % part.encode() in page, part
 
 
@@ -612,7 +613,7 @@ def _shown_cards(page_bytes):
 
 
 def test_the_lecturer_page_without_a_choice_shows_every_card(lecturer):
-    assert _shown_cards(lecturer.get("/lecturer").data) == {"roster", "attendance", "results", "photo", "summary", "poll"}
+    assert _shown_cards(lecturer.get("/lecturer").data) == {"roster", "attendance", "results", "photo", "summary", "poll", "homework"}
 
 
 def test_a_tile_shows_only_its_own_part_of_the_lecturer_page(lecturer):
@@ -622,6 +623,7 @@ def test_a_tile_shows_only_its_own_part_of_the_lecturer_page(lecturer):
         "photo": {"photo"},
         "summary": {"summary"},
         "poll": {"poll"},
+        "homework": {"homework"},
     }
     for part, cards in expected.items():
         assert _shown_cards(lecturer.get("/lecturer", query_string={"go": part}).data) == cards, part
@@ -629,7 +631,7 @@ def test_a_tile_shows_only_its_own_part_of_the_lecturer_page(lecturer):
 
 def test_an_unknown_choice_shows_the_whole_page(lecturer):
     page = lecturer.get("/lecturer", query_string={"go": "<script>"}).data
-    assert len(_shown_cards(page)) == 6 and b"<script>alert" not in page
+    assert len(_shown_cards(page)) == 7 and b"<script>alert" not in page
 
 
 def test_the_page_title_follows_the_choice(lecturer):

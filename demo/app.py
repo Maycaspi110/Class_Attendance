@@ -34,6 +34,7 @@ from attendance.homework import (
     HomeworkError,
     DEFAULT_COOLDOWN_SECONDS,
     DEFAULT_MIN_WORKS,
+    MAX_REQUEST_CHARS,
     REFRESH_EVERY,
     HomeworkStore,
     ReviewServiceError,
@@ -67,8 +68,9 @@ LECTURER_SECTIONS = {
     "photo": ("Photo count", ("photo",)),
     "summary": ("Class summary", ("summary",)),
     "poll": ("Poll", ("poll",)),
+    "homework": ("Homework report", ("homework",)),
 }
-LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll")  # the cards of the lecturer page
+LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll", "homework")  # the cards of the lecturer page
 MAX_HOMEWORK_BYTES = 200 * 1024
 
 
@@ -816,6 +818,75 @@ def create_app(test_config=None):
         if result["state"] == "error":
             return fail(result["error"], 502)
         return jsonify(ok=True, **homework_status(assignment, email))
+
+    # ---- the report for the lecturer: all the works of one assignment together ----
+
+    def report_json(assignment):
+        report = state.homework.report(assignment)
+        return {
+            "count": state.homework.count(assignment),
+            "report": report,  # None, or {"state": working/done/error, "text": ..., "error": ..., "time": ...}
+            "ready": state.reviewer is not None,
+        }
+
+    @app.route("/api/homework/assignments")
+    @lecturer_required
+    def homework_assignments():
+        """The assignments that have works, with how many. No student is named."""
+        names = [{"name": name, "count": count} for name, count in state.homework.assignments()]
+        return jsonify(ok=True, assignments=names, ready=state.reviewer is not None)
+
+    @app.route("/api/homework/report", methods=["GET"])
+    @lecturer_required
+    def homework_report_get():
+        assignment = clean_name(request.args.get("assignment"))
+        if not assignment:
+            return fail("Write the name of the assignment.")
+        return jsonify(ok=True, **report_json(assignment))
+
+    @app.route("/api/homework/report", methods=["POST"])
+    @lecturer_required
+    def homework_report_create():
+        """On the due date (or later) the AI reads all the works together and writes one report for the lecturer."""
+        if state.reviewer is None:
+            return fail("The AI report is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        assignment = clean_name(request.form.get("assignment"))
+        if not assignment:
+            return fail("Write the name of the assignment.")
+        task = str(request.form.get("request") or "").replace("\r\n", "\n").strip()[:MAX_REQUEST_CHARS]
+        if len(task) < 10:
+            return fail("Paste what the assignment asks for (a few sentences), so the AI can check if the works match it.")
+        try:
+            due = datetime.strptime(str(request.form.get("due") or "").strip(), "%Y-%m-%d").date()
+        except ValueError:
+            return fail("Choose the due date of the assignment.")
+        today = datetime.fromtimestamp(now(), manager.tz).date()
+        if today < due:
+            return fail("The report opens on the due date (%s). Today is %s." % (due.isoformat(), today.isoformat()), 409)
+        store = state.homework
+        count = store.count(assignment)
+        if count < 1:
+            return fail("No student sent a work for this assignment yet.", 409)
+        if not store.start_report(assignment, now()):
+            return fail("The report is being written now. Wait for it.", 409)
+
+        def run():
+            try:
+                text = state.reviewer.report(task, store.report_texts(assignment))
+                store.finish_report(assignment, now(), count, text=text)
+            except ReviewServiceError as failure:
+                store.finish_report(assignment, now(), count, error=str(failure))
+            except Exception:  # never leave the page waiting forever
+                app.logger.exception("The homework report failed")
+                store.finish_report(assignment, now(), count, error="Something went wrong. Try again.")
+
+        if app.config.get("HOMEWORK_IN_BACKGROUND", not app.testing):
+            threading.Thread(target=run, daemon=True).start()
+            return jsonify(ok=True, working=True), 202
+        run()
+        if store.report(assignment)["state"] == "error":
+            return fail(store.report(assignment)["error"], 502)
+        return jsonify(ok=True, **report_json(assignment))
 
     @app.errorhandler(500)
     def server_error(_error):

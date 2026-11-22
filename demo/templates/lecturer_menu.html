@@ -15,5 +15,6 @@
   {{ tile("blue", "Check", "Photo count", "Photograph the room. The AI counts the people and compares with the check-ins.", url_for('lecturer', go='photo'), "camera") }}
   {{ tile("indigo", "After class", "Class summary", "Upload a recording or a YouTube link. The AI writes a summary only you can see.", url_for('lecturer', go='summary'), "summary") }}
   {{ tile("violet", "Any time", "Poll", "Ask the class a quick question and see the answers come in.", url_for('lecturer', go='poll'), "poll") }}
+  {{ tile("blue", "Due date", "Homework report", "On the due date the AI reads all the works together and writes a report for you.", url_for('lecturer', go='homework'), "doc") }}
 </main>
 {% endblock %}

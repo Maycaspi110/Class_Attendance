@@ -11,7 +11,7 @@
 {% else %}
 <nav class="jump" aria-label="Parts of this page">
   <a href="#roster">Roster</a><a href="#attendance">Attendance</a><a href="#results">Results</a>
-  <a href="#photo">Photo count</a><a href="#summary">Summary</a><a href="#poll">Poll</a>
+  <a href="#photo">Photo count</a><a href="#summary">Summary</a><a href="#poll">Poll</a><a href="#homework">Homework</a>
 </nav>
 {% endif %}
 
@@ -94,6 +94,25 @@
   <button type="button" id="closepoll" class="secondary" hidden>Close the poll</button>
   <div id="pollmsg" class="msg" role="status"></div>
   <div id="pollresults"></div>
+</div>
+<div class="card" id="homework"{{ ' hidden' if visible and 'homework' not in visible }}>
+  <h2>Homework report (only you see it)</h2>
+  <p class="muted">On the due date, the AI reads the works of all the students together and writes one report: do the works match the assignment, which mistakes repeat, what was not clear, and what was interesting. It is not written about each student, and no names are shown.</p>
+  <div id="homeworkoff" class="msg warn" hidden>The AI report is not set up on this server yet (GEMINI_API_KEY is missing).</div>
+  <label>Assignment name (the same name the students wrote)
+    <input type="text" id="hwname" maxlength="60" list="hwnames" placeholder="Ex2" autocomplete="off">
+  </label>
+  <datalist id="hwnames"></datalist>
+  <div id="hwcount" class="muted"></div>
+  <label>What the assignment asks for (paste the text of the assignment)
+    <textarea id="hwrequest" rows="5" maxlength="3000" placeholder="For example: write a program that ..."></textarea>
+  </label>
+  <label>Due date
+    <input type="date" id="hwdue">
+  </label>
+  <button type="button" id="hwmake" class="secondary" disabled>Write the class report</button>
+  <div id="hwmsg" class="msg" role="status"></div>
+  <div id="hwtext" class="summarytext" hidden></div>
 </div>
 <p class="muted">Version: {{ version }}</p>
 {% endblock %}

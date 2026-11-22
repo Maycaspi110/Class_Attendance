@@ -280,6 +280,89 @@
     });
   }
 
+  // ---- homework report (only the lecturer) ----
+  var hwMsg = $("hwmsg"), hwButton = $("hwmake"), hwTimer = null;
+
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+
+  // The button opens on the due date (the server checks it again).
+  function hwUpdateButton() {
+    var due = $("hwdue").value;
+    var name = $("hwname").value.trim();
+    hwButton.disabled = !due || !name || due > today();
+    if (due && due > today()) { say(hwMsg, "The report opens on the due date (" + due + ").", ""); }
+    else if (hwMsg.textContent.indexOf("opens on the due date") === 0) { say(hwMsg, "", ""); }
+  }
+
+  function hwShow(d) {
+    $("homeworkoff").hidden = d.ready !== false;
+    var r = d.report;
+    $("hwcount").textContent = $("hwname").value.trim() ? d.count + " students sent a work for this assignment." : "";
+    var box = $("hwtext");
+    box.hidden = !(r && r.text);
+    box.textContent = r && r.text ? r.text : "";
+    if (r && r.state === "working") {
+      say(hwMsg, "The AI is reading all the works... this can take a few minutes.", "");
+      hwButton.disabled = true;
+      hwPoll();
+    } else if (r && r.state === "error") {
+      say(hwMsg, r.error, "bad");
+      hwUpdateButton();
+    } else if (r && r.state === "done") {
+      say(hwMsg, "The report is ready (" + r.count + " works). Only you can see it.", "ok");
+      hwUpdateButton();
+    } else {
+      hwUpdateButton();
+    }
+  }
+
+  function hwLoad() {
+    var name = $("hwname").value.trim();
+    if (!name) { return; }
+    api("GET", "/api/homework/report?assignment=" + encodeURIComponent(name)).then(function (result) {
+      if (result.data && result.data.ok) { hwShow(result.data); }
+    });
+  }
+
+  function hwPoll() {
+    clearTimeout(hwTimer);
+    hwTimer = setTimeout(hwLoad, 4000);
+  }
+
+  $("hwmake").addEventListener("click", function () {
+    var form = new FormData();
+    form.append("assignment", $("hwname").value.trim());
+    form.append("request", $("hwrequest").value);
+    form.append("due", $("hwdue").value);
+    hwButton.disabled = true;
+    say(hwMsg, "Sending to the AI...", "");
+    api("POST", "/api/homework/report", form, true).then(function (result) {
+      if (needLogin(result)) { return; }
+      var d = result.data || {};
+      if (d.ok && d.working) { say(hwMsg, "The AI is reading all the works... this can take a few minutes.", ""); hwPoll(); return; }
+      if (d.ok) { hwShow(d); return; }
+      say(hwMsg, d.error || "Could not write the report (server answer " + result.status + ").", "bad");
+      hwUpdateButton();
+    });
+  });
+
+  ["hwname", "hwdue"].forEach(function (id) { $(id).addEventListener("input", hwUpdateButton); });
+  $("hwname").addEventListener("change", hwLoad);
+  api("GET", "/api/homework/assignments").then(function (result) {
+    var d = result.data;
+    if (!d || !d.ok) { return; }
+    $("homeworkoff").hidden = d.ready !== false;
+    var list = $("hwnames");
+    d.assignments.forEach(function (a) {
+      var option = add(list, "option", "");
+      option.value = a.name;
+      option.label = a.name + " (" + a.count + " works)";
+    });
+  });
+
   // ---- poll ----
   var pollMsg = $("pollmsg");
 
