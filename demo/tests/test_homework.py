@@ -44,6 +44,11 @@ class FakeReviewer:
         if self.error:
             raise ReviewServiceError(self.error)
 
+    def read_work(self, pdf):
+        """The fake AI reads the "PDF": the text of the work comes after the first line."""
+        self.work_pdfs = getattr(self, "work_pdfs", []) + [pdf]
+        return pdf.split(b"\n", 1)[1].decode("utf-8")
+
     def read_assignment(self, pdf):
         self.pdfs = getattr(self, "pdfs", []) + [pdf]
         return {"text": self.task, "due": self.found_due}
@@ -107,12 +112,10 @@ def clock():
     return Clock(NOW)
 
 
-def send(client, who=DANA, assignment="Ex2", work=WORK, as_file=True):
+def send(client, who=DANA, assignment="Ex2", work=WORK, pdf=None):
+    """A student sends a work. The fake PDF is a PDF header and then the text of the work."""
     data = {"email": who, "assignment": assignment}
-    if as_file:
-        data["work"] = (io.BytesIO(work.encode("utf-8")), "work.py")
-    else:
-        data["text"] = work
+    data["work"] = (io.BytesIO(pdf if pdf is not None else b"%PDF-1.4\n" + work.encode("utf-8")), "work.pdf")
     return client.post("/api/homework", data=data, content_type="multipart/form-data")
 
 
@@ -141,9 +144,39 @@ def test_a_student_gets_a_review_and_the_page_opens(clock):
     assert reviewer.reviews == [WORK.strip()]  # only the work of this student goes to the AI
 
 
-def test_pasted_text_works_like_a_file(clock):
-    student = make_client(FakeReviewer(), clock)
-    assert send(student, as_file=False).get_json()["ok"]
+def test_only_a_pdf_is_accepted(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+    for bad in (b"def add(a, b): return a + b", b"", b"PK a zip file"):
+        refused = send(student, pdf=bad)
+        assert refused.status_code == 400 and "PDF" in refused.get_json()["error"]
+    no_file = student.post("/api/homework", data={"email": DANA, "assignment": "Ex2", "text": WORK}, content_type="multipart/form-data")
+    assert no_file.status_code == 400 and "PDF" in no_file.get_json()["error"]
+    assert reviewer.reviews == [] and not hasattr(reviewer, "work_pdfs")  # nothing went to the AI
+
+
+def test_the_ai_reads_the_pdf_and_then_reviews_its_text(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+    assert send(student).get_json()["ok"]
+    assert reviewer.work_pdfs[0].startswith(b"%PDF-") and reviewer.reviews == [WORK.strip()]
+
+
+def test_a_pdf_the_ai_cannot_read_is_not_saved_and_can_be_tried_again_after_a_wait(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+
+    def broken(pdf):
+        raise ReviewServiceError("The AI could not read the file.")
+
+    reviewer.read_work = broken
+    failed = send(student)
+    assert failed.status_code == 502 and "could not read" in failed.get_json()["error"]
+    assert status(student).get_json()["count"] == 0 and reviewer.reviews == []
+    assert send(student).status_code == 429  # a short wait after a failure
+    clock.t += 30
+    del reviewer.read_work
+    assert send(student).status_code == 200
 
 
 def test_the_email_must_be_on_the_roster(clock):
@@ -190,7 +223,7 @@ def test_a_missing_assignment_name_is_refused(clock):
 
 def test_a_big_file_is_refused(clock):
     student = make_client(FakeReviewer(), clock)
-    assert send(student, work="a" * (1100 * 1024)).status_code == 413
+    assert send(student, work="a" * (5 * 1024 * 1024 + 10)).status_code == 413
 
 
 def test_a_failed_review_is_not_saved_and_can_be_tried_again_after_a_wait(clock):
@@ -376,6 +409,19 @@ def answer(text):
 
 def prompt_of(body):
     return json.loads(body)["contents"][0]["parts"][0]["text"]
+
+
+def test_the_work_request_has_the_pdf_inside_and_gives_back_its_text():
+    seen = {}
+
+    def post(url, headers, body, timeout):
+        seen["parts"] = json.loads(body)["contents"][0]["parts"]
+        return answer("def add(a, b): return a + b")
+
+    text = GeminiReviewer("k", http_post=post).read_work(b"%PDF-1.4 hi")
+    assert text == "def add(a, b): return a + b"
+    assert seen["parts"][0]["inline_data"]["mime_type"] == "application/pdf"
+    assert "exactly as it is written" in seen["parts"][1]["text"]
 
 
 def test_the_review_request_has_the_key_in_a_header_and_only_the_work():

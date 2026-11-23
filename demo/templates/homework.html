@@ -12,15 +12,12 @@
   <label>Assignment
     <select id="assignment" required></select>
   </label>
-  <label>Your work (a text or code file, up to 1 MB)
-    <input type="file" id="work" accept=".txt,.md,.py,.java,.js,.ts,.c,.cpp,.cs,.html,.css,.json,text/plain">
-  </label>
-  <label>Or paste the text here
-    <textarea id="text" rows="6" maxlength="100000" placeholder="Paste your code or text"></textarea>
+  <label>Your work (a PDF file, up to 5 MB)
+    <input type="file" id="work" accept=".pdf,application/pdf" required>
   </label>
   <button type="submit" id="send">Get the review</button>
   <div id="msg" class="msg" role="status"></div>
-  <p class="muted">Your work is sent to an AI service to write the review. Do not send private information. You get one review for each assignment each day. A new version replaces the old one.</p>
+  <p class="muted">The PDF of your work is sent to an AI service to read it and write the review. Do not send private information. You get one review for each assignment each day. A new version replaces the old one.</p>
 </form>
 
 <div class="card" id="resultbox" hidden>

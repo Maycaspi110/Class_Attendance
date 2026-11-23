@@ -73,7 +73,7 @@ LECTURER_SECTIONS = {
     "homework": ("Homework report", ("homework",)),
 }
 LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll", "publish", "homework")  # the cards of the lecturer page
-MAX_HOMEWORK_BYTES = 1024 * 1024
+MAX_HOMEWORK_BYTES = 5 * 1024 * 1024
 
 
 class DemoState:
@@ -717,20 +717,20 @@ def create_app(test_config=None):
     @app.route("/api/homework", methods=["POST"])
     def homework_review():
         """A student sends a work and gets one AI review. Identified by the roster email, like the check-in."""
-        request.max_content_length = MAX_HOMEWORK_BYTES + 4096
+        request.max_content_length = MAX_HOMEWORK_BYTES + 1024 * 1024
         if state.reviewer is None:
             return fail("The AI review is not set up. Add GEMINI_API_KEY in the server settings.", 503)
         student, assignment, error = homework_student()
         if error:
             return error
         upload = request.files.get("work")
-        if upload is not None and upload.filename:
-            raw = upload.read(MAX_HOMEWORK_BYTES + 1)
-            if len(raw) > MAX_HOMEWORK_BYTES:
-                return fail("The file is too large (the limit is 1 MB).", 413)
-            raw_text = raw.decode("utf-8-sig", errors="replace")
-        else:
-            raw_text = str(request.form.get("text") or "")[:MAX_HOMEWORK_BYTES]
+        if upload is None or not upload.filename:
+            return fail("Choose the PDF file of your work.")
+        pdf = upload.read(MAX_HOMEWORK_BYTES + 1)
+        if len(pdf) > MAX_HOMEWORK_BYTES:
+            return fail("The file is too large (the limit is 5 MB).", 413)
+        if not pdf.startswith(b"%PDF-"):
+            return fail("The file must be a PDF.")
         try:
             wait = state.homework.review_wait(assignment, student.email, now(), app.config["HOMEWORK_COOLDOWN_SECONDS"])
             if wait > 0:
@@ -740,8 +740,8 @@ def create_app(test_config=None):
                     409,
                     wait=wait,
                 )
-            text = clean_work(raw_text)
             state.homework.check_wait(student.email, now())
+            text = clean_work(state.reviewer.read_work(pdf))  # the AI reads the PDF, then reviews the text
             review = state.reviewer.review(text)
             state.homework.save(assignment, student.email, text, now())
         except ReviewServiceError as error:

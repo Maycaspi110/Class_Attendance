@@ -89,10 +89,9 @@
   $("form").addEventListener("submit", function (event) {
     event.preventDefault();
     var file = $("work").files[0];
-    var text = $("text").value;
-    if (!file && !text.trim()) { say(msg, "Choose a file or paste your work.", "bad"); return; }
+    if (!file) { say(msg, "Choose the PDF file of your work.", "bad"); return; }
     var form = fields();
-    if (file) { form.append("work", file, file.name); } else { form.append("text", text); }
+    form.append("work", file, file.name);
     var button = $("send");
     button.disabled = true;
     say(msg, "Writing the review... this can take up to a minute.", "");
