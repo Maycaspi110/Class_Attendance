@@ -16,7 +16,7 @@ The demo runs on the Render address, from a phone for the students and a laptop 
 | 2 | Press "I am a lecturer", log in, press the "Course roster" tile and upload the roster (a CSV file with the columns Name and Email) | The roster is lost when the server sleeps |
 | 3 | On the lecturer menu press "Classroom screen" and put that page on the projector | It needs to be ready |
 | 4 | Check that the lecturer's phone has Location on | The classroom location is taken from it |
-| 5 | Have the files ready: a classroom photo, a screen recording of about 2 minutes (or a YouTube link), `tests/sample-homework-a.py`, `-b.py` and `-c.py` (three works for the homework comparison), and the PDF of an assignment (for example `Assignment-Ex2.pdf`) | Used in steps 5-7 |
+| 5 | Have the files ready: a classroom photo, a screen recording of about 2 minutes (or a YouTube link), `tests/sample-homework-a.pdf`, `-b.pdf` and `-c.pdf` (three works for the homework comparison), and the PDF of an assignment (for example `Assignment-Ex2.pdf`) | Used in steps 5-7 |
 | 6 | Have 2-3 students ready with their phones | For the live check-in |
 | 7 | Keep screenshots of each result (the `evidence` folder) | If the network or the AI does not work |
 

@@ -64,7 +64,7 @@ flowchart LR
 | Lecturer page | Uploads the roster, starts and ends the start and end check-ins, shows the results and the comments, uploads the classroom photo, uploads a class recording (or a YouTube link) and shows the summary, downloads the CSV, creates a poll and shows its results. | Lecturer | FR-1 to FR-9, FR-18, FR-20, FR-21 |
 | Classroom screen page | Shows the current 4-digit code and the QR code, and updates them when the code changes. | Classroom screen | show the code and QR |
 | Student page | The student enters an email and a code (or arrives from the QR code), allows location, writes a comment in the end check-in, sees a confirmation or an error, and answers a poll. | Student | FR-10 to FR-17, FR-19 |
-| Homework page | The student enters an email and the assignment name, sends a work, and sees the AI review. | Student | FR-22, FR-23 |
+| Homework page | The student enters an email, chooses the assignment from the list and sends the PDF of the work, and sees the AI review. | Student | FR-22, FR-23 |
 
 ### Server
 
