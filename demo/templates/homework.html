@@ -9,8 +9,8 @@
   <label>Your email
     <input type="email" id="email" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="name@example.com" maxlength="254" required>
   </label>
-  <label>Name of the assignment
-    <input type="text" id="assignment" maxlength="60" placeholder="For example: Ex2" required>
+  <label>Assignment
+    <select id="assignment" required></select>
   </label>
   <label>Your work (a text or code file, up to 200 KB)
     <input type="file" id="work" accept=".txt,.md,.py,.java,.js,.ts,.c,.cpp,.cs,.html,.css,.json,text/plain">
@@ -32,7 +32,7 @@
   <h2>Compare with the class</h2>
   <p class="muted">Opens when enough students sent their work (the number is shown below). The AI compares your work with a general overview of all the works: how close you are to the general direction, what is different, and how to improve. You can do it once a day.</p>
   <progress id="comparebar" max="8" value="0"></progress>
-  <div id="comparestatus" class="msg" role="status">Type your email and the name of the assignment.</div>
+  <div id="comparestatus" class="msg" role="status">Type your email and choose the assignment.</div>
   <button type="button" id="compare" class="secondary" disabled>Compare with the class</button>
   <div id="comparetext" class="summarytext" hidden></div>
 </div>

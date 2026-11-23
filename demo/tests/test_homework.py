@@ -33,6 +33,9 @@ def email(n):
 
 
 class FakeReviewer:
+    task = "Write a program that adds two numbers and prints the result."
+    found_due = None
+
     def __init__(self, error=None):
         self.error = error
         self.reviews, self.overviews, self.compares = [], [], []
@@ -40,6 +43,10 @@ class FakeReviewer:
     def _fail(self):
         if self.error:
             raise ReviewServiceError(self.error)
+
+    def read_assignment(self, pdf):
+        self.pdfs = getattr(self, "pdfs", []) + [pdf]
+        return {"text": self.task, "due": self.found_due}
 
     def review(self, work):
         self.reviews.append(work)
@@ -55,6 +62,17 @@ class FakeReviewer:
         self.compares.append((work, overview))
         self._fail()
         return "A comparison with the class."
+
+
+PDF = b"%PDF-1.4 the assignment"
+
+
+def publish(lecturer, name, due="2030-01-01", course="OOP", pdf=PDF, filename="task.pdf"):
+    return lecturer.post(
+        "/api/assignments",
+        data={"course": course, "name": name, "due": due, "file": (io.BytesIO(pdf), filename)},
+        content_type="multipart/form-data",
+    )
 
 
 def make_client(reviewer, clock, min_works=None, roster=None, background=False, cooldown=None):
@@ -78,6 +96,9 @@ def make_client(reviewer, clock, min_works=None, roster=None, background=False, 
     lecturer = app.test_client()
     assert lecturer.post("/login", data={"password": PASSWORD}).status_code == 302
     confirm_roster(lecturer, roster or BIG_ROSTER)
+    if reviewer is not None:
+        for name in ("Ex1", "Ex2", "Ex3"):  # the lecturer published these, the students choose them from the list
+            assert publish(lecturer, name).status_code == 200
     return app.test_client()
 
 
@@ -481,3 +502,21 @@ def test_a_wait_of_zero_means_no_daily_limit(clock):
     assert send(student).status_code == 200
     assert send(student, work=WORK + "# a change\n").status_code == 200
     assert len(reviewer.reviews) == 2
+
+
+# ---- the student can only choose an assignment that the lecturer published ----
+
+def test_an_assignment_that_was_not_published_is_refused(clock):
+    student = make_client(FakeReviewer(), clock)
+    for response in (send(student, assignment="Ex9"), status(student, assignment="Ex9"), compare(student, assignment="Ex9")):
+        assert response.status_code == 404 and "did not publish" in response.get_json()["error"]
+
+
+def test_the_students_see_the_list_without_the_text_or_any_work(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+    send(student)
+    data = student.get("/api/assignments").get_json()
+    assert [a["name"] for a in data["assignments"]] == ["Ex1", "Ex2", "Ex3"]
+    assert set(data["assignments"][0]) == {"name", "course", "due"}
+    assert reviewer.task not in json.dumps(data) and "def add" not in json.dumps(data)

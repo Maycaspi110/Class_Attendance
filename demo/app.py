@@ -34,6 +34,7 @@ from attendance.homework import (
     HomeworkError,
     DEFAULT_COOLDOWN_SECONDS,
     DEFAULT_MIN_WORKS,
+    MAX_ASSIGNMENT_PDF_BYTES,
     MAX_REQUEST_CHARS,
     REFRESH_EVERY,
     HomeworkStore,
@@ -68,9 +69,10 @@ LECTURER_SECTIONS = {
     "photo": ("Photo count", ("photo",)),
     "summary": ("Class summary", ("summary",)),
     "poll": ("Poll", ("poll",)),
+    "publish": ("Publish an assignment", ("publish",)),
     "homework": ("Homework report", ("homework",)),
 }
-LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll", "homework")  # the cards of the lecturer page
+LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll", "publish", "homework")  # the cards of the lecturer page
 MAX_HOMEWORK_BYTES = 200 * 1024
 
 
@@ -692,7 +694,9 @@ def create_app(test_config=None):
             return None, None, fail("This email is not on the roster.", 403)
         assignment = clean_name(request.values.get("assignment"))
         if not assignment:
-            return None, None, fail("Write the name of the assignment.")
+            return None, None, fail("Choose the assignment from the list.")
+        if state.homework.published(assignment) is None:
+            return None, None, fail("The lecturer did not publish this assignment. Choose it from the list.", 404)
         return student, assignment, None
 
     def homework_status(assignment, email):
@@ -819,30 +823,100 @@ def create_app(test_config=None):
             return fail(result["error"], 502)
         return jsonify(ok=True, **homework_status(assignment, email))
 
-    # ---- the report for the lecturer: all the works of one assignment together ----
+    # ---- assignments: the lecturer publishes them, the students choose one from the list ----
 
-    def report_json(assignment):
-        report = state.homework.report(assignment)
+    def today():
+        return datetime.fromtimestamp(now(), manager.tz).date().isoformat()
+
+    def assignment_json(item):
         return {
-            "count": state.homework.count(assignment),
-            "report": report,  # None, or {"state": working/done/error, "text": ..., "error": ..., "time": ...}
-            "ready": state.reviewer is not None,
+            "name": item["name"],
+            "course": item["course"],
+            "due": item["due"],
+            "count": state.homework.count(item["name"]),
+            "opens": today() >= item["due"],  # the class report opens on the due date
         }
+
+    @app.route("/api/assignments", methods=["GET"])
+    def assignments_for_students():
+        """The published assignments: the course, the name and the due date. Never the text, never any work."""
+        items = [{"name": i["name"], "course": i["course"], "due": i["due"]} for i in state.homework.all_published()]
+        return jsonify(ok=True, assignments=items)
 
     @app.route("/api/homework/assignments")
     @lecturer_required
-    def homework_assignments():
-        """The assignments that have works, with how many. No student is named."""
-        names = [{"name": name, "count": count} for name, count in state.homework.assignments()]
-        return jsonify(ok=True, assignments=names, ready=state.reviewer is not None)
+    def assignments_for_lecturer():
+        items = [assignment_json(item) for item in state.homework.all_published()]
+        return jsonify(ok=True, assignments=items, ready=state.reviewer is not None)
+
+    @app.route("/api/assignments", methods=["POST"])
+    @lecturer_required
+    def assignment_publish():
+        """The lecturer uploads the PDF of an assignment. The AI reads it and checks the due date inside."""
+        request.max_content_length = MAX_ASSIGNMENT_PDF_BYTES + 1024 * 1024
+        if state.reviewer is None:
+            return fail("The AI is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        course = " ".join(str(request.form.get("course") or "").split())[:80]
+        name = clean_name(request.form.get("name"))
+        if not course or not name:
+            return fail("Write the name of the course and the name of the assignment.")
+        try:
+            due = datetime.strptime(str(request.form.get("due") or "").strip(), "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            return fail("Choose the due date of the assignment.")
+        upload = request.files.get("file")
+        if upload is None or not upload.filename:
+            return fail("Choose the PDF file of the assignment.")
+        data = upload.read(MAX_ASSIGNMENT_PDF_BYTES + 1)
+        if len(data) > MAX_ASSIGNMENT_PDF_BYTES:
+            return fail("The PDF is too large (the limit is 5 MB).", 413)
+        if not data.startswith(b"%PDF-"):
+            return fail("The file must be a PDF.")
+        try:
+            info = state.reviewer.read_assignment(data)
+        except ReviewServiceError as error:
+            return fail(str(error), 502)
+        if len(info["text"]) < 10:
+            return fail("The AI could not read text in this PDF. Use a PDF with text, not a photo of a page.")
+        found = info["due"]
+        warning = None
+        if found is None:
+            warning = "The AI did not find a due date in the document. The date you chose is used."
+        elif found != due:
+            warning = "The document says the due date is %s, but you chose %s. Check it, and publish again to fix it." % (
+                found,
+                due,
+            )
+        try:
+            state.homework.publish(name, course, due, info["text"], now())
+        except HomeworkError as error:
+            return fail(str(error), 409)
+        return jsonify(
+            ok=True,
+            warning=warning,
+            found_due=found,
+            assignment=assignment_json(state.homework.published(name)),
+        )
+
+    # ---- the report for the lecturer: all the works of one assignment together ----
+
+    def report_json(item):
+        data = assignment_json(item)
+        data.update(report=state.homework.report(item["name"]), ready=state.reviewer is not None)
+        return data  # the report: None, or {"state": working/done/error, "text": ..., "error": ..., "time": ...}
+
+    def published_or_error(name):
+        assignment = clean_name(name)
+        item = state.homework.published(assignment) if assignment else None
+        if item is None:
+            return None, fail("Choose a published assignment.", 404)
+        return item, None
 
     @app.route("/api/homework/report", methods=["GET"])
     @lecturer_required
     def homework_report_get():
-        assignment = clean_name(request.args.get("assignment"))
-        if not assignment:
-            return fail("Write the name of the assignment.")
-        return jsonify(ok=True, **report_json(assignment))
+        item, error = published_or_error(request.args.get("assignment"))
+        return error or jsonify(ok=True, **report_json(item))
 
     @app.route("/api/homework/report", methods=["POST"])
     @lecturer_required
@@ -850,43 +924,35 @@ def create_app(test_config=None):
         """On the due date (or later) the AI reads all the works together and writes one report for the lecturer."""
         if state.reviewer is None:
             return fail("The AI report is not set up. Add GEMINI_API_KEY in the server settings.", 503)
-        assignment = clean_name(request.form.get("assignment"))
-        if not assignment:
-            return fail("Write the name of the assignment.")
-        task = str(request.form.get("request") or "").replace("\r\n", "\n").strip()[:MAX_REQUEST_CHARS]
-        if len(task) < 10:
-            return fail("Paste what the assignment asks for (a few sentences), so the AI can check if the works match it.")
-        try:
-            due = datetime.strptime(str(request.form.get("due") or "").strip(), "%Y-%m-%d").date()
-        except ValueError:
-            return fail("Choose the due date of the assignment.")
-        today = datetime.fromtimestamp(now(), manager.tz).date()
-        if today < due:
-            return fail("The report opens on the due date (%s). Today is %s." % (due.isoformat(), today.isoformat()), 409)
+        item, error = published_or_error(request.form.get("assignment"))
+        if error:
+            return error
+        if today() < item["due"]:
+            return fail("The report opens on the due date (%s). Today is %s." % (item["due"], today()), 409)
         store = state.homework
-        count = store.count(assignment)
+        count = store.count(item["name"])
         if count < 1:
             return fail("No student sent a work for this assignment yet.", 409)
-        if not store.start_report(assignment, now()):
+        if not store.start_report(item["name"], now()):
             return fail("The report is being written now. Wait for it.", 409)
 
         def run():
             try:
-                text = state.reviewer.report(task, store.report_texts(assignment))
-                store.finish_report(assignment, now(), count, text=text)
+                text = state.reviewer.report(item["text"][:MAX_REQUEST_CHARS], store.report_texts(item["name"]))
+                store.finish_report(item["name"], now(), count, text=text)
             except ReviewServiceError as failure:
-                store.finish_report(assignment, now(), count, error=str(failure))
+                store.finish_report(item["name"], now(), count, error=str(failure))
             except Exception:  # never leave the page waiting forever
                 app.logger.exception("The homework report failed")
-                store.finish_report(assignment, now(), count, error="Something went wrong. Try again.")
+                store.finish_report(item["name"], now(), count, error="Something went wrong. Try again.")
 
         if app.config.get("HOMEWORK_IN_BACKGROUND", not app.testing):
             threading.Thread(target=run, daemon=True).start()
             return jsonify(ok=True, working=True), 202
         run()
-        if store.report(assignment)["state"] == "error":
-            return fail(store.report(assignment)["error"], 502)
-        return jsonify(ok=True, **report_json(assignment))
+        if store.report(item["name"])["state"] == "error":
+            return fail(store.report(item["name"])["error"], 502)
+        return jsonify(ok=True, **report_json(item))
 
     @app.errorhandler(500)
     def server_error(_error):

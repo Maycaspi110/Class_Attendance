@@ -12,6 +12,24 @@
     return form;
   }
 
+  // The assignments are chosen from the list the lecturer published.
+  function loadAssignments() {
+    api("GET", "/api/assignments").then(function (result) {
+      var d = result.data, select = $("assignment");
+      clear(select);
+      if (!d || !d.ok || !d.assignments.length) {
+        add(select, "option", "(no assignment yet)").value = "";
+        say(msg, "The lecturer did not publish an assignment yet.", "bad");
+        return;
+      }
+      add(select, "option", "Choose the assignment").value = "";
+      d.assignments.forEach(function (a) {
+        var option = add(select, "option", a.course + " - " + a.name + " (due " + a.due + ")");
+        option.value = a.name;
+      });
+    });
+  }
+
   function filled() { return $("email").value.trim() && $("assignment").value.trim(); }
 
   function waitText(seconds) {
@@ -63,7 +81,10 @@
   }
 
   $("email").addEventListener("change", refreshStatus);
-  $("assignment").addEventListener("change", refreshStatus);
+  $("assignment").addEventListener("change", function () {
+    $("resultbox").hidden = true;
+    refreshStatus();
+  });
 
   $("form").addEventListener("submit", function (event) {
     event.preventDefault();
@@ -101,5 +122,5 @@
     });
   });
 
-  if (filled()) { refreshStatus(); }
+  loadAssignments();
 })();
