@@ -73,7 +73,7 @@ LECTURER_SECTIONS = {
     "homework": ("Homework report", ("homework",)),
 }
 LECTURER_PARTS = ("roster", "attendance", "results", "photo", "summary", "poll", "publish", "homework")  # the cards of the lecturer page
-MAX_HOMEWORK_BYTES = 200 * 1024
+MAX_HOMEWORK_BYTES = 1024 * 1024
 
 
 class DemoState:
@@ -727,7 +727,7 @@ def create_app(test_config=None):
         if upload is not None and upload.filename:
             raw = upload.read(MAX_HOMEWORK_BYTES + 1)
             if len(raw) > MAX_HOMEWORK_BYTES:
-                return fail("The file is too large (the limit is 200 KB).", 413)
+                return fail("The file is too large (the limit is 1 MB).", 413)
             raw_text = raw.decode("utf-8-sig", errors="replace")
         else:
             raw_text = str(request.form.get("text") or "")[:MAX_HOMEWORK_BYTES]

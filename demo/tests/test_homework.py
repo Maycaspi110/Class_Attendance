@@ -190,7 +190,7 @@ def test_a_missing_assignment_name_is_refused(clock):
 
 def test_a_big_file_is_refused(clock):
     student = make_client(FakeReviewer(), clock)
-    assert send(student, work="a" * (300 * 1024)).status_code == 413
+    assert send(student, work="a" * (1100 * 1024)).status_code == 413
 
 
 def test_a_failed_review_is_not_saved_and_can_be_tried_again_after_a_wait(clock):

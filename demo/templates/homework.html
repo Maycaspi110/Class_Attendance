@@ -12,11 +12,11 @@
   <label>Assignment
     <select id="assignment" required></select>
   </label>
-  <label>Your work (a text or code file, up to 200 KB)
+  <label>Your work (a text or code file, up to 1 MB)
     <input type="file" id="work" accept=".txt,.md,.py,.java,.js,.ts,.c,.cpp,.cs,.html,.css,.json,text/plain">
   </label>
   <label>Or paste the text here
-    <textarea id="text" rows="6" maxlength="30000" placeholder="Paste your code or text"></textarea>
+    <textarea id="text" rows="6" maxlength="100000" placeholder="Paste your code or text"></textarea>
   </label>
   <button type="submit" id="send">Get the review</button>
   <div id="msg" class="msg" role="status"></div>

@@ -16,7 +16,7 @@ from datetime import datetime
 
 from .headcount import GeminiCounter, _default_post, _http_message
 
-MAX_WORK_CHARS = 30000  # the work of one student
+MAX_WORK_CHARS = 100000  # the work of one student
 MAX_OVERVIEW_CHARS = 3000  # the part of every work that goes into the overview
 MAX_WORKS_IN_OVERVIEW = 40  # how many works the overview reads
 MAX_WORKS_IN_REPORT = 60  # how many works the lecturer's report reads
