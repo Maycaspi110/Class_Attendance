@@ -16,7 +16,7 @@ The demo runs on the Render address, from a phone for the students and a laptop 
 | 2 | Press "I am a lecturer", log in, press the "Course roster" tile and upload the roster (a CSV file with the columns Name and Email) | The roster is lost when the server sleeps |
 | 3 | On the lecturer menu press "Classroom screen" and put that page on the projector | It needs to be ready |
 | 4 | Check that the lecturer's phone has Location on | The classroom location is taken from it |
-| 5 | Have the files ready: a classroom photo, a screen recording of about 2 minutes (or a YouTube link), `tests/sample-homework-a.py`, `-b.py` and `-c.py` (three works for the homework comparison) | Used in steps 5-7 |
+| 5 | Have the files ready: a classroom photo, a screen recording of about 2 minutes (or a YouTube link), `tests/sample-homework-a.py`, `-b.py` and `-c.py` (three works for the homework comparison), and the PDF of an assignment (for example `Assignment-Ex2.pdf`) | Used in steps 5-7 |
 | 6 | Have 2-3 students ready with their phones | For the live check-in |
 | 7 | Keep screenshots of each result (the `evidence` folder) | If the network or the AI does not work |
 
@@ -32,7 +32,7 @@ The demo runs on the Render address, from a phone for the students and a laptop 
 | 5:30 | **Poll:** the "Poll" tile, "Did you understand the lesson?", and the students answer | The results update on the lecturer page |
 | 6:30 | **Spreadsheet:** download the CSV and open it in Excel | One row per student with the start and end check-in and the comment |
 | 7:30 | **Class summary:** press the "Class summary" tile, upload the 2 minute recording and wait about a minute | A short summary that only the lecturer sees |
-| 8:30 | **Homework:** students press "I am a student", then "Homework review", and send a work for one assignment name. The server setting `HOMEWORK_MIN_WORKS` is 3 for the demo | Each student gets a review (once a day for each assignment). The page shows "N of 3 works", and the comparison button opens at 3. The comparison shows how a work differs from the class. No one sees another work |
+| 8:30 | **Homework:** first the lecturer presses "Publish an assignment", writes the course, the name and the due date (today), and uploads the PDF. Then students press "I am a student", then "Homework review", choose the assignment from the list and send a work. The server setting `HOMEWORK_MIN_WORKS` is 3 for the demo | Each student gets a review (once a day for each assignment). The page shows "N of 3 works", and the comparison button opens at 3. The comparison shows how a work differs from the class. No one sees another work |
 | 9:30 | **Limits** (30 s): the free AI has limits, email is the only identity, the photo count is only a warning | |
 
 ## If something fails

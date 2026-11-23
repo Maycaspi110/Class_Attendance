@@ -34,7 +34,8 @@ The three features use the Google Gemini API (free tier) from the server. The ke
 - **Class summary:** a recording (MP4, WebM, MP3, M4A, WAV) or a public YouTube link. For a recording the browser takes out the sound (about 2 MB per minute), so a 140 MB screen recording is about 4 MB. The AI works in the background, and only the lecturer sees the summary.
   (The server also accepts a transcript text file for the summary, `.txt`, `.vtt` or `.srt`, but the page does not offer it.)
 - **Homework review:** one review per student and assignment each day (a new version replaces the old one). From `HOMEWORK_MIN_WORKS` works (default 8) a student can compare their work with the class, once a day: Gemini writes one general overview of all the works (only what several works share, made again after 5 new works) and compares the work with it. The student never sees another work. The comparison runs in the background.
-- **Homework report (lecturer):** on the due date the lecturer pastes the text of the assignment and presses one button. Gemini reads all the works together and writes one report: do they match the assignment, repeated mistakes, what was not clear, what was interesting. No names. It runs in the background and can take a few minutes.
+- **Publish an assignment (lecturer):** course, name, due date and the PDF. Gemini reads the PDF and warns if the due date inside is not the chosen date. Students choose the assignment from a list.
+- **Homework report (lecturer):** on the due date the lecturer chooses the assignment and presses one button. Gemini reads all the works together and writes one report: do they match the assignment, repeated mistakes, what was not clear, what was interesting. No names. It runs in the background and can take a few minutes.
 
 ## Run it on your computer
 

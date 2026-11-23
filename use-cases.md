@@ -4,7 +4,7 @@
 **Author:** May Caspi
 **Related documents:** SoW, SRS
 
-Each use case is a short story of how a user does one thing with the system. Attendance is the main feature (UC-1 to UC-4). The photo count (UC-5), the poll (UC-6), the class summary (UC-7), the homework review (UC-8) and the homework report for the lecturer (UC-9) are extra features. All of them are implemented in the demo.
+Each use case is a short story of how a user does one thing with the system. Attendance is the main feature (UC-1 to UC-4). The photo count (UC-5), the poll (UC-6), the class summary (UC-7), the homework review (UC-8), publishing an assignment (UC-9) and the homework report for the lecturer (UC-10) are extra features. All of them are implemented in the demo.
 
 ## UC-1: Lecturer uploads the course roster
 
@@ -124,9 +124,9 @@ Each use case is a short story of how a user does one thing with the system. Att
 **Story:** As a student, I want a detailed review of my homework, and to see how it compares with the rest of the class, so that I can improve it before I submit it.
 
 - **Actor:** Student
-- **Before:** The student is on the roster.
+- **Before:** The student is on the roster. The lecturer published the assignment (UC-9).
 - **Main flow:**
-  1. The student opens the homework page, types their email and the name of the assignment, and uploads a text or code file (or pastes the text).
+  1. The student opens the homework page, types their email, chooses the assignment from the list that the lecturer published, and uploads a text or code file (or pastes the text).
   2. The system sends the work to an AI. The student gets a review: summary, strengths, problems and suggestions. The page says when a new review is possible: once a day for each assignment.
   3. The page shows how many students sent their work, for example "5 of 8". Until 8 students did, the comparison button is gray.
   4. When 8 or more students sent their work, the button opens. The student presses it.
@@ -138,21 +138,39 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **After:** The work stays in memory for the overview. The student can compare once a day. The student never sees another student's work or name.
 - **Related requirements:** FR-22, FR-23
 
-## UC-9: Lecturer gets a report about all the works of an assignment
+## UC-9: Lecturer publishes an assignment
+
+**Story:** As a lecturer, I want to publish an assignment with its due date, so that the students choose it from a list and the system knows what the assignment asks for.
+
+- **Actor:** Lecturer
+- **Before:** The lecturer is logged in.
+- **Main flow:**
+  1. The lecturer opens the "Publish an assignment" tile and writes the course name and the assignment name.
+  2. The lecturer chooses the due date and uploads the PDF of the assignment.
+  3. The AI reads the PDF and checks the due date written inside it against the chosen date.
+  4. The page says that the assignment is published. If the dates differ, or the document has no date, the page shows a warning.
+- **Other cases:**
+  - The file is not a PDF, is too large (over 5 MB), or has no readable text: the system shows an error.
+  - The date in the document is different: it is only a warning. The lecturer can publish again with a fixed date.
+  - The AI is not available: a clear error, and nothing is published.
+- **After:** The assignment appears in the list on the student homework page (course, name and due date, never the text). The text read from the PDF is kept for the class report.
+- **Related requirements:** FR-27
+
+## UC-10: Lecturer gets a report about all the works of an assignment
 
 **Story:** As a lecturer, I want one report about all the works of an assignment on the due date, so that I can see if the class understood the assignment and what to explain again.
 
 - **Actor:** Lecturer
-- **Before:** The lecturer is logged in. Students sent works for the assignment (UC-8).
+- **Before:** The lecturer published the assignment (UC-9). Students sent works for it (UC-8).
 - **Main flow:**
-  1. The lecturer opens the "Homework report" tile and chooses the assignment name. The page shows how many students sent a work.
-  2. The lecturer pastes what the assignment asks for and chooses the due date. Until the due date, the button is gray.
+  1. The lecturer opens the "Homework report" tile and chooses the assignment from the list. The page shows the due date and how many students sent a work.
+  2. Until the due date, the button is gray.
   3. On the due date, the lecturer presses "Write the class report".
-  4. The AI reads all the works together and writes one report: do the works match the assignment, which mistakes repeat or what was not clear, what was interesting or special, and what to explain again. It can take a few minutes.
+  4. The AI reads all the works together with the text of the assignment, and writes one report: do the works match the assignment, which mistakes repeat or what was not clear, what was interesting or special, and what to explain again. It can take a few minutes.
   5. The lecturer reads the report. Only the lecturer sees it.
 - **Other cases:**
-  - Before the due date: the system says when the report opens.
-  - No student sent a work, or the text of the assignment is missing: the system shows an error.
+  - Before the due date: the page says when the report opens.
+  - No student sent a work: the system shows an error.
   - The AI is not available: a clear error, the old report stays, and the lecturer can try again.
 - **After:** The report is kept in memory until the server restarts. It does not name any student and does not describe works one by one.
-- **Related requirements:** FR-27
+- **Related requirements:** FR-28
