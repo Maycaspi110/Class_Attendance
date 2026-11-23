@@ -103,7 +103,7 @@ body.home { max-width: 980px; padding: 40px 24px 32px;
     linear-gradient(180deg, #fbfbfe, #f1f3fb); }
 .homehead { display: flex; align-items: center; gap: 18px; margin-bottom: 4px; }
 .homehead .logo { flex: none; min-width: 64px; height: 84px; padding: 0 16px; border-radius: 18px 18px 30px 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; line-height: 1.05; text-align: center;
-  background: linear-gradient(160deg, #0f766e, #0ea5e9); box-shadow: 0 10px 24px rgba(14, 116, 144, .35); }
+  background: linear-gradient(160deg, #2563eb, #4338ca); box-shadow: 0 10px 24px rgba(67, 56, 202, .35); }
 .homehead .titles { border-left: 2px solid rgba(23, 32, 58, .08); padding-left: 18px; }
 .homehead h1 { font-size: 2.1rem; margin: 0; letter-spacing: -.03em; }
 .homehead .sub { margin: 4px 0 0; font-size: 1rem; }
