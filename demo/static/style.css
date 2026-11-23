@@ -102,8 +102,8 @@ body.home { max-width: 980px; padding: 40px 24px 32px;
     radial-gradient(800px 500px at -10% 110%, rgba(125, 160, 230, .20), transparent 60%),
     linear-gradient(180deg, #fbfbfe, #f1f3fb); }
 .homehead { display: flex; align-items: center; gap: 18px; margin-bottom: 4px; }
-.homehead .logo { flex: none; min-width: 64px; height: 64px; padding: 0 16px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; line-height: 1.05; text-align: center;
-  background: linear-gradient(135deg, #3b3f9e, #7c5ce0); box-shadow: 0 10px 24px rgba(76, 70, 180, .35); }
+.homehead .logo { flex: none; min-width: 64px; height: 84px; padding: 0 16px; border-radius: 18px 18px 30px 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; line-height: 1.05; text-align: center;
+  background: linear-gradient(160deg, #0f766e, #0ea5e9); box-shadow: 0 10px 24px rgba(14, 116, 144, .35); }
 .homehead .titles { border-left: 2px solid rgba(23, 32, 58, .08); padding-left: 18px; }
 .homehead h1 { font-size: 2.1rem; margin: 0; letter-spacing: -.03em; }
 .homehead .sub { margin: 4px 0 0; font-size: 1rem; }
@@ -162,6 +162,7 @@ body.home .tiles .tile { min-height: 190px; }
 
 progress { width: 100%; height: 10px; margin: 6px 0 2px; accent-color: #6a5acd; }
 
-.homehead .logo .big { font-size: 1.35rem; font-weight: 800; letter-spacing: .14em; }
-.homehead .logo .small { font-size: .62rem; font-weight: 700; letter-spacing: .2em; }
-@media (max-width: 720px) { .homehead .logo { height: 54px; padding: 0 12px; } .homehead .logo .big { font-size: 1.1rem; } }
+.homehead .logo svg { margin-bottom: 2px; }
+.homehead .logo .big { font-size: 1.2rem; font-weight: 800; letter-spacing: .14em; }
+.homehead .logo .small { font-size: .56rem; font-weight: 700; letter-spacing: .2em; }
+@media (max-width: 720px) { .homehead .logo { height: 76px; padding: 0 12px; } .homehead .logo .big { font-size: 1.05rem; } }
