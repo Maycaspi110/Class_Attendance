@@ -4,7 +4,7 @@
 **Author:** May Caspi
 **Related documents:** SRS, Use Cases, Software Components, Class and Sequence Diagrams
 
-The tests follow the classes of the class diagram. The automated tests are written with pytest (389 pass). The numbers (radius, limits) are in the SRS.
+The tests follow the classes of the class diagram. The automated tests are written with pytest (390 pass). The numbers (radius, limits) are in the SRS.
 
 ## 1. Approach
 
@@ -63,9 +63,9 @@ By hand, with real phones (iPhone and Android).
 
 ## 5. Pass criteria and status
 
-- All unit and integration tests pass: **389 pass**.
+- All unit and integration tests pass: **390 pass**.
 - Each acceptance test passes, or the failure is written down with a decision. Known limits (for example a code sent to a friend) are not failures.
-- **Done by hand:** the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the pages on phones through Render, the photo count, the class summary with a 2 minute recording, the homework review, publishing an assignment with a PDF, three PDF works, and a check-in from a laptop.
-- **Evidence:** the `evidence` folder has the pytest output and screenshots (photo count, results, poll, and the first code and QR tests).
-- **Not done yet:** the text of the class report on Render, the warning for a wrong date in a PDF, many phones at once in the real classroom, and the demo in class.
+- **Done by hand:** the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the pages on phones through Render, the photo count, the class summary with a 2 minute recording, the homework review, publishing an assignment with a PDF, three PDF works, the class report for the lecturer, and a check-in from a laptop.
+- **Evidence:** the `evidence` folder has the pytest output and screenshots (photo count, results, poll, the class report and the comparison, and the first code and QR tests).
+- **Not done yet:** the warning for a wrong date in a PDF on Render, many phones at once in the real classroom, and the demo in class.
 - **Not tested:** the quality of the AI answers (only that they are shown and the errors are clear), Moodle and Zoom, and polls sent by email (not included).

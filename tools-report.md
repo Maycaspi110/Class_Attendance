@@ -17,7 +17,7 @@ Technical tools considered for the attendance system and the other teaching feat
 | AI | Google Gemini API (free tier) | Photo count: a classroom photo uploaded from the lecturer page | Returned 48 people for the photo, and the page compared it with the check-ins | **Chosen** for the photo count, the class summary, the homework review and the class report |
 | AI | Class summary from a recording | A screen recording of about 2 minutes (141 MB), uploaded from the lecturer page | The browser took out the sound (3.7 MB) and Gemini returned a summary | **Chosen** |
 | AI | Homework review | A work sent from the homework page, then two works of one assignment from the lecturer's list (first design: each work compared with other works) | A review came back with a comparison. The design was then changed to one review and a comparison with a class overview | **Chosen**. The class overview was built and tested with a fake AI: real test pending |
-| AI | Publish an assignment, PDF homework and the class report | On Render: the lecturer published an assignment with a PDF and a due date, then three works were sent as PDF files for it | The assignment was published, the students chose it from the list, and the lecturer page showed "3 students sent a work" with the report button open | **Chosen**. The text of the class report itself and the warning for a wrong date in a PDF are not confirmed yet: real test pending |
+| AI | Publish an assignment, PDF homework and the class report | On Render: the lecturer published an assignment with a PDF and a due date, then three works were sent as PDF files for it | The assignment was published, the students chose it from the list, and the lecturer page showed "3 students sent a work" with the report button open. The report had the four parts (match with the assignment, repeated mistakes, interesting points, short suggestions) and the comparison with the class opened at 3 of 3 works | **Chosen**. The class report was written by Gemini for the three works (in Hebrew, in the language of the works) and shown only on the lecturer page; the screenshots are in the `evidence` folder. The warning for a wrong date in a PDF was not tested on Render |
 
 ## Details
 
@@ -73,6 +73,8 @@ The first plan was GitHub Pages, but the demo needs a server (codes, check-ins, 
 
 ### AI (Google Gemini)
 The AI features use the Gemini API of Google, on the free tier, because there is no budget for a paid API plan. The server calls the API with a key that is kept only in the server settings, so the phones never see it. All the AI features use the same key: counting people in a photo, summarizing a class recording, reading the PDF of an assignment or a work, reviewing homework, and writing the class report. The model name is a setting, because Google replaces models over time: the first model I used (gemini-2.5-flash) was no longer available and was replaced.
+
+**Class report test:** three works of one assignment were sent as PDF files, and the lecturer pressed the report button. The report talked about the class as a whole and named no student. The first answer showed the markdown symbols of the AI (`**`) and LaTeX as plain text, so every AI request now asks for plain text only, and the text boxes follow the direction of the language (right to left for Hebrew).
 
 **Photo count test:** the lecturer page sent a classroom photo and Gemini returned 48 people, which the page compared with 1 check-in. The count is rough, so it is only a warning for the lecturer.
 
