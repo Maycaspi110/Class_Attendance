@@ -702,24 +702,27 @@ def create_app(test_config=None):
     def homework_status(assignment, email):
         count = state.homework.count(assignment)
         needed = app.config["HOMEWORK_MIN_WORKS"]
-        reviewed = state.homework.work_of(assignment, email) is not None
+        submitted = state.homework.work_of(assignment, email) is not None
         cooldown = app.config["HOMEWORK_COOLDOWN_SECONDS"]
+        review = state.homework.review_of(assignment, email)
         return {
             "count": count,
             "needed": needed,
-            "reviewed": reviewed,
-            "unlocked": reviewed and count >= needed,
+            "submitted": submitted,
+            "unlocked": submitted and count >= needed,
+            "review": review["text"] if review else None,  # the last AI review of this student
             "review_wait": state.homework.review_wait(assignment, email, now(), cooldown),  # seconds until a new review
             "compare_wait": state.homework.comparison_wait(assignment, email, now(), cooldown),
             "comparison": state.homework.comparison(assignment, email),  # None, or the state of the comparison
         }
 
     @app.route("/api/homework", methods=["POST"])
-    def homework_review():
-        """A student sends a work and gets one AI review. Identified by the roster email, like the check-in."""
+    def homework_submit():
+        """A student sends the PDF of a work. The AI reads its text and the work is saved (a new one replaces the old).
+        The student is identified by the roster email, like the check-in. The review is a separate step."""
         request.max_content_length = MAX_HOMEWORK_BYTES + 1024 * 1024
         if state.reviewer is None:
-            return fail("The AI review is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+            return fail("The AI is not set up. Add GEMINI_API_KEY in the server settings.", 503)
         student, assignment, error = homework_student()
         if error:
             return error
@@ -732,24 +735,45 @@ def create_app(test_config=None):
         if not pdf.startswith(b"%PDF-"):
             return fail("The file must be a PDF.")
         try:
-            wait = state.homework.review_wait(assignment, student.email, now(), app.config["HOMEWORK_COOLDOWN_SECONDS"])
-            if wait > 0:
-                return fail(
-                    "You already got a review for this assignment today. You can get another one in about %s."
-                    % wait_text(wait),
-                    409,
-                    wait=wait,
-                )
             state.homework.check_wait(student.email, now())
-            text = clean_work(state.reviewer.read_work(pdf))  # the AI reads the PDF, then reviews the text
-            review = state.reviewer.review(text)
+            text = clean_work(state.reviewer.read_work(pdf))  # the AI reads the text of the PDF
             state.homework.save(assignment, student.email, text, now())
         except ReviewServiceError as error:
             state.homework.note_failure(student.email, now())
             return fail(str(error), 502)
         except HomeworkError as error:
             return fail(str(error), 429 if "wait" in str(error) else 400)
-        return jsonify(ok=True, review=review, **homework_status(assignment, student.email))
+        return jsonify(ok=True, **homework_status(assignment, student.email))
+
+    @app.route("/api/homework/review", methods=["POST"])
+    def homework_review():
+        """The AI review of the work that the student sent. Once a day for each assignment."""
+        if state.reviewer is None:
+            return fail("The AI review is not set up. Add GEMINI_API_KEY in the server settings.", 503)
+        student, assignment, error = homework_student()
+        if error:
+            return error
+        work = state.homework.work_of(assignment, student.email)
+        if work is None:
+            return fail("Send your work first, then you can ask for the review.", 409)
+        wait = state.homework.review_wait(assignment, student.email, now(), app.config["HOMEWORK_COOLDOWN_SECONDS"])
+        if wait > 0:
+            return fail(
+                "You already got a review for this assignment today. You can get another one in about %s."
+                % wait_text(wait),
+                409,
+                wait=wait,
+            )
+        try:
+            state.homework.check_wait(student.email, now())
+            review = state.reviewer.review(work.text)
+            state.homework.set_review(assignment, student.email, review, now())
+        except ReviewServiceError as error:
+            state.homework.note_failure(student.email, now())
+            return fail(str(error), 502)
+        except HomeworkError as error:
+            return fail(str(error), 429)
+        return jsonify(ok=True, **homework_status(assignment, student.email))
 
     @app.route("/api/homework/status")
     def homework_state():
@@ -768,8 +792,8 @@ def create_app(test_config=None):
         if error:
             return error
         status = homework_status(assignment, student.email)
-        if not status["reviewed"]:
-            return fail("Send your work and get its review first.", 409)
+        if not status["submitted"]:
+            return fail("Send your work first.", 409)
         if status["count"] < status["needed"]:
             return fail(
                 "The comparison opens when %d students sent their work (now %d)." % (status["needed"], status["count"]), 409

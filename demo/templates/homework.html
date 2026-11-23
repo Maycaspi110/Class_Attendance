@@ -3,7 +3,7 @@
 {% block body %}
 <a class="homelink" href="{{ url_for('student_menu') }}">&larr; Student menu</a>
 <h1>Homework review</h1>
-<p class="sub">Send your work and get an AI review (once a day for each assignment). When enough students sent their work, you can also compare yours with the class. You never see anyone else's work or name.</p>
+<p class="sub">Send your work, then ask for an AI review (once a day for each assignment). When enough students sent their work, you can also compare yours with the class. You never see anyone else's work or name.</p>
 
 <form class="card" id="form">
   <label>Your email
@@ -15,14 +15,17 @@
   <label>Your work (a PDF file, up to 5 MB)
     <input type="file" id="work" accept=".pdf,application/pdf" required>
   </label>
-  <button type="submit" id="send">Get the review</button>
+  <button type="submit" id="send">Send my work</button>
   <div id="msg" class="msg" role="status"></div>
-  <p class="muted">The PDF of your work is sent to an AI service to read it and write the review. Do not send private information. You get one review for each assignment each day. A new version replaces the old one.</p>
+  <p class="muted">The PDF of your work is sent to an AI service, which reads its text. Do not send private information. You can send a new version at any time, and it replaces the old one.</p>
 </form>
 
-<div class="card" id="resultbox" hidden>
-  <h2>Your review</h2>
-  <div id="review" class="summarytext"></div>
+<div class="card" id="reviewbox">
+  <h2>AI review of your work</h2>
+  <p class="muted">The AI reviews the work that you sent: what it does, its strengths, and problems with suggestions. You can ask for a review once a day for each assignment.</p>
+  <div id="reviewstatus" class="msg" role="status">Choose the assignment and send your work first.</div>
+  <button type="button" id="reviewbtn" class="secondary" disabled>Get an AI review</button>
+  <div id="reviewtext" class="summarytext" hidden></div>
 </div>
 
 <div class="card" id="comparebox">

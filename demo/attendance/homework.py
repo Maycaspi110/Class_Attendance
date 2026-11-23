@@ -1,4 +1,4 @@
-"""Homework: a student sends a work and gets an AI review. Later the work can be compared with the class.
+"""Homework: a student sends a work (a PDF). Then the student can ask for an AI review, and later compare the work with the class.
 
 The student never sees another student's work or name. When enough students sent their work, the AI
 writes one general overview of all the works of the assignment (only what several works have in
@@ -128,6 +128,7 @@ class HomeworkStore:
         self._last_try = {}  # email -> time of the last review try
         self._overviews = {}  # assignment key -> {"text": ..., "count": ...}
         self._comparisons = {}  # (assignment key, email) -> {"state": ..., "text": ..., "error": ...}
+        self._reviews = {}  # (assignment key, email) -> the last AI review {"text", "time"}
         self._published = {}  # assignment key -> what the lecturer published (name, course, due date, text)
         self._reports = {}  # assignment key -> the report for the lecturer
         self._lock = threading.RLock()
@@ -176,10 +177,20 @@ class HomeworkStore:
                 raise HomeworkError("The demo server reached its limit of saved works.")
             works[email] = Submission(email, text, now)
 
+    def review_of(self, assignment, email):
+        """The last AI review of the work of this student, as {"text", "time"}, or None."""
+        with self._lock:
+            review = self._reviews.get((self._key(assignment), email))
+            return dict(review) if review else None
+
+    def set_review(self, assignment, email, text, now):
+        with self._lock:
+            self._reviews[(self._key(assignment), email)] = {"text": text, "time": now}
+
     def review_wait(self, assignment, email, now, cooldown):
-        """Seconds until this student can get another review for this assignment (0 = now)."""
-        work = self.work_of(assignment, email)
-        return 0 if work is None else max(0, int(cooldown - (now - work.time) + 0.999))
+        """Seconds until this student can ask for another AI review for this assignment (0 = now)."""
+        review = self.review_of(assignment, email)
+        return 0 if review is None else max(0, int(cooldown - (now - review["time"]) + 0.999))
 
     # ---- the report for the lecturer (all the works together)
 

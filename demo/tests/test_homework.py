@@ -45,9 +45,9 @@ class FakeReviewer:
             raise ReviewServiceError(self.error)
 
     def read_work(self, pdf):
-        """The fake AI reads the "PDF": the text of the work comes after the first line."""
+        """The fake AI reads the "PDF": the text of the work comes after the header."""
         self.work_pdfs = getattr(self, "work_pdfs", []) + [pdf]
-        return pdf.split(b"\n", 1)[1].decode("utf-8")
+        return pdf[len(b"%PDF-1.4 "):].decode("utf-8")
 
     def read_assignment(self, pdf):
         self.pdfs = getattr(self, "pdfs", []) + [pdf]
@@ -112,11 +112,21 @@ def clock():
     return Clock(NOW)
 
 
-def send(client, who=DANA, assignment="Ex2", work=WORK, pdf=None):
-    """A student sends a work. The fake PDF is a PDF header and then the text of the work."""
+def submit(client, who=DANA, assignment="Ex2", work=WORK, pdf=None):
+    """A student sends the PDF of a work (no review yet). The fake PDF is a header and then the text of the work."""
     data = {"email": who, "assignment": assignment}
-    data["work"] = (io.BytesIO(pdf if pdf is not None else b"%PDF-1.4\n" + work.encode("utf-8")), "work.pdf")
+    data["work"] = (io.BytesIO(pdf if pdf is not None else b"%PDF-1.4 " + work.encode("utf-8")), "work.pdf")
     return client.post("/api/homework", data=data, content_type="multipart/form-data")
+
+
+def ask_review(client, who=DANA, assignment="Ex2"):
+    return client.post("/api/homework/review", data={"email": who, "assignment": assignment}, content_type="multipart/form-data")
+
+
+def send(client, who=DANA, assignment="Ex2", work=WORK, pdf=None):
+    """Send the work and ask for the review. Returns the answer of the first step that did not work, or of the review."""
+    sent = submit(client, who, assignment, work, pdf)
+    return sent if sent.status_code != 200 else ask_review(client, who, assignment)
 
 
 def compare(client, who=DANA, assignment="Ex2"):
@@ -224,18 +234,6 @@ def test_a_missing_assignment_name_is_refused(clock):
 def test_a_big_file_is_refused(clock):
     student = make_client(FakeReviewer(), clock)
     assert send(student, work="a" * (5 * 1024 * 1024 + 10)).status_code == 413
-
-
-def test_a_failed_review_is_not_saved_and_can_be_tried_again_after_a_wait(clock):
-    reviewer = FakeReviewer(error="The free AI limit was reached for now.")
-    student = make_client(reviewer, clock)
-    response = send(student)
-    assert response.status_code == 502 and "limit" in response.get_json()["error"]
-    assert send(student).status_code == 429  # a moment later: wait
-    clock.t += 30
-    reviewer.error = None
-    data = send(student).get_json()
-    assert data["ok"] and data["count"] == 1
 
 
 def test_without_a_key_the_review_says_it_is_not_set_up(clock, monkeypatch):
@@ -566,3 +564,63 @@ def test_the_students_see_the_list_without_the_text_or_any_work(clock):
     assert [a["name"] for a in data["assignments"]] == ["Ex1", "Ex2", "Ex3"]
     assert set(data["assignments"][0]) == {"name", "course", "due"}
     assert reviewer.task not in json.dumps(data) and "def add" not in json.dumps(data)
+
+
+# ---- two steps: send the work, then ask for the AI review ----
+
+def test_sending_the_work_does_not_call_the_review_and_asking_does(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+    sent = submit(student).get_json()
+    assert sent["ok"] and sent["submitted"] is True and sent["review"] is None and sent["review_wait"] == 0
+    assert sent["count"] == 1 and reviewer.reviews == []  # the AI only read the PDF
+    reviewed = ask_review(student).get_json()
+    assert reviewed["ok"] and reviewed["review"] == "A review of the work." and reviewer.reviews == [WORK.strip()]
+    assert 0 < reviewed["review_wait"] <= DAY
+
+
+def test_the_review_needs_a_sent_work(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+    refused = ask_review(student)
+    assert refused.status_code == 409 and "Send your work first" in refused.get_json()["error"]
+    assert reviewer.reviews == []
+    assert status(student).get_json()["submitted"] is False
+
+
+def test_a_work_can_be_sent_again_at_any_time_and_the_review_is_once_a_day(clock):
+    reviewer = FakeReviewer()
+    student = make_client(reviewer, clock)
+    submit(student)
+    assert ask_review(student).status_code == 200
+    assert submit(student, work="def better():\n    return 2\n").status_code == 200  # a new version, no wait
+    again = ask_review(student)
+    assert again.status_code == 409 and "today" in again.get_json()["error"]
+    clock.t += DAY + 1
+    assert ask_review(student).status_code == 200
+    assert reviewer.reviews == [WORK.strip(), "def better():\n    return 2"]  # the review reads the newest version
+
+
+def test_a_failed_review_keeps_the_work_and_can_be_asked_again_after_a_wait(clock):
+    reviewer = FakeReviewer(error="The free AI limit was reached for now.")
+    student = make_client(reviewer, clock)
+    assert submit(student).status_code == 200
+    failed = ask_review(student)
+    assert failed.status_code == 502 and "limit" in failed.get_json()["error"]
+    assert status(student).get_json()["submitted"] is True  # the work is still saved
+    assert ask_review(student).status_code == 429  # a moment later: wait
+    clock.t += 30
+    reviewer.error = None
+    assert ask_review(student).get_json()["review"] == "A review of the work."
+
+
+def test_the_status_has_the_last_review_so_the_page_can_show_it_again(clock):
+    student = make_client(FakeReviewer(), clock)
+    assert status(student).get_json()["review"] is None
+    send(student)
+    assert status(student).get_json()["review"] == "A review of the work."
+
+
+def test_the_review_of_an_unpublished_assignment_is_refused(clock):
+    student = make_client(FakeReviewer(), clock)
+    assert ask_review(student, assignment="Ex9").status_code == 404
