@@ -25,7 +25,7 @@
   <p class="muted">The AI reviews the work that you sent: what it does, its strengths, and problems with suggestions. You can ask for a review once a day for each assignment.</p>
   <div id="reviewstatus" class="msg" role="status">Choose the assignment and send your work first.</div>
   <button type="button" id="reviewbtn" class="secondary" disabled>Get an AI review</button>
-  <div id="reviewtext" class="summarytext" hidden></div>
+  <div id="reviewtext" class="summarytext" dir="auto" hidden></div>
 </div>
 
 <div class="card" id="comparebox">
@@ -34,7 +34,7 @@
   <progress id="comparebar" max="8" value="0"></progress>
   <div id="comparestatus" class="msg" role="status">Type your email and choose the assignment.</div>
   <button type="button" id="compare" class="secondary" disabled>Compare with the class</button>
-  <div id="comparetext" class="summarytext" hidden></div>
+  <div id="comparetext" class="summarytext" dir="auto" hidden></div>
 </div>
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='homework.js') }}"></script>{% endblock %}

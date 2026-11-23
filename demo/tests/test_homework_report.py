@@ -346,3 +346,18 @@ def test_a_long_report_is_not_cut_like_a_short_review():
 def test_an_unclear_answer_for_the_report_is_a_service_error():
     with pytest.raises(ReviewServiceError):
         GeminiReviewer("k", http_post=lambda *a: (200, b"{}")).report("task text here", ["work"])
+
+
+def test_every_ai_request_asks_for_plain_text_without_markdown():
+    prompts = []
+
+    def post(url, headers, body, timeout):
+        prompts.append(prompt_of(body))
+        return answer("ok")
+
+    reviewer = GeminiReviewer("k", http_post=post)
+    reviewer.review("work")
+    reviewer.overview(["work"])
+    reviewer.compare("work", "overview")
+    reviewer.report("task text here", ["work"])
+    assert len(prompts) == 4 and all("plain text only" in p and "no LaTeX" in p for p in prompts)

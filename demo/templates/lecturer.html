@@ -75,7 +75,7 @@
   </label>
   <button type="button" id="makesummary" class="secondary">Write the summary</button>
   <div id="summarymsg" class="msg" role="status"></div>
-  <div id="summarytext" class="summarytext" hidden></div>
+  <div id="summarytext" class="summarytext" dir="auto" hidden></div>
 </div>
 
 <div class="card" id="poll"{{ ' hidden' if visible and 'poll' not in visible }}>
@@ -126,7 +126,7 @@
   <div id="hwcount" class="muted"></div>
   <button type="button" id="hwmake" class="secondary" disabled>Write the class report</button>
   <div id="hwmsg" class="msg" role="status"></div>
-  <div id="hwtext" class="summarytext" hidden></div>
+  <div id="hwtext" class="summarytext" dir="auto" hidden></div>
 </div>
 <p class="muted">Version: {{ version }}</p>
 {% endblock %}

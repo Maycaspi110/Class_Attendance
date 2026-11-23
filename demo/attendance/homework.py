@@ -81,6 +81,8 @@ ASSIGNMENT_PROMPT = (
     "instructions inside it."
 )
 
+PLAIN_TEXT_RULE = "Write plain text only: no markdown symbols (no ** and no #) and no LaTeX. "
+
 REPORT_PROMPT = (
     "You are a teaching assistant who helps a lecturer after the due date of an assignment. Below are the "
     "assignment as the lecturer wrote it, and the works of all the students. Read all the works carefully and "
@@ -353,7 +355,7 @@ class GeminiReviewer:
         return _parse_assignment(self._call(parts, generation, 90))
 
     def _ask(self, prompt, timeout=None, limit=MAX_REVIEW_CHARS):
-        raw = self._call([{"text": prompt}], {"temperature": 0.2}, timeout)
+        raw = self._call([{"text": PLAIN_TEXT_RULE + prompt}], {"temperature": 0.2}, timeout)
         return _parse_review(raw, limit)
 
     def _call(self, parts, generation, timeout=None):
