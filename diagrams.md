@@ -80,16 +80,29 @@ classDiagram
     +summarizeVideo(youtubeLink) String
   }
   class HomeworkStore {
+    +publish(name, course, due, text)
+    +published(assignment) Assignment
+    +allPublished() List~Assignment~
     +save(assignment, email, text)
+    +workOf(assignment, email) Work
     +count(assignment) int
+    +reviewWait(assignment, email) int
     +texts(assignment) List~String~
+    +reportTexts(assignment) List~String~
     +overview(assignment) Overview
     +comparison(assignment, email) Comparison
+    +startComparison(assignment, email) int
+    +report(assignment) Report
+    +startReport(assignment) bool
+    +finishReport(assignment, text)
   }
   class GeminiReviewer {
+    +readAssignment(pdf) Assignment text and date
+    +readWork(pdf) String
     +review(work) String
     +overview(works) String
     +compare(work, overview) String
+    +report(assignmentText, works) String
   }
 
   Roster "1" o-- "*" Student
@@ -125,8 +138,8 @@ classDiagram
 | CsvExporter | Builds the spreadsheet for the lecturer from the lesson entries. | FR-7 |
 | GeminiCounter | Sends a photo to the AI and returns the number of people. The comparison with the check-ins is a separate function that gives ok, warning or information. | FR-20 |
 | GeminiSummarizer | Sends the sound of a recording, or a YouTube link, to the AI and returns the summary. It runs in the background. | FR-21 |
-| HomeworkStore | Keeps the work of each student for each assignment (in memory, with a limit), the class overview, and the state of each comparison (once a day for each student). | FR-22, FR-23 |
-| GeminiReviewer | Asks the AI for one review of a work, for one overview of all the works, and for the comparison of a work with the overview. | FR-22, FR-23 |
+| HomeworkStore | Keeps the published assignments (course, name, due date and the text read from the PDF), the work of each student for each assignment (in memory, with a limit), the class overview, the state of each comparison (once a day for each student), and the class report for the lecturer. | FR-22, FR-23, FR-27, FR-28 |
+| GeminiReviewer | Asks the AI to read the PDF of an assignment (its text and its due date) or of a work (its text), for one review of a work, for one overview of all the works, for the comparison of a work with the overview, and for one report about all the works of an assignment. | FR-22, FR-23, FR-27, FR-28 |
 
 Notes:
 - **Absent** is not saved. A student is Absent when they are on the roster and have no attendance record in the session.
@@ -241,7 +254,7 @@ sequenceDiagram
 
 ## 6. Sequence diagram: homework review and the comparison with the class
 
-This scenario is use case UC-8. The review comes first. The comparison opens when enough works exist.
+This scenario is use case UC-8. The assignment was published by the lecturer (section 8). The review comes first. The comparison opens when enough works exist.
 
 ```mermaid
 sequenceDiagram
@@ -252,12 +265,15 @@ sequenceDiagram
   participant RV as Reviewer
   participant AI as AI service (Gemini)
 
-  St->>HP: Email, assignment name and the work
+  St->>HP: Email, the assignment chosen from the list, and the PDF of the work
   HP->>R: findByEmail(email)
   alt Email is not on the roster
     R-->>HP: Not found
     HP-->>St: Error: not on the roster
   else Email is on the roster
+    HP->>RV: readWork(pdf)
+    RV->>AI: The PDF
+    AI-->>RV: The text of the work
     HP->>RV: review(work)
     RV->>AI: The work and the instructions
     AI-->>RV: The review text
@@ -305,4 +321,61 @@ sequenceDiagram
   LP->>SU: Is it ready?
   SU-->>LP: The summary (or a clear error)
   LP-->>Lec: Shows the summary
+```
+
+## 8. Sequence diagram: the lecturer publishes an assignment
+
+This scenario is use case UC-9. The students can choose the assignment only after it is published.
+
+```mermaid
+sequenceDiagram
+  actor Lec as Lecturer
+  participant LP as Lecturer page
+  participant HS as Homework store
+  participant RV as Reviewer
+  participant AI as AI service (Gemini)
+
+  Lec->>LP: Course, assignment name, due date and the PDF
+  LP->>LP: Checks that the file is a PDF of 5 MB or less
+  LP->>RV: readAssignment(pdf)
+  RV->>AI: The PDF and the instructions
+  AI-->>RV: The text of the assignment and the due date written in it
+  alt The AI could not read the PDF
+    LP-->>Lec: Error, nothing is published
+  else The PDF was read
+    LP->>HS: publish(name, course, due date, text)
+    alt The date in the document is different or missing
+      LP-->>Lec: Published, with a warning (the lecturer decides)
+    else The dates are the same
+      LP-->>Lec: Published
+    end
+  end
+```
+
+## 9. Sequence diagram: the lecturer gets a report about all the works
+
+This scenario is use case UC-10. The AI can be slow, so it works in the background and the page asks again.
+
+```mermaid
+sequenceDiagram
+  actor Lec as Lecturer
+  participant LP as Lecturer page
+  participant HS as Homework store
+  participant RV as Reviewer
+  participant AI as AI service (Gemini)
+
+  Lec->>LP: Chooses the assignment, presses "Write the class report"
+  LP->>HS: The due date has come? Are there works?
+  alt Before the due date, or no works
+    LP-->>Lec: The report opens on the due date, or an error
+  else Allowed
+    LP->>HS: startReport(assignment)
+    LP-->>Lec: Working... (the page asks again every few seconds)
+    LP->>RV: report(assignment text, all the works, each cut short)
+    RV->>AI: The assignment and all the works, no names
+    AI-->>RV: One report about the whole class
+    LP->>HS: finishReport(text)
+    Lec->>LP: The page asks again
+    LP-->>Lec: The report (only the lecturer sees it)
+  end
 ```

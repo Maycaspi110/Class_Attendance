@@ -28,7 +28,7 @@ A lesson has two check-ins (start and end of the class): both is Present, only t
 
 ## AI features
 
-The three features use the Google Gemini API (free tier) from the server. The key is only in the server settings (`GEMINI_API_KEY`). Without it the pages say the feature is not set up.
+The AI features use the Google Gemini API (free tier) from the server. The key is only in the server settings (`GEMINI_API_KEY`). Without it the pages say the feature is not set up.
 
 - **Photo count:** the browser shrinks the photo, the server checks it is a real image, Gemini returns a number, and it is compared with the check-ins (a gap above max(2, 15 percent) is a warning). The photo is not saved.
 - **Class summary:** a recording (MP4, WebM, MP3, M4A, WAV) or a public YouTube link. For a recording the browser takes out the sound (about 2 MB per minute), so a 140 MB screen recording is about 4 MB. The AI works in the background, and only the lecturer sees the summary.
