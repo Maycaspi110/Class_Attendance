@@ -102,7 +102,7 @@ body.home { max-width: 980px; padding: 40px 24px 32px;
     radial-gradient(800px 500px at -10% 110%, rgba(125, 160, 230, .20), transparent 60%),
     linear-gradient(180deg, #fbfbfe, #f1f3fb); }
 .homehead { display: flex; align-items: center; gap: 18px; margin-bottom: 4px; }
-.homehead .logo { flex: none; width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center;
+.homehead .logo { flex: none; min-width: 64px; height: 64px; padding: 0 16px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; line-height: 1.05; text-align: center;
   background: linear-gradient(135deg, #3b3f9e, #7c5ce0); box-shadow: 0 10px 24px rgba(76, 70, 180, .35); }
 .homehead .titles { border-left: 2px solid rgba(23, 32, 58, .08); padding-left: 18px; }
 .homehead h1 { font-size: 2.1rem; margin: 0; letter-spacing: -.03em; }
@@ -161,3 +161,7 @@ body.home .tiles .tile { min-height: 190px; }
 .choose { margin-top: 0; }
 
 progress { width: 100%; height: 10px; margin: 6px 0 2px; accent-color: #6a5acd; }
+
+.homehead .logo .big { font-size: 1.35rem; font-weight: 800; letter-spacing: .14em; }
+.homehead .logo .small { font-size: .62rem; font-weight: 700; letter-spacing: .2em; }
+@media (max-width: 720px) { .homehead .logo { height: 54px; padding: 0 12px; } .homehead .logo .big { font-size: 1.1rem; } }
