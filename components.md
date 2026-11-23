@@ -64,7 +64,7 @@ flowchart LR
 | Lecturer page | Uploads the roster, starts and ends the start and end check-ins, shows the results and the comments, uploads the classroom photo, uploads a class recording (or a YouTube link) and shows the summary, downloads the CSV, creates a poll and shows its results. | Lecturer | FR-1 to FR-9, FR-18, FR-20, FR-21 |
 | Classroom screen page | Shows the current 4-digit code and the QR code, and updates them when the code changes. | Classroom screen | show the code and QR |
 | Student page | The student enters an email and a code (or arrives from the QR code), allows location, writes a comment in the end check-in, sees a confirmation or an error, and answers a poll. | Student | FR-10 to FR-17, FR-19 |
-| Homework page | The student enters an email, chooses the assignment from the list and sends the PDF of the work, and sees the AI review. | Student | FR-22, FR-23 |
+| Homework page | The student enters an email, chooses the assignment from the list and sends the PDF of the work with one button, and asks for the AI review with another button. | Student | FR-22, FR-23 |
 
 ### Server
 
@@ -99,7 +99,7 @@ flowchart LR
 - **A poll:** the lecturer page sends the question to the poll manager. Students answer through the student page, and the answers are saved in the storage.
 - **Photo count:** the lecturer page sends the photo to the headcounter, which gets the number from the AI service and compares it with the number of check-ins.
 - **Class summary:** the lecturer page takes the sound out of the recording and sends it to the summarizer, which gets the summary from the AI service in the background. The page asks every few seconds until it is ready. Only the lecturer page can read it.
-- **Homework:** the homework page sends the work to the homework reviewer, which gets one review from the AI service, saves the work and returns only the review. When enough works exist, the comparison button asks the reviewer for the class overview (made again after 5 new works or a day) and for the comparison of one work with it. The page asks every few seconds until the answer is ready. The lecturer first publishes the assignment: the reviewer sends the PDF to the AI, which returns the text and the due date written in the document, and the page warns if it is not the chosen date. The students choose from the list of published assignments. On the due date the lecturer page asks the reviewer for one report about all the works of the assignment (together, no names) and shows it only to the lecturer.
+- **Homework:** the homework page sends the PDF to the homework reviewer, which gets the text from the AI service and saves the work. A second button asks the reviewer for one review of the saved work from the AI service (once a day). When enough works exist, the comparison button asks the reviewer for the class overview (made again after 5 new works or a day) and for the comparison of one work with it. The page asks every few seconds until the answer is ready. The lecturer first publishes the assignment: the reviewer sends the PDF to the AI, which returns the text and the due date written in the document, and the page warns if it is not the chosen date. The students choose from the list of published assignments. On the due date the lecturer page asks the reviewer for one report about all the works of the assignment (together, no names) and shows it only to the lecturer.
 
 ## 4. Notes
 

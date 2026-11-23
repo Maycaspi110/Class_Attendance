@@ -4,7 +4,7 @@
 **Author:** May Caspi
 **Related documents:** SRS, Use Cases, Software Components, Class and Sequence Diagrams
 
-The tests follow the classes of the class diagram. The automated tests are written with pytest (384 pass). The numbers (radius, limits) are in the SRS.
+The tests follow the classes of the class diagram. The automated tests are written with pytest (389 pass). The numbers (radius, limits) are in the SRS.
 
 ## 1. Approach
 
@@ -31,7 +31,7 @@ Every test has an input and an expected result. The automated tests use made-up 
 | Headcount | The count is read from the AI answer, unclear answers, the key is never in the address or in an error, the file type is read from its bytes, ok / warning / info comparison | `test_headcount.py`, `test_headcount_app.py` |
 | Summarizer | Recording type from the bytes, only YouTube links, the size limit, the work in the background, only the lecturer can see the summary, clear errors | `test_summary.py` |
 | Publish an assignment and the class report | Only the lecturer can publish or read the report, only a PDF of 5 MB or less is accepted, the AI is given the file, a different or missing date in the document is a warning and the assignment is still published, publishing the same name fixes the date, a PDF without text or an AI failure publishes nothing, the report is closed before the due date and open on it, no works or an unknown assignment is refused, the report reads every work once and uses the text from the PDF, a failed report keeps the old one, a slow AI is answered in the background, the report request has no names | `test_homework_report.py` |
-| Homework review | One review per student and assignment each day (a new version replaces the old one after a day), not on the roster, only a PDF is accepted, a PDF the AI cannot read is not saved, a failed review is not saved, the comparison is closed below 8 works and open from 8, a student who sent nothing cannot compare, once a day for each student, the class overview is made once and again after 5 new works or a day, other works are never shown, a slow AI is answered in the background, the limits (5 MB PDF, 40 works of 3000 characters in the overview) | `test_homework.py` |
+| Homework review | One review per student and assignment each day (a new version replaces the old one after a day), not on the roster, only a PDF is accepted, a PDF the AI cannot read is not saved, the review is a separate step that needs a sent work, a failed review keeps the work and can be asked again, a new version can be sent at any time, the comparison is closed below 8 works and open from 8, a student who sent nothing cannot compare, once a day for each student, the class overview is made once and again after 5 new works or a day, other works are never shown, a slow AI is answered in the background, the limits (5 MB PDF, 40 works of 3000 characters in the overview) | `test_homework.py` |
 | App and pages | A lecturer location worse than 500 m is refused, the first page has two tiles, each menu has its own tiles and links back, the lecturer menu needs the password, each tile shows only its own part, the login returns only to our own pages | `test_app.py` |
 
 ## 3. Integration tests
@@ -57,13 +57,13 @@ By hand, with real phones (iPhone and Android).
 | Download the CSV and open it in Excel | The data is correct |
 | Photo count with the class photo from the lecturer | A number close to the real count, and a clear message |
 | Class summary with a recording of about 2 minutes | The browser sends only the sound, and a summary appears for the lecturer only |
-| Homework review with several students for one assignment | Each gets one review, the button shows the number of works, and from 8 works (3 on the demo server) it opens and gives a comparison with the class |
+| Homework review with several students for one assignment | Each sends a work and asks for one review, the button shows the number of works, and from 8 works (3 on the demo server) it opens and gives a comparison with the class |
 | Many AI requests in a short time | A clear message that the limit was reached |
 | The site after 15 minutes of no use | It wakes up in about a minute; the roster is uploaded again |
 
 ## 5. Pass criteria and status
 
-- All unit and integration tests pass: **384 pass**.
+- All unit and integration tests pass: **389 pass**.
 - Each acceptance test passes, or the failure is written down with a decision. Known limits (for example a code sent to a friend) are not failures.
 - **Done by hand:** the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the pages on phones through Render, the photo count, the class summary with a 2 minute recording, the homework review, publishing an assignment with a PDF, three PDF works, and a check-in from a laptop.
 - **Evidence:** the `evidence` folder has the pytest output and screenshots (photo count, results, poll, and the first code and QR tests).

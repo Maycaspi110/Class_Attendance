@@ -86,6 +86,8 @@ classDiagram
     +save(assignment, email, text)
     +workOf(assignment, email) Work
     +count(assignment) int
+    +setReview(assignment, email, text)
+    +reviewOf(assignment, email) Review
     +reviewWait(assignment, email) int
     +texts(assignment) List~String~
     +reportTexts(assignment) List~String~
@@ -254,7 +256,7 @@ sequenceDiagram
 
 ## 6. Sequence diagram: homework review and the comparison with the class
 
-This scenario is use case UC-8. The assignment was published by the lecturer (section 8). The review comes first. The comparison opens when enough works exist.
+This scenario is use case UC-8. The assignment was published by the lecturer (section 8). Sending the work comes first, then the review (a separate button). The comparison opens when enough works exist.
 
 ```mermaid
 sequenceDiagram
@@ -274,12 +276,18 @@ sequenceDiagram
     HP->>RV: readWork(pdf)
     RV->>AI: The PDF
     AI-->>RV: The text of the work
-    HP->>RV: review(work)
-    RV->>AI: The work and the instructions
-    AI-->>RV: The review text
-    HP->>HS: Save the work
-    HP-->>St: The review, and "N of 8 works" (the button is gray). A new review: after a day
+    HP->>HS: Save the work (a new version replaces the old one)
+    HP-->>St: Work sent, and "N of 8 works" (the comparison button is gray)
   end
+
+  Note over St,AI: A separate button: the AI review of the work that was sent (once a day)
+  St->>HP: Presses "Get an AI review"
+  HP->>HS: Is there a work, and was the last review more than a day ago?
+  HP->>RV: review(work)
+  RV->>AI: The work and the instructions
+  AI-->>RV: The review text
+  HP->>HS: Keep the review
+  HP-->>St: The review
 
   Note over St,AI: Later, when 8 or more works exist
   St->>HP: Presses "Compare with the class"

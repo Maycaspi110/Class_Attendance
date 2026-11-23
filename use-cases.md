@@ -126,14 +126,15 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Actor:** Student
 - **Before:** The student is on the roster. The lecturer published the assignment (UC-9).
 - **Main flow:**
-  1. The student opens the homework page, types their email, chooses the assignment from the list that the lecturer published, and uploads the PDF of the work.
-  2. The system sends the work to an AI. The student gets a review: summary, strengths, problems and suggestions. The page says when a new review is possible: once a day for each assignment.
+  1. The student opens the homework page, types their email, chooses the assignment from the list that the lecturer published, uploads the PDF of the work and presses "Send my work". The AI reads the text of the PDF and the work is saved.
+  2. The student presses "Get an AI review" (a separate button). The AI reviews the work that was sent, and the student gets summary, strengths, problems and suggestions. The page says when a new review is possible: once a day for each assignment.
   3. The page shows how many students sent their work, for example "5 of 8". Until 8 students did, the comparison button is gray.
   4. When 8 or more students sent their work, the button opens. The student presses it.
   5. The AI makes one general overview of all the works of the assignment (only what several works share), and compares the work of the student with it: how close it is to the general direction, what is different, and how to improve. The student reads the result.
 - **Other cases:**
   - The email is not on the roster, or the file is not a PDF, or the work has no readable text: the system shows an error.
-  - The student sends a work again on the same day: the system says how long to wait. After a day, a new version replaces the old one and gets a new review.
+  - The student presses "Get an AI review" before sending a work: the system asks to send the work first.
+  - The student sends a new version at any time: it replaces the old one. A new review of it is possible once a day: if the student asks earlier, the system says how long to wait.
   - The AI is not available: a clear error, and the student can try the comparison again.
 - **After:** The work stays in memory for the overview. The student can compare once a day. The student never sees another student's work or name.
 - **Related requirements:** FR-22, FR-23

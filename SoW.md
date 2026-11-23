@@ -42,7 +42,7 @@ Lecturer polls: a quick poll about the current material, answered from students'
 
 Class summary: the lecturer uploads a short recording of the class (or pastes a public YouTube link), and an AI writes a summary that only the lecturer sees. The sound is taken out of the recording in the browser, so only the sound is sent
 
-Homework review: a student (identified by email) sends a work and gets an AI review (once a day for each assignment). When at least 8 students sent their work, each can compare their work with a general overview of all the works, once a day (anonymous: no one sees another work). The lecturer publishes the assignment first (PDF and due date, the AI checks the date), and students choose it from a list. On the due date the lecturer gets one AI report about all the works together
+Homework review: a student (identified by email) sends a work (a PDF) and can ask for an AI review of it (once a day for each assignment). When at least 8 students sent their work, each can compare their work with a general overview of all the works, once a day (anonymous: no one sees another work). The lecturer publishes the assignment first (PDF and due date, the AI checks the date), and students choose it from a list. On the due date the lecturer gets one AI report about all the works together
 
 AI service: Google Gemini on the free tier, called from the server. The students' phones never get the key.
 
