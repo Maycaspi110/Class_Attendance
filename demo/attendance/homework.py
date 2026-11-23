@@ -2,7 +2,7 @@
 
 The student never sees another student's work or name. When enough students sent their work, the AI
 writes one general overview of all the works of the assignment (only what several works have in
-common), and every student can compare their own work with that overview once.
+common), and every student can compare their own work with that overview once a day.
 On the due date the lecturer can ask for one report about all the works together (never about one student).
 The works are kept in memory only, until the server restarts.
 """
@@ -245,7 +245,7 @@ class HomeworkStore:
         with self._lock:
             self._overviews[self._key(assignment)] = {"text": text, "count": count, "time": now}
 
-    # ---- the comparison of one student: once
+    # ---- the comparison of one student: once a day
 
     def comparison(self, assignment, email):
         with self._lock:

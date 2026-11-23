@@ -761,7 +761,7 @@ def create_app(test_config=None):
 
     @app.route("/api/homework/compare", methods=["POST"])
     def homework_compare():
-        """Compare the work of a student with the class. It opens when enough students sent their work, and works once."""
+        """Compare the work of a student with the class. It opens when enough students sent their work, and works once a day."""
         if state.reviewer is None:
             return fail("The AI review is not set up. Add GEMINI_API_KEY in the server settings.", 503)
         student, assignment, error = homework_student()
