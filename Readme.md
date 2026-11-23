@@ -7,6 +7,8 @@ A simple web-based tool for teaching in class. Students use it from any smartpho
 
 **Live demo:** https://class-attendance-ogqg.onrender.com
 
+**Demo video:** https://claude.ai/artifact/TcGAxKhvxpe5Pp2v2Gx8m8
+
 (Students: open it on a phone and press *I am a student*. Lecturer: press *I am a lecturer*, the password is given in class. The free server sleeps when it is not used, so the first visit can take about a minute.)
 
 **The app and how to run it:** [demo/README.md](demo/README.md)
