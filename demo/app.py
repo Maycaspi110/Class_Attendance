@@ -126,6 +126,9 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.config.update(
         LECTURER_PASSWORD=os.environ.get("LECTURER_PASSWORD"),
+        # The student entry of the demo (a name and a code). It is not a security feature.
+        STUDENT_NAME=os.environ.get("STUDENT_NAME") or "May Caspi",
+        STUDENT_PASSWORD=os.environ.get("STUDENT_PASSWORD") or "1100",
         CODE_SECRET=os.environ.get("CODE_SECRET"),
         CODE_PERIOD_SECONDS=_env_int("CODE_PERIOD_SECONDS", 20),
         ALLOWED_RADIUS_METERS=_env_int("ALLOWED_RADIUS_METERS", 150),
@@ -211,7 +214,7 @@ def create_app(test_config=None):
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; img-src 'self' data:; frame-ancestors 'none'; form-action 'self'"
         )
-        if request.path.startswith("/api/") or request.path in ("/lecturer", "/screen", "/login"):
+        if request.path.startswith("/api/") or request.path in ("/lecturer", "/screen", "/login", "/student/login"):
             response.headers["Cache-Control"] = "no-store"
         return response
 
@@ -254,6 +257,29 @@ def create_app(test_config=None):
                 error = "Wrong password."
         return render_template("login.html", error=error), (401 if error else 200)
 
+    @app.route("/student/login", methods=["GET", "POST"])
+    def student_login():
+        error = None
+        if request.method == "POST":
+            ip = request.remote_addr or "?"
+            recent = [t for t in state.login_failures.get(ip, []) if now() - t < LOGIN_WINDOW_SECONDS]
+            state.login_failures[ip] = recent
+            name = " ".join((request.form.get("name") or "").split()).casefold()
+            given = (request.form.get("password") or "").encode("utf-8")
+            expected = app.config["STUDENT_PASSWORD"].encode("utf-8")
+            right_name = name == " ".join(app.config["STUDENT_NAME"].split()).casefold()
+            right_code = hmac.compare_digest(given, expected)
+            if len(recent) >= MAX_LOGIN_FAILURES:
+                error = "Too many attempts. Wait a few minutes."
+            elif right_name and right_code:
+                login_session["student"] = app.config["STUDENT_NAME"]
+                login_session.permanent = True
+                return redirect(url_for("student_menu"))
+            else:
+                recent.append(now())
+                error = "Wrong name or code."
+        return render_template("student_login.html", error=error), (401 if error else 200)
+
     @app.route("/logout")
     def logout():
         login_session.clear()
@@ -271,7 +297,9 @@ def create_app(test_config=None):
 
     @app.route("/student")
     def student_menu():
-        return render_template("student.html")
+        if not login_session.get("student"):
+            return redirect(url_for("student_login"))
+        return render_template("student.html", name=login_session["student"])
 
     @app.route("/lecturer/menu")
     @lecturer_required

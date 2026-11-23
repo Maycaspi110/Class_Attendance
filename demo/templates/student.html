@@ -4,7 +4,7 @@
 {% block bodyclass %}home{% endblock %}
 {% block body %}
 <a class="homelink" href="{{ url_for('home') }}">&larr; Home</a>
-{{ head("Student", "Everything you need in class") }}
+{{ head("Student", "Hello, " ~ name) }}
 <main class="tiles">
   {{ tile("indigo", "Student", "Mark attendance", "Scan the QR code or type the code. Add a comment at the end of the class, and answer the poll.", url_for('checkin'), "check") }}
   {{ tile("blue", "Student", "Homework review", "Send your work and get an AI review, compared with your last version and other works.", url_for('homework_page'), "doc") }}

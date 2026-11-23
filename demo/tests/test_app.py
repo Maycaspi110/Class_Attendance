@@ -525,7 +525,27 @@ def test_the_first_page_has_only_two_tiles_student_and_lecturer(student):
     assert page.data.count(b'class="tile ') == 2
 
 
+def student_login(client, name="May Caspi", code="1100"):
+    return client.post("/student/login", data={"name": name, "password": code})
+
+
+def test_the_student_menu_needs_the_demo_name_and_code(student):
+    assert student.get("/student").status_code == 302  # to the student login
+    assert student.get("/student/login").status_code == 200
+    assert student_login(student, code="0000").status_code == 401
+    assert student_login(student, name="Someone Else").status_code == 401
+    assert student.get("/student").status_code == 302
+    assert student_login(student, name="  may   CASPI ").status_code == 302
+    page = student.get("/student")
+    assert page.status_code == 200 and b"Hello, May Caspi" in page.data
+
+
+def test_the_check_in_page_stays_open_for_the_qr_code(student):
+    assert student.get("/checkin").status_code == 200
+
+
 def test_the_student_menu_has_the_student_tools_and_no_lecturer_tools(student):
+    student_login(student)
     page = student.get("/student")
     assert page.status_code == 200
     assert b'href="/checkin"' in page.data and b'href="/homework"' in page.data
@@ -553,11 +573,13 @@ def test_the_lecturer_menu_needs_the_password_and_has_the_lecturer_tools(student
 
 
 def test_every_page_links_back_to_its_menu(student, lecturer):
+    student_login(student)
     for client, path, back in (
         (student, "/checkin", b'href="/student"'),
         (student, "/homework", b'href="/student"'),
         (student, "/student", b'href="/"'),
         (student, "/login", b'href="/"'),
+        (student, "/student/login", b'href="/"'),
         (lecturer, "/lecturer", b'href="/lecturer/menu"'),
         (lecturer, "/lecturer/menu", b'href="/"'),
     ):

@@ -29,7 +29,7 @@ The main feature is attendance (the picture shows its flow). The other tools are
 
 ![How attendance works](attendance-flow.png)
 
-0. Everyone starts from one home page with two tiles: student and lecturer. The student menu has Mark attendance and Homework review. The lecturer menu (with the lecturer password) has Course roster, Attendance & results, Classroom screen, Photo count, Class summary, Poll, Publish an assignment and Homework report.
+0. Everyone starts from one home page with two tiles: student and lecturer. The student enters a name and a code (a demo login: May Caspi, 1100); the QR code opens the check-in page directly. The student menu has Mark attendance and Homework review. The lecturer menu (with the lecturer password) has Course roster, Attendance & results, Classroom screen, Photo count, Class summary, Poll, Publish an assignment and Homework report.
 1. The lecturer uploads the course roster once, and opens attendance from their phone inside the classroom. The system saves that location as the classroom location.
 2. A 4-digit code (also shown as a QR code) appears on the classroom screen and changes every 20-30 seconds.
 3. A student on the roster opens the web page on their phone, enters their email and the code (or scans the QR code), and is marked present.
@@ -69,5 +69,5 @@ No method is 100% cheat-proof. The known limits are listed in the [conclusion](c
   - Lecturer-only AI summary of a class recording (a screen or Zoom recording, or a public YouTube link)
   - Homework page: a student sends a work (a PDF) with one button and asks for an AI review with another button, once a day. When at least 8 students sent their work, a student can compare their work with a general overview of the class, once a day. The lecturer first publishes the assignment (a PDF and a due date, and the AI checks the date inside the document), and students choose it from a list. On the due date the lecturer gets one AI report about all the works together (do they match the assignment, repeated mistakes, interesting ideas)
 - **AI:** Google Gemini (free tier), used from the server. The key is kept only in the server settings.
-- **Built with:** Python and Flask, hosted on Render (free), 390 automated tests (pytest). The data is kept in memory only, and is lost when the free server sleeps.
+- **Built with:** Python and Flask, hosted on Render (free), 392 automated tests (pytest). The data is kept in memory only, and is lost when the free server sleeps.
 - **Not included:** integration with Moodle, Zoom, or personal information systems; students uploading their own summaries; polls sent by email
