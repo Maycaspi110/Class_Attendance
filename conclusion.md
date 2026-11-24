@@ -32,7 +32,7 @@ A web app that students open on their own phones, with nothing to install. It ru
 ## Known limits
 
 - Nothing is 100% cheat-proof. A code can be shared with a friend during its short validity.
-- Email is the only identity (also on the homework page), so someone who knows a classmate's email can use it. A real system needs a login.
+- Email is the only identity (also on the homework page), so someone who knows a classmate's email can use it. The student menu asks for the roster email (no password), so a real system needs a stronger login.
 - The demo keeps its data in memory, and it is lost when the free server sleeps (about 15 minutes without use).
 - Photos, the sound of recordings and works are sent to Google. The demo uses sample data, and the terms of the free tier should be checked before real use.
 - The free AI has request limits, and a request can fail or be slow.

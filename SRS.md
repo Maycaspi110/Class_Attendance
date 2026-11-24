@@ -23,7 +23,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 
 | Req. no. | Requirement |
 |----------|-------------|
-| FR-1 | The lecturer shall be able to upload the course roster (name and email for each student). The system shall keep the roster, so the lecturer uploads it once for the course. |
+| FR-1 | The lecturer shall be able to upload the course roster (name and email for each student). The system shall keep the roster, so the lecturer uploads it once for the course. The roster can also be loaded at server start from a server setting (`ROSTER_CSV`). |
 | FR-2 | The lecturer shall be able to start an attendance session. Starting the session stores the classroom location, taken from the lecturer's phone. |
 | FR-3 | The system shall show a 4-digit code and a matching QR code on the classroom screen. The code shall change every 10-30 seconds. |
 | FR-4 | The system shall accept the current code and the previous code. |
@@ -38,7 +38,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 | Req. no. | Requirement |
 |----------|-------------|
 | FR-10 | The student shall be able to open the check-in page in a phone browser, without installing anything. |
-| FR-11 | The student shall identify with an email address. Only emails on the roster are accepted. |
+| FR-11 | The student shall identify with an email address. Only emails on the roster are accepted. The student menu needs a login with the roster email (no password) and greets the student by name; the check-in page stays open for the QR code. |
 | FR-12 | The student shall be able to enter the code by typing it or by scanning the QR code. |
 | FR-13 | The system shall ask for the phone location and check that the student is within the allowed distance from the classroom (default: about 150 m). |
 | FR-14 | If the code is valid but the location is far, missing or too inaccurate (an accuracy worse than 1000 m), the student shall be marked Flagged for the lecturer, not rejected. |
@@ -81,7 +81,7 @@ FR = Functional Requirement (what the system does). NFR = Non-functional Require
 - The homework review never shows another student's work or name. The comparison uses a general overview of all the works, which is told to describe only what several works share, so a single work should not be recognized. With few works this is not a guarantee.
 - A firewall in front of the demo server (the hosting service) can stop an uploaded text that looks like an attack, for example a README with SQL words or a path such as `../../etc/passwd`. Then the lecturer or student sees only a 403 answer, and has to remove that text.
 - The photo count is a rough number. It is a warning for the lecturer and nobody is marked because of it.
-- The homework page identifies the student only by the roster email, like the check-in, so it can be misused. A real system would add a login.
+- The homework page identifies the student only by the roster email, like the check-in, so it can be misused. The student logs in with the roster email only (no password), so a real system would add a stronger login.
 - Not included: Moodle or Zoom integration, students uploading their own class summaries, polls sent by email.
 
 ## 6. Open points

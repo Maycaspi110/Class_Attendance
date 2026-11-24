@@ -84,5 +84,5 @@ May Caspi prepares all the deliverables: the documents, the design, the code and
 - **The free AI has limits and can be slow.** Mitigation: short waits between requests, clear error messages, and a short recording (2-5 minutes) for the demo.
 - **Privacy:** photos, the sound of recordings and works are sent to Google. Mitigation: nothing is saved except the short results in memory, and the demo uses sample data.
 - **Email is the only identity** for the homework page, so a student could send a work in another student's name. Known limitation of the demo.
-- **The free server sleeps**, and the data in memory is lost. Mitigation: open the site a few minutes before the demo and upload the roster again.
+- **The free server sleeps**, and the data in memory is lost. Mitigation: open the site a few minutes before the demo. The course list is kept in the server setting `ROSTER_CSV` and loaded at every start (or the lecturer uploads it again).
 - **Time is limited.** Mitigation: keep each feature simple (KISS).

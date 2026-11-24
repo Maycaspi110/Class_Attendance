@@ -59,7 +59,7 @@ By hand, with real phones (iPhone and Android).
 | Class summary with a recording of about 2 minutes | The browser sends only the sound, and a summary appears for the lecturer only |
 | Homework review with several students for one assignment | Each sends a work and asks for one review, the button shows the number of works, and from 8 works (3 on the demo server) it opens and gives a comparison with the class |
 | Many AI requests in a short time | A clear message that the limit was reached |
-| The site after 15 minutes of no use | It wakes up in about a minute; the roster is uploaded again |
+| The site after 15 minutes of no use | It wakes up in about a minute; the course list is loaded again from the server setting (or uploaded again) |
 
 ## 5. Pass criteria and status
 

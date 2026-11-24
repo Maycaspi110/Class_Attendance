@@ -13,7 +13,7 @@ The demo runs on the Render address, from a phone for the students and a laptop 
 | # | Do | Why |
 |---|----|-----|
 | 1 | Open the site and wait until it loads. You see the first page with two tiles: student and lecturer | The free server sleeps and needs about a minute to wake up |
-| 2 | Press "I am a lecturer", log in, press the "Course roster" tile and upload the roster (a CSV file with the columns Name and Email) | The roster is lost when the server sleeps |
+| 2 | Press "I am a lecturer", log in, press the "Course roster" tile and upload the roster (a CSV file with the columns Name and Email) | The roster is lost when the server sleeps, unless it is kept in the `ROSTER_CSV` setting (loaded at every start) |
 | 3 | On the lecturer menu press "Classroom screen" and put that page on the projector | It needs to be ready |
 | 4 | Check that the lecturer's phone has Location on | The classroom location is taken from it |
 | 5 | Have the files ready: a classroom photo, a screen recording of about 2 minutes (or a YouTube link), `tests/sample-homework-a.pdf`, `-b.pdf` and `-c.pdf` (three works for the homework comparison), and the PDF of an assignment (for example `Assignment-Ex2.pdf`) | Used in steps 5-7 |

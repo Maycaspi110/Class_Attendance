@@ -11,7 +11,8 @@ The design is in the main folder: `SRS.md`, `use-cases.md`, `components.md`, `di
 | Page | Address | Who |
 |------|---------|-----|
 | First page | `/` | everyone: student or lecturer |
-| Student menu | `/student` | students: mark attendance, homework review |
+| Student login | `/student/login` | students: type the email from the course list |
+| Student menu | `/student` | students (after the login, "Hello, name"): mark attendance, homework review |
 | Check-in | `/checkin` | students: code (typed or from the QR code), email, location, a comment at the end, the poll |
 | Homework review | `/homework` | students |
 | Lecturer menu | `/lecturer/menu` | lecturer (password): six tiles, each opens only its own part of `/lecturer` |
@@ -78,12 +79,12 @@ The demo must be on the internet (HTTPS) for the phones. It runs as **one** proc
 1. Create a free account at <https://render.com> (**Sign up with GitHub**).
 2. **New** > **Web Service**, connect the repository `Class_Attendance`.
 3. Use: Language `Python 3`, Branch `main`, Root Directory `demo`, Build Command `pip install -r requirements.txt`, Start Command `gunicorn wsgi:app --workers 1 --threads 8 --timeout 90 --bind 0.0.0.0:$PORT`, Instance Type `Free`.
-4. Under **Environment Variables** add `PYTHON_VERSION` (`3.12.8`), `LECTURER_PASSWORD`, `CODE_SECRET`, `SECRET_KEY` (random values, never shared), `CODE_PERIOD_SECONDS` (`30`), `TIMEZONE`, `SECURE_COOKIES`, `TRUST_PROXY`, `REQUIRE_SECRETS` (`1`) and `GEMINI_API_KEY` (from Google AI Studio). A random text: `-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object { [char]$_ })`.
+4. Under **Environment Variables** add `PYTHON_VERSION` (`3.12.8`), `LECTURER_PASSWORD`, `CODE_SECRET`, `SECRET_KEY` (random values, never shared), `CODE_PERIOD_SECONDS` (`30`), `TIMEZONE`, `SECURE_COOKIES`, `TRUST_PROXY`, `REQUIRE_SECRETS` (`1`) and `GEMINI_API_KEY` (from Google AI Studio), and optionally `ROSTER_CSV` (the text of the course list, so it is loaded every time the server starts). A random text: `-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object { [char]$_ })`.
 5. **Create Web Service**, wait until it is live, and open the address on a phone.
 
 Never write the password, the secrets or the key in a file of the repository. `render.yaml` is an alternative (**New** > **Blueprint**).
 
-**Before the demo:** the free server sleeps after about 15 minutes and needs about a minute to wake up, so open it a few minutes before. Everything is in memory: after a sleep the roster is gone, so upload it again, and download the CSV before you stop. Use a made-up roster on a public server. A host firewall can stop an uploaded text that looks like an attack (for example `../../etc/passwd` or SQL words in a README): the page then shows only 403.
+**Before the demo:** the free server sleeps after about 15 minutes and needs about a minute to wake up, so open it a few minutes before. Everything is in memory: after a sleep the roster is gone (unless it is kept in the `ROSTER_CSV` setting, which is loaded again at every start), so upload it again if needed, and download the CSV before you stop. Use a made-up roster on a public server. A host firewall can stop an uploaded text that looks like an attack (for example `../../etc/passwd` or SQL words in a README): the page then shows only 403.
 
 ## Files
 

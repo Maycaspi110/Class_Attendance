@@ -161,6 +161,7 @@ sequenceDiagram
   participant LC as Location checker
   participant DB as Storage
 
+  Note over St,SP: The page is open for the QR code. From the menu, the student first logs in with the roster email.
   St->>SP: Types email and code, allows location
   SP->>AM: checkIn(email, code, location, accuracy, comment)
   AM->>R: findByEmail(email)

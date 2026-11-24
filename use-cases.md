@@ -48,7 +48,7 @@ Each use case is a short story of how a user does one thing with the system. Att
 - **Actor:** Student
 - **Before:** A session is open. The student has a phone with a browser.
 - **Main flow:**
-  1. The student scans the QR code from the classroom screen, or opens the check-in page and types the code.
+  1. The student scans the QR code from the classroom screen (it opens the check-in page directly), or logs in on the student page with the course email, opens "Mark attendance" and types the code.
   2. The student types their email.
   3. The student allows location when the phone asks.
   4. The student presses "I am here".

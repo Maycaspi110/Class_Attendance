@@ -60,10 +60,10 @@ flowchart LR
 
 | Component | What it does | Used by | Related requirements |
 |-----------|--------------|---------|--------------|
-| Home page and menus | A first page with two tiles (student or lecturer), a student menu (check-in, homework) and a lecturer menu with six tiles (roster, attendance, classroom screen, photo count, class summary, poll). The lecturer menu needs the password, and each of its tiles opens only its own part of the lecturer page (for example only the roster). The design uses blue, white, purple and gray. | Everyone | FR-10, FR-22 |
+| Home page and menus | A first page with two tiles (student or lecturer), a student login by email, a student menu (check-in, homework, with a greeting) and a lecturer menu with eight tiles (roster, attendance, classroom screen, photo count, class summary, poll, publish an assignment, homework report). The lecturer menu needs the password, and each of its tiles opens only its own part of the lecturer page (for example only the roster). The design uses blue, white, purple and gray. | Everyone | FR-10, FR-22 |
 | Lecturer page | Uploads the roster, starts and ends the start and end check-ins, shows the results and the comments, uploads the classroom photo, uploads a class recording (or a YouTube link) and shows the summary, downloads the CSV, creates a poll and shows its results. | Lecturer | FR-1 to FR-9, FR-18, FR-20, FR-21 |
 | Classroom screen page | Shows the current 4-digit code and the QR code, and updates them when the code changes. | Classroom screen | show the code and QR |
-| Student page | The student enters an email and a code (or arrives from the QR code), allows location, writes a comment in the end check-in, sees a confirmation or an error, and answers a poll. | Student | FR-10 to FR-17, FR-19 |
+| Student page | The student logs in with an email on the course list, then enters the email and a code (or arrives from the QR code), allows location, writes a comment in the end check-in, sees a confirmation or an error, and answers a poll. | Student | FR-10 to FR-17, FR-19 |
 | Homework page | The student enters an email, chooses the assignment from the list and sends the PDF of the work with one button, and asks for the AI review with another button. | Student | FR-22, FR-23 |
 
 ### Server
@@ -89,7 +89,7 @@ flowchart LR
 
 | Component | What it does |
 |-----------|--------------|
-| Storage | Keeps the roster, the sessions (with the classroom location), the check-ins, the comments, the poll answers, the summary and the homework works. In a real system this is a database, so the lecturer uploads the roster once for the course. In the demo it is kept in memory. |
+| Storage | Keeps the roster, the sessions (with the classroom location), the check-ins, the comments, the poll answers, the summary and the homework works. In a real system this is a database, so the lecturer uploads the roster once for the course. In the demo it is kept in memory, and the roster is loaded at every start from the server setting `ROSTER_CSV`. |
 
 ## 3. How the components work together
 
