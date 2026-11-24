@@ -58,7 +58,7 @@ To try it with a phone on the same Wi-Fi, set `$env:HOST = "0.0.0.0"` before you
 | Name | What it is | Default |
 |------|------------|---------|
 | `LECTURER_PASSWORD` | The password of the lecturer pages | a random one is printed at start |
-| `STUDENT_NAME`, `STUDENT_PASSWORD` | The demo student login (name and code) | `May Caspi`, `1100` |
+| `ROSTER_CSV` | The course list (the text of the CSV file with Name and Email). Loaded every time the server starts, so students can log in and send homework without the lecturer uploading the list | no list |
 | `CODE_SECRET` | The secret that creates the codes (long and random) | a development value |
 | `CODE_PERIOD_SECONDS` | How often the code changes (10 to 30) | `20` |
 | `ALLOWED_RADIUS_METERS` | The allowed distance from the classroom | `150` |

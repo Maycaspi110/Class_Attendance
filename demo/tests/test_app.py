@@ -525,26 +525,38 @@ def test_the_first_page_has_only_two_tiles_student_and_lecturer(student):
     assert page.data.count(b'class="tile ') == 2
 
 
-def student_login(client, name="May Caspi", code="1100"):
-    return client.post("/student/login", data={"name": name, "password": code})
+def student_login(client, email="dana.levi@example.com"):
+    return client.post("/student/login", data={"email": email})
 
 
-def test_the_student_menu_needs_the_demo_name_and_code(student):
+def test_the_student_menu_needs_an_email_from_the_course_list(student, lecturer):
     assert student.get("/student").status_code == 302  # to the student login
     assert student.get("/student/login").status_code == 200
-    assert student_login(student, code="0000").status_code == 401
-    assert student_login(student, name="Someone Else").status_code == 401
+    assert student_login(student).status_code == 401  # no list yet
+    confirm_roster(lecturer)
+    assert student_login(student, "nobody@example.com").status_code == 401
     assert student.get("/student").status_code == 302
-    assert student_login(student, name="  may   CASPI ").status_code == 302
+    assert student_login(student, " Dana.Levi@Example.com ").status_code == 302
     page = student.get("/student")
-    assert page.status_code == 200 and b"Hello, May Caspi" in page.data
+    assert page.status_code == 200 and b"Hello, Dana Levi" in page.data
+
+
+def test_the_course_list_from_the_server_settings_is_loaded_at_start(clock):
+    from .conftest import ROSTER_CSV as CSV
+
+    app = create_app({"TESTING": True, "LECTURER_PASSWORD": PASSWORD, "CODE_SECRET": "x", "CLOCK": clock, "ROSTER_CSV": CSV})
+    client = app.test_client()
+    assert student_login(client, "noa.cohen@example.com").status_code == 302  # nobody uploaded a list
+    broken = create_app({"TESTING": True, "LECTURER_PASSWORD": PASSWORD, "CODE_SECRET": "x", "CLOCK": clock, "ROSTER_CSV": "bad"})
+    assert student_login(broken.test_client()).status_code == 401  # a bad setting gives an empty list, not a crash
 
 
 def test_the_check_in_page_stays_open_for_the_qr_code(student):
     assert student.get("/checkin").status_code == 200
 
 
-def test_the_student_menu_has_the_student_tools_and_no_lecturer_tools(student):
+def test_the_student_menu_has_the_student_tools_and_no_lecturer_tools(student, lecturer):
+    confirm_roster(lecturer)
     student_login(student)
     page = student.get("/student")
     assert page.status_code == 200
@@ -573,6 +585,7 @@ def test_the_lecturer_menu_needs_the_password_and_has_the_lecturer_tools(student
 
 
 def test_every_page_links_back_to_its_menu(student, lecturer):
+    confirm_roster(lecturer)
     student_login(student)
     for client, path, back in (
         (student, "/checkin", b'href="/student"'),

@@ -3,13 +3,10 @@
 {% block body %}
 <a class="homelink" href="{{ url_for('home') }}">&larr; Home</a>
 <h1>Student login</h1>
-<p class="sub">Enter your name and the code you were given.</p>
+<p class="sub">Enter the email you are registered with in the course.</p>
 <form class="card" method="post" action="">
-  <label>Name
-    <input type="text" name="name" autocomplete="name" autofocus required>
-  </label>
-  <label>Code
-    <input type="password" name="password" inputmode="numeric" autocomplete="off" required>
+  <label>Email
+    <input type="email" name="email" autocomplete="email" autofocus required>
   </label>
   {% if error %}<div class="msg bad">{{ error }}</div>{% endif %}
   <button type="submit">Log in</button>

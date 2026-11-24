@@ -20,7 +20,7 @@ A web app that students open on their own phones, with nothing to install. It ru
 
 ## How I checked it
 
-- 392 automated tests (pytest) for the classes, the pages and the errors. The AI is replaced by a fake one in the tests.
+- 393 automated tests (pytest) for the classes, the pages and the errors. The AI is replaced by a fake one in the tests.
 - Manual tests: the changing code and the QR code on an iPhone and an Android device, GPS in the classroom and the library, the CSV in Excel, the website on phones through Render, and the AI photo count.
 
 ## What I learned

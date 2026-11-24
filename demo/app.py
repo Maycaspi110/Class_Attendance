@@ -126,9 +126,8 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.config.update(
         LECTURER_PASSWORD=os.environ.get("LECTURER_PASSWORD"),
-        # The student entry of the demo (a name and a code). It is not a security feature.
-        STUDENT_NAME=os.environ.get("STUDENT_NAME") or "May Caspi",
-        STUDENT_PASSWORD=os.environ.get("STUDENT_PASSWORD") or "1100",
+        # The course list (the CSV text), kept in the server settings, so it is loaded again every time the server starts.
+        ROSTER_CSV=os.environ.get("ROSTER_CSV"),
         CODE_SECRET=os.environ.get("CODE_SECRET"),
         CODE_PERIOD_SECONDS=_env_int("CODE_PERIOD_SECONDS", 20),
         ALLOWED_RADIUS_METERS=_env_int("ALLOWED_RADIUS_METERS", 150),
@@ -177,6 +176,11 @@ def create_app(test_config=None):
         tz=ZoneInfo(app.config["TIMEZONE"]),
     )
     state = DemoState(manager)
+    if app.config["ROSTER_CSV"]:
+        try:
+            manager.roster = Roster().load(app.config["ROSTER_CSV"])
+        except RosterError as error:
+            print("ROSTER_CSV could not be used: %s" % error)
     app.extensions["demo"] = state
     if app.config.get("HEADCOUNTER") is not None:  # tests give a fake counter
         state.counter = app.config["HEADCOUNTER"]
@@ -264,20 +268,16 @@ def create_app(test_config=None):
             ip = request.remote_addr or "?"
             recent = [t for t in state.login_failures.get(ip, []) if now() - t < LOGIN_WINDOW_SECONDS]
             state.login_failures[ip] = recent
-            name = " ".join((request.form.get("name") or "").split()).casefold()
-            given = (request.form.get("password") or "").encode("utf-8")
-            expected = app.config["STUDENT_PASSWORD"].encode("utf-8")
-            right_name = name == " ".join(app.config["STUDENT_NAME"].split()).casefold()
-            right_code = hmac.compare_digest(given, expected)
+            student = manager.roster.find_by_email(str(request.form.get("email") or "")[:254])
             if len(recent) >= MAX_LOGIN_FAILURES:
                 error = "Too many attempts. Wait a few minutes."
-            elif right_name and right_code:
-                login_session["student"] = app.config["STUDENT_NAME"]
+            elif student is not None:
+                login_session["student"] = student.name
                 login_session.permanent = True
                 return redirect(url_for("student_menu"))
             else:
                 recent.append(now())
-                error = "Wrong name or code."
+                error = "This email is not on the course list."
         return render_template("student_login.html", error=error), (401 if error else 200)
 
     @app.route("/logout")
